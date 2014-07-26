@@ -943,6 +943,16 @@ static void one_second_loop()
 
 	// send a heartbeat
 	gcs_send_message(MSG_HEARTBEAT);
+	
+	// trigger once
+	static bool done = false;
+	
+	// check that A0 is high, we have not done this before, and we are higher than 20m
+	if (digitalRead(A0) == HIGH && !done && (current_loc.alt-home.alt) > (20*100)) 
+	{
+		set_mode(RTL);
+		done = true;
+	}
 }
 
 static void update_GPS(void)

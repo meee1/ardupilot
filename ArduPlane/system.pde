@@ -211,6 +211,9 @@ static void init_ardupilot()
     digitalWrite(FENCE_TRIGGERED_PIN, LOW);
 #endif
 
+	pinMode(A0, INPUT);
+	digitalWrite(A0, HIGH);
+
     /*
       setup the 'main loop is dead' check. Note that this relies on
       the RC library being initialised.
