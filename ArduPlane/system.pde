@@ -181,7 +181,7 @@ static void init_ardupilot()
 	// Do GPS init
 	g_gps = &g_gps_driver;
 	g_gps->init();			// GPS Initialization
-    g_gps->callback = mavlink_delay;
+   // g_gps->callback = mavlink_delay;
 
 	//mavlink_system.sysid = MAV_SYSTEM_ID;				// Using g.sysid_this_mav
 	mavlink_system.compid = 1;	//MAV_COMP_ID_IMU;   // We do not check for comp id
@@ -371,6 +371,7 @@ static void set_mode(byte mode)
 		case STABILIZE:
 		case FLY_BY_WIRE_A:
 		case FLY_BY_WIRE_B:
+        case BOX:
 			break;
 
 		case AUTO:

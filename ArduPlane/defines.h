@@ -22,7 +22,7 @@
 #define FAILSAFE_LONG	2
 #define FAILSAFE_GCS	3
 #define	FAILSAFE_SHORT_TIME 1500	// Miliiseconds
-#define	FAILSAFE_LONG_TIME  20000	// Miliiseconds
+#define	FAILSAFE_LONG_TIME  180000	// Miliiseconds
 
 
 // active altitude sensor
@@ -63,6 +63,7 @@
 #define MANUAL 0
 #define CIRCLE 1			 // When flying sans GPS, and we loose the radio, just circle
 #define STABILIZE 2
+#define BOX 3
 
 #define FLY_BY_WIRE_A 5		// Fly By Wire A has left stick horizontal => desired roll angle, left stick vertical => desired pitch angle, right stick vertical = manual throttle
 #define FLY_BY_WIRE_B 6		// Fly By Wire B has left stick horizontal => desired roll angle, left stick vertical => desired pitch angle, right stick vertical => desired airspeed

@@ -107,9 +107,11 @@ static void stabilize()
 
 	// Apply output to Rudder
 	// ----------------------
-	calc_nav_yaw(speed_scaler);
-	g.channel_rudder.servo_out *= ch4_inf;
-	g.channel_rudder.servo_out += g.channel_rudder.pwm_to_angle();
+    if (control_mode != BOX) {
+        calc_nav_yaw(speed_scaler);
+        g.channel_rudder.servo_out *= ch4_inf;
+        g.channel_rudder.servo_out += g.channel_rudder.pwm_to_angle();
+    }
 
 	// Call slew rate limiter if used
 	// ------------------------------
@@ -206,6 +208,8 @@ static void calc_nav_roll()
 	// This does not make provisions for wind speed in excess of airframe speed
 	nav_gain_scaler = (float)g_gps->ground_speed / (STANDARD_SPEED * 100.0);
 	nav_gain_scaler = constrain(nav_gain_scaler, 0.2, 1.4);
+    
+    nav_gain_scaler = 1.0;
 
 	// negative error = left turn
 	// positive error = right turn

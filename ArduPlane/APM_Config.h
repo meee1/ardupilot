@@ -16,9 +16,9 @@
 // The following are the recommended settings for Xplane
 // simulation. Remove the leading "/* and trailing "*/" to enable:
 
-#define HIL_MODE            HIL_MODE_DISABLED
+//#define HIL_MODE            HIL_MODE_DISABLED
 
-/*
+
 // HIL_MODE SELECTION
 //
 // Mavlink supports
@@ -26,7 +26,7 @@
 // 2. HIL_MODE_SENSORS: full sensor simulation
 //#define HIL_MODE            HIL_MODE_ATTITUDE
 
-*/
+
 
 // use this to enable the new MAVLink 1.0 protocol, instead of the
 // older 0.9 protocol

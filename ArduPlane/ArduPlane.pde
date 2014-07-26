@@ -53,7 +53,6 @@ version 2.1 of the License, or (at your option) any later version.
 #include "config.h"
 
 #include <GCS_MAVLink.h>    // MAVLink GCS definitions
-
 #include <AP_Mount.h>		// Camera/Antenna mount
 
 // Local modules
@@ -280,7 +279,7 @@ static const char* flight_mode_strings[] = {
 	"Manual",
 	"Circle",
 	"Stabilize",
-	"",
+	"BOX",
 	"",
 	"FBW_A",
 	"FBW_B",
@@ -636,6 +635,15 @@ static unsigned long 	dTnav;
 // % MCU cycles used
 static float 			load;
 
+// BOX
+int mainLoop_count_target;
+int box_roll = 0;
+int box_max = 15;
+int box_pitch = 0;
+int box_pmax = 3;          //was 5
+byte box_dir = 0;
+byte box_rep_done = 0;
+byte box_rep = 3;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1056,6 +1064,127 @@ static void update_current_flight_mode(void)
 				calc_nav_pitch();
 				calc_throttle();
 				break;
+                
+	case BOX:
+    			hold_course = -1;
+    			//send_message(MSG_ATTITUDE); // 50 hz telem was beening used to analise the comp box sofware made google earth go crasy
+    			crash_checker();
+                        if (box_dir < 9 && box_dir >= 12) // to override yaw
+                          calc_nav_yaw(1);
+    			//calc_nav_roll();
+    			//calc_nav_pitch();
+    			calc_throttle();
+    			if(mainLoop_count >= mainLoop_count_target) { // every second   50 = 1 sec    2 sec = 100
+    				if (box_dir == 0) { // level
+    				  gcs_send_text_P(SEVERITY_LOW,PSTR("A Box Pitch"));
+    				  mainLoop_count_target = 100; // 2 sec
+    				  box_roll = 0;
+    				  box_pitch = 0;
+    				  box_dir++;
+    				} else if (box_dir == 1) { // pmax
+    				  mainLoop_count_target = 40; // .832 sec
+    				  box_roll = 0;
+    				  box_pitch = box_pmax;
+    				} else if (box_dir == 2)  { // level
+    				  mainLoop_count_target = 12;
+    				  box_roll = 0;
+    				  box_pitch = 0;
+    				  box_dir++;
+    				} else if (box_dir == 3)  { // - pmax
+    				  mainLoop_count_target = 40;
+    				  box_roll = 0;
+    				  box_pitch = -box_pmax;
+    				} else if (box_dir == 4)  { // level
+    				  mainLoop_count_target = 12;
+    				  box_pitch = 0;
+    				  box_roll = 0;
+    				  if (box_rep_done < box_rep) {
+    					  box_rep_done++;
+    					  box_dir = 1;
+    				  } else {
+      				          gcs_send_text_P(SEVERITY_LOW,PSTR("A Box Roll"));
+    					  box_rep_done = 0;
+    					  mainLoop_count_target = 100;
+    					  box_dir++;
+    				  }
+    				} else if (box_dir == 5) { // rmax
+    				  mainLoop_count_target = 40;
+    				  box_pitch = 0;
+    				  box_roll = box_max;
+    				} else if (box_dir == 6) { // level
+    				  mainLoop_count_target = 12;
+    				  box_pitch = 0;
+    				  box_roll = 0;
+    				  box_dir++;
+    				} else if (box_dir == 7) { // - rmax
+    				  mainLoop_count_target = 40;
+    				  box_pitch = 0;
+    				  box_roll = -box_max;
+    				} else if (box_dir == 8) { // level
+    				  mainLoop_count_target = 12;
+    				  box_pitch = 0;
+    				  box_roll = 0;
+    				  if (box_rep_done < box_rep) {
+    					  box_rep_done++;
+    					  box_dir = 5;
+    				  } else {
+                                          gcs_send_text_P(SEVERITY_LOW,PSTR("A Box Yaw"));
+    					  box_rep_done = 0;
+    					  mainLoop_count_target = 100; 
+    					  box_dir++;
+    				  }
+    				} else if (box_dir == 9) {     // servo_out[CH_RUDDER]
+    				  mainLoop_count_target = 40;
+                                  g.channel_rudder.servo_out = 750;    // was 2000 ruder deflection
+    				  box_pitch = 0;
+    				  box_roll = 0;
+                                  box_dir++;
+    				} else if (box_dir == 10) { // level
+    				  mainLoop_count_target = 12;
+                                  g.channel_rudder.servo_out = 0;
+    				  box_pitch = 0;
+    				  box_roll = 0;
+    				  box_dir++;
+    				} else if (box_dir == 11) { // - 
+    				  mainLoop_count_target = 40;
+                                  g.channel_rudder.servo_out = -750;     // was 2000 rudder deflection
+    				  box_pitch = 0;
+    				  box_roll = 0;
+                                  box_dir++;
+    				} else if (box_dir == 12) { // level
+    				  mainLoop_count_target = 12;
+                                  g.channel_rudder.servo_out = 0;
+    				  box_pitch = 0;
+    				  box_roll = 0;
+    				  if (box_rep_done < box_rep) {
+                                          box_dir++;
+    					  box_rep_done++;
+    					  box_dir = 9;
+    				  } else {
+    					  box_rep_done = 0;
+    					  mainLoop_count_target = 100; // bigger pause /changed 6-18
+    					  box_dir++;
+    				  }
+    				} else if (box_dir >= 13) {
+      				  gcs_send_text_P(SEVERITY_LOW,PSTR("A Box Done"));
+    				  mainLoop_count_target = 1;
+    				  box_pitch = 0;
+    				  box_roll = 0;
+                      set_mode(AUTO);
+    				  box_dir = 0;
+    				  box_rep_done = 0;
+    				}
+    				box_roll = constrain(box_roll, -box_max, box_max);
+    				box_pitch = constrain(box_pitch, -box_pmax, box_pmax);
+    				if (box_roll >= box_max || box_roll <= -box_max || box_pitch >= box_pmax || box_pitch <= -box_pmax)
+    				{
+    				 box_dir++;
+    				}
+    				mainLoop_count = 0;
+    			}
+    			nav_pitch = constrain(box_pitch * 100, -2000, 2000);
+    			nav_roll = constrain(box_roll * 100, -4500, 4500);
+    			break;
 
 			case FLY_BY_WIRE_A:
 				// set nav_roll and nav_pitch using sticks

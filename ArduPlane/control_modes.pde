@@ -23,6 +23,13 @@ static void read_control_switch()
 
 		oldSwitchPosition = switchPosition;
 		prev_WP = current_loc;
+        
+        		//BOX
+  mainLoop_count_target = 1;
+  box_pitch = 0;
+  box_roll = 0;
+  box_dir = 0;
+  box_rep_done = 0;
 
 		// reset navigation integrators
 		// -------------------------

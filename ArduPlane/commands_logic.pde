@@ -417,6 +417,7 @@ static void do_change_alt()
 	target_altitude		= current_loc.alt + (condition_rate / 10);		// Divide by ten for 10Hz update
 	next_WP.alt 		= condition_value;								// For future nav calculations
 	offset_altitude 	= 0;											// For future nav calculations
+    prev_WP             = current_loc;
 }
 
 static void do_within_distance()
