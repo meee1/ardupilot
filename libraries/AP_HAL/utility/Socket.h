@@ -17,6 +17,7 @@
  */
 
 #include <AP_HAL.h>
+#include <sys/types.h>
 #if HAL_OS_SOCKETS
 
 class SocketAPM {
