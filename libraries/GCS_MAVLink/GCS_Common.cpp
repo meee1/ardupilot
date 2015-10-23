@@ -555,7 +555,7 @@ void GCS_MAVLINK::handle_param_request_read(mavlink_message_t *msg)
         chan,
         param_name,
         value,
-        mav_var_type(p_type),
+        MAVLINK_TYPE_FLOAT,
         _count_parameters(),
         packet.param_index);
 }
@@ -603,7 +603,7 @@ void GCS_MAVLINK::handle_param_set(mavlink_message_t *msg, DataFlash_Class *Data
         chan,
         key,
         vp->cast_to_float(var_type),
-        mav_var_type(var_type),
+        MAVLINK_TYPE_FLOAT,
         _count_parameters(),
         -1);     // XXX we don't actually know what its index is...
 
