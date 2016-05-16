@@ -21,6 +21,7 @@
 #include <AP_Notify/AP_Notify.h>
 #include <GCS_MAVLink/GCS.h>
 
+#include "AP_GPS_NOVA.h"
 #include "AP_GPS_ERB.h"
 #include "AP_GPS_GSOF.h"
 #include "AP_GPS_MTK.h"
@@ -243,6 +244,9 @@ AP_GPS::detect_instance(uint8_t instance)
 	} else if ((_type[instance] == GPS_TYPE_GSOF)) {
 		_broadcast_gps_type("GSOF", instance, -1); // baud rate isn't valid
 		new_gps = new AP_GPS_GSOF(*this, state[instance], _port[instance]);
+	} else if ((_type[instance] == GPS_TYPE_NOVA)) {
+		_broadcast_gps_type("NOVA", instance, -1); // baud rate isn't valid
+		new_gps = new AP_GPS_NOVA(*this, state[instance], _port[instance]);
 	}
 
     // record the time when we started detection. This is used to try

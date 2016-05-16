@@ -69,6 +69,7 @@ public:
 		GPS_TYPE_GSOF  = 11,
 		GPS_TYPE_QURT  = 12,
         GPS_TYPE_ERB = 13,
+        GPS_TYPE_NOVA = 14,
     };
 
     /// GPS status codes
