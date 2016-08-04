@@ -1341,6 +1341,7 @@ void GCS_MAVLINK_Rover::handleMessage(mavlink_message_t* msg)
         handle_serial_control(msg, rover.gps);
         break;
 
+    case MAVLINK_MSG_ID_GPS_RTCM_DATA:
     case MAVLINK_MSG_ID_GPS_INJECT_DATA:
         handle_gps_inject(msg, rover.gps);
         break;

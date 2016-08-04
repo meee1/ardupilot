@@ -883,12 +883,26 @@ mission_ack:
 void 
 GCS_MAVLINK::handle_gps_inject(const mavlink_message_t *msg, AP_GPS &gps)
 {
-    mavlink_gps_inject_data_t packet;
-    mavlink_msg_gps_inject_data_decode(msg, &packet);
-    //TODO: check target
-
-    gps.inject_data(packet.data, packet.len);
-
+    if (msg->msgid == MAVLINK_MSG_ID_GPS_RTCM_DATA) { 
+        mavlink_gps_rtcm_data_t packet;
+        mavlink_msg_gps_rtcm_data_decode(msg, &packet);
+        static uint8_t data[180];
+        static uint8_t len = 0;
+        if ((packet.flags & 1) == 1) {
+            memcpy(packet.data, data, 180);
+            len = packet.len;
+        } else {
+            if (len > 0) {
+                gps.inject_data(data, len);
+                len = 0;
+            }
+            gps.inject_data(packet.data, packet.len);
+        }
+    } else if (msg->msgid == MAVLINK_MSG_ID_GPS_INJECT_DATA) {
+        mavlink_gps_inject_data_t packet;
+        mavlink_msg_gps_inject_data_decode(msg, &packet);
+        gps.inject_data(packet.data, packet.len);
+    }
 }
 
 // send a message using mavlink, handling message queueing

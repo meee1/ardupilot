@@ -1934,6 +1934,7 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         handle_serial_control(msg, copter.gps);
         break;
 
+    case MAVLINK_MSG_ID_GPS_RTCM_DATA:
     case MAVLINK_MSG_ID_GPS_INJECT_DATA:
         handle_gps_inject(msg, copter.gps);
         result = MAV_RESULT_ACCEPTED;

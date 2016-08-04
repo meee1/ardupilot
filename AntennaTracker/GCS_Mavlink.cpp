@@ -860,6 +860,7 @@ mission_failed:
         handle_serial_control(msg, tracker.gps);
         break;
 
+    case MAVLINK_MSG_ID_GPS_RTCM_DATA:
     case MAVLINK_MSG_ID_GPS_INJECT_DATA:
         handle_gps_inject(msg, tracker.gps);
         break;

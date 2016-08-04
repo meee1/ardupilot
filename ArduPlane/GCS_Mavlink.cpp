@@ -2065,6 +2065,7 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         handle_serial_control(msg, plane.gps);
         break;
 
+    case MAVLINK_MSG_ID_GPS_RTCM_DATA:
     case MAVLINK_MSG_ID_GPS_INJECT_DATA:
         handle_gps_inject(msg, plane.gps);
         break;
