@@ -113,6 +113,12 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
                                           buf[i],
                                           &msg, &status) == MAVLINK_FRAMING_OK) {
                 switch (msg.msgid) {
+                    case MAVLINK_MSG_ID_ATTITUDE: {
+                        mavlink_attitude_t pkt;
+                        mavlink_msg_attitude_decode(&msg, &pkt);
+                        dcm.from_euler(pkt.roll, pkt.pitch, pkt.yaw);
+                        ::printf("ATT");
+                    }
                     case MAVLINK_MSG_ID_HIL_GPS:{
                         //::printf("MAVLINK_MSG_ID_HIL_GPS %u - %u\n", (unsigned)msg.sysid, (unsigned)msg.compid);
                         mavlink_hil_gps_t pkt;
@@ -123,10 +129,7 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
                         location.lng = pkt.lon;
                         location.alt = pkt.alt;
                         
-                        float r, p, y;
-                        dcm.to_euler(&r, &p, &y);
-                                            
-                        dcm.from_euler(r, p, radians(pkt.cog));
+::printf("GPS");
                         break;
                     }
                     case MAVLINK_MSG_ID_HIL_SENSOR:{
@@ -141,6 +144,14 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
                         gyro = Vector3f(pkt.xgyro,
                                         pkt.ygyro,
                                         pkt.zgyro);
+                 /*              
+                        Vector3f mag_ef = Vector3f(pkt.xmag*275,
+                                        pkt.ymag*275,
+                                        pkt.zmag*275);
+                               
+mag_bf =  mag_ef;
+*/
+//::printf("INS");
                                
 float terminal_rotation_rate = 4*radians(360.0f);
 float roll_rate_max = radians(700);
@@ -159,7 +170,7 @@ float yaw_rate_max = radians(700);
     rot_accel.z -= gyro.z * radians(400.0)  / terminal_rotation_rate;
 
                                         
-                        update_dynamics(rot_accel);
+                        //update_dynamics(rot_accel);
                     // auto-adjust to crrcsim frame rate
     double deltat = pkt.time_usec - last_timestamp;
     //time_now_us += deltat * 1.0e6;
