@@ -37,6 +37,10 @@ SIM_Mavlink::SIM_Mavlink(const char *home_str, const char *frame_str) :
            (unsigned)bind_port);
     
     socket_in.bind("0.0.0.0", bind_port);
+    
+    // Mavlink sensor data is not good enough for EKF. Use fake EKF by default
+    AP_Param::set_default_by_name("AHRS_EKF_TYPE", 10);
+    AP_Param::set_default_by_name("INS_GYR_CAL", 0);
 }
 
 /*
@@ -54,10 +58,12 @@ void SIM_Mavlink::send_servos(const struct sitl_input &input)
     //HilControlsMessage or HilActuatorControlsMessage
     mavlink_hil_controls_t hilctl;
     hilctl.time_usec =  AP_HAL::micros();
+    // 0-1 values
     hilctl.roll_ailerons = (input.servos[0] - 1000) /1000.0;
     hilctl.pitch_elevator = (input.servos[1]- 1000)/1000.0;
     hilctl.yaw_rudder = (input.servos[2]- 1000) /1000.0;
     hilctl.throttle = (input.servos[3]- 1000) /1000.0;
+    //-1 to 1 values
     hilctl.aux1 = (input.servos[4]- 1500) * 0.002;
     hilctl.aux2 = (input.servos[5]- 1500) * 0.002;
     hilctl.aux3 = (input.servos[6]- 1500) * 0.002;
@@ -144,45 +150,6 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
                         gyro = Vector3f(pkt.xgyro,
                                         pkt.ygyro,
                                         pkt.zgyro);
-                 /*              
-                        Vector3f mag_ef = Vector3f(pkt.xmag*275,
-                                        pkt.ymag*275,
-                                        pkt.zmag*275);
-                               
-mag_bf =  mag_ef;
-*/
-//::printf("INS");
-                               
-float terminal_rotation_rate = 4*radians(360.0f);
-float roll_rate_max = radians(700);
-float pitch_rate_max = radians(700);
-float yaw_rate_max = radians(700);
-                               
-    // rotational acceleration, in rad/s/s, in body frame
-    Vector3f rot_accel;
-    rot_accel.x = 0 * roll_rate_max;
-    rot_accel.y = 0 * pitch_rate_max;
-    rot_accel.z = 0 * yaw_rate_max;
-
-    // rotational air resistance
-    rot_accel.x -= gyro.x * radians(5000.0) / terminal_rotation_rate;
-    rot_accel.y -= gyro.y * radians(5000.0) / terminal_rotation_rate;
-    rot_accel.z -= gyro.z * radians(400.0)  / terminal_rotation_rate;
-
-                                        
-                        //update_dynamics(rot_accel);
-                    // auto-adjust to crrcsim frame rate
-    double deltat = pkt.time_usec - last_timestamp;
-    //time_now_us += deltat * 1.0e6;
-
-    //::printf("%f\n",deltat);
-    
-    if (deltat < 0.01 && deltat > 0) {
-        //adjust_frame_time(1.0/deltat);
-    }
-    last_timestamp = pkt.time_usec;
-
-    
                         break;
                     }
                 }
@@ -198,21 +165,17 @@ float yaw_rate_max = radians(700);
  */
 void SIM_Mavlink::update(const struct sitl_input &input)
 {
-    //printf("update\n");
     send_servos(input);
-    //printf("update 1\n");
     recv_fdm(input);
-    //printf("update 2\n");
 
     // update magnetic field
     update_mag_field_bf();
-    //::printf("update done\n");
     
     if (startup_ms == 0)
         startup_ms = AP_HAL::millis();
     
-    if (AP_HAL::millis() < (startup_ms + 10000)) {
-        // simulated aircraft don't appear until 10s after startup. This avoids a windows
+    if (AP_HAL::millis() < (startup_ms + 5000)) {
+        // simulated aircraft don't appear until 5s after startup. This avoids a windows
         // threading issue with non-blocking sockets and the initial wait on uartA
         return;
     }
