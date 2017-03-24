@@ -59,6 +59,13 @@ private:
         uint8_t seq;
     } mavlink;
     
+    struct {
+        bool connected;
+        mavlink_message_t rxmsg;
+        mavlink_status_t status;
+        uint8_t seq;
+    } mavlink2;
+    
     bool connected = false;
     bool seen_heartbeat = false;
     uint8_t vehicle_system_id;

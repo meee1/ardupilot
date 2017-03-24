@@ -33,8 +33,7 @@ SIM_Mavlink::SIM_Mavlink(const char *home_str, const char *frame_str) :
 {
     memset(&mavlink, 0, sizeof(mavlink));
     
-    ::printf("Waiting for HIL sim data on UDP port %u\n",
-           (unsigned)bind_port);
+    ::printf("Waiting for HIL sim data on UDP port %u\n", (unsigned)bind_port);
     
     socket_in.bind("0.0.0.0", bind_port);
     
@@ -49,10 +48,10 @@ SIM_Mavlink::SIM_Mavlink(const char *home_str, const char *frame_str) :
 void SIM_Mavlink::send_servos(const struct sitl_input &input)
 {
     if (AP_HAL::millis() < 10000) {
-        // simulated aircraft don't appear until 10s after startup. This avoids a windows
+        // simulated aircraft don't appear until 5s after startup. This avoids a windows
         // threading issue with non-blocking sockets and the initial wait on uartA
         return;
-    }  
+    }
     
     //generate mavlink hil servo packet
     //HilControlsMessage or HilActuatorControlsMessage
@@ -84,7 +83,7 @@ void SIM_Mavlink::send_servos(const struct sitl_input &input)
 
         uint8_t msgbuf[len];
         len = mavlink_msg_to_send_buffer(msgbuf, &msg);
-        if (len > 0) {
+        if (len > 0 && connected) {
             socket_in.send(msgbuf, len);
         }
 }
@@ -112,7 +111,7 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
             mav_socket.send(buf,ret);
         }
         
-        for (uint8_t i=0; i<ret; i++) {
+        for (ssize_t i=0; i<ret; i++) {
             mavlink_message_t msg;
             mavlink_status_t status;
             if (mavlink_frame_char_buffer(&mavlink.rxmsg, &mavlink.status,
@@ -123,25 +122,25 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
                         mavlink_attitude_t pkt;
                         mavlink_msg_attitude_decode(&msg, &pkt);
                         dcm.from_euler(pkt.roll, pkt.pitch, pkt.yaw);
-                        ::printf("ATT");
+                        //::printf("ATT");
                     }
                     case MAVLINK_MSG_ID_HIL_GPS:{
                         //::printf("MAVLINK_MSG_ID_HIL_GPS %u - %u\n", (unsigned)msg.sysid, (unsigned)msg.compid);
                         mavlink_hil_gps_t pkt;
                         mavlink_msg_hil_gps_decode(&msg, &pkt);
-                        velocity_ef = Vector3f(pkt.vn, pkt.ve, pkt.vd);
+                        velocity_ef = Vector3f(pkt.vn/100.0, pkt.ve/100.0, pkt.vd/100.0);
 
                         location.lat = pkt.lat;
                         location.lng = pkt.lon;
-                        location.alt = pkt.alt;
+                        location.alt = pkt.alt/10.0f;
                         
-::printf("GPS");
+                        ::printf("GPS %u %u %u", pkt.lat, pkt.lon, pkt.alt);
                         break;
                     }
                     case MAVLINK_MSG_ID_HIL_SENSOR:{
                         //::printf("MAVLINK_MSG_ID_HIL_SENSOR %u\n", (unsigned)msg.sysid);
                         mavlink_hil_sensor_t pkt;
-                    mavlink_msg_hil_sensor_decode(&msg, &pkt);
+                        mavlink_msg_hil_sensor_decode(&msg, &pkt);
                          // get imu stuff
                         accel_body = Vector3f(pkt.xacc,
                                               pkt.yacc,
@@ -150,14 +149,15 @@ void SIM_Mavlink::recv_fdm(const struct sitl_input &input)
                         gyro = Vector3f(pkt.xgyro,
                                         pkt.ygyro,
                                         pkt.zgyro);
+                        //::printf("IMU");
                         break;
                     }
                 }
-                
-              
             }
         }
     }
+    
+    //time_now_us = AP_HAL::millis() * 1000;
 }
 
 /*
@@ -171,6 +171,8 @@ void SIM_Mavlink::update(const struct sitl_input &input)
     // update magnetic field
     update_mag_field_bf();
     
+    //sync_frame_time();
+    
     if (startup_ms == 0)
         startup_ms = AP_HAL::millis();
     
@@ -179,6 +181,7 @@ void SIM_Mavlink::update(const struct sitl_input &input)
         // threading issue with non-blocking sockets and the initial wait on uartA
         return;
     }
+    
     if (!mavlink.connected && mav_socket.connect(target_address, target_port)) {
         ::printf("hil connected to %s:%u\n", target_address, (unsigned)target_port);
         mav_socket.set_blocking(false);
@@ -188,14 +191,15 @@ void SIM_Mavlink::update(const struct sitl_input &input)
         printf("mavlink not connected\n");
         return;
     }
-    
-    uint8_t buf[255];
+
+    uint8_t buf[20000];
     ssize_t ret;
     while ((ret=mav_socket.recv(buf, sizeof(buf), 0)) > 0) {
-        for (uint8_t i=0; i<ret; i++) {
+        ::printf("read %u ",(unsigned int)ret);
+        for (ssize_t i=0; i<ret; i++) {
             mavlink_message_t msg;
             mavlink_status_t status;
-            if (mavlink_frame_char_buffer(&mavlink.rxmsg, &mavlink.status,
+            if (mavlink_frame_char_buffer(&mavlink2.rxmsg, &mavlink2.status,
                 buf[i],
                 &msg, &status) == MAVLINK_FRAMING_OK) {
 
@@ -217,9 +221,9 @@ void SIM_Mavlink::update(const struct sitl_input &input)
                 uint8_t saved_seq = chan0_status->current_tx_seq;
                 chan0_status->current_tx_seq = saved_seq++;
 
-                uint8_t msgbuf[255];
+                uint8_t msgbuf[300];
                 len = mavlink_msg_to_send_buffer(msgbuf, &msg);
-                if (len > 0) {
+                if (len > 0 && connected) {
                     socket_in.send(msgbuf, len);
                 }
 
