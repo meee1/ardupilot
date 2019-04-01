@@ -205,6 +205,45 @@ void *calloc(size_t nmemb, size_t size)
     return malloc(nmemb * size);
 }
 
+void *realloc (void *addr, size_t size)
+{
+    union heap_header *hp;
+    size_t prev_size, new_size;
+
+    void *ptr;
+
+    if(addr == NULL) {
+        return malloc(size);
+    }
+
+    /* previous allocated segment is preceded by an heap_header */
+    hp = addr - sizeof(union heap_header);
+    prev_size = hp->used.size; /* size is always multiple of 8 */
+
+    /* check new size memory alignment */
+    if(size % 8 == 0) {
+        new_size = size;
+    }
+    else {
+        new_size = ((int) (size / 8)) * 8 + 8;
+    }
+
+    if(prev_size >= new_size) {
+        return addr;
+    }
+
+    ptr = malloc(size);
+    if(ptr == NULL) {
+        return NULL;
+    }
+
+    memcpy(ptr, addr, prev_size);
+
+    free(addr);
+
+    return ptr;
+}
+
 void free(void *ptr)
 {
     if(ptr != NULL) {

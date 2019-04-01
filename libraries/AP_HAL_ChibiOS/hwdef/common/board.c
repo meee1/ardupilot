@@ -238,6 +238,14 @@ void __late_init(void) {
 #ifndef HAL_BOOTLOADER_BUILD
   stm32_watchdog_clear_reason();
 #endif
+
+  /*
+   * Initialize RNG
+   */
+  rccEnableAHB2(RCC_AHB2ENR_RNGEN, 0);
+  RNG->CR |= RNG_CR_IE;
+  RNG->CR |= RNG_CR_RNGEN;
+  
 #if CH_CFG_USE_HEAP == TRUE
   malloc_init();
 #endif

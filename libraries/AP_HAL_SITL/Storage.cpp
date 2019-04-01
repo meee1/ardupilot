@@ -226,7 +226,7 @@ static bool sitl_flash_erasepage(uint32_t page)
     memset(fill, 0xff, sizeof(fill));
     sitl_flash_open();
     bool ret = pwrite(flash_fd, fill, sizeof(fill), page * HAL_STORAGE_SIZE) == sizeof(fill);
-    printf("erase %u -> %u\n", page, ret);
+    hal.console->printf("erase %u -> %u\n", page, ret);
     return ret;
 }
 

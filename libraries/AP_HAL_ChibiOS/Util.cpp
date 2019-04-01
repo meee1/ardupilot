@@ -251,6 +251,17 @@ bool Util::flash_bootloader()
         free(fw);
         return false;
     }
+
+    if (hal.flash->getpagesize(0) < fw_size) {
+        hal.console->printf("Bootloader size overflows first page.\n");
+        hal.console->printf("Erasing Second Page\n");
+        if (!hal.flash->erasepage(1)) {
+            hal.console->printf("Erase failed\n");
+            free(fw);
+            return false;
+        }
+    }
+
     hal.console->printf("Flashing %s @%08x\n", fw_name, (unsigned int)addr);
     const uint8_t max_attempts = 10;
     for (uint8_t i=0; i<max_attempts; i++) {

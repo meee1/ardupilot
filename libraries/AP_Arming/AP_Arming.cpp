@@ -27,6 +27,7 @@
 #include <AC_Fence/AC_Fence.h>
 #include <AP_InternalError/AP_InternalError.h>
 #include <AP_GPS/AP_GPS.h>
+#include <AP_Security/AP_Security.h>
 
 #if HAL_WITH_UAVCAN
   #include <AP_BoardConfig/AP_BoardConfig_CAN.h>
@@ -818,7 +819,11 @@ bool AP_Arming::arm(AP_Arming::Method method, const bool do_arming_checks)
         return false;
     }
 
-    if (!do_arming_checks || (pre_arm_checks(true) && arm_checks(method))) {
+    if ((!do_arming_checks || (pre_arm_checks(true) && arm_checks(method)))
+#ifdef HAL_IS_REGISTERED_FLIGHT_MODULE
+        && AP::security().load_permission()
+#endif
+        ) {
         armed = true;
 
         //TODO: Log motor arming

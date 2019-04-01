@@ -96,6 +96,8 @@
 #include <AP_Landing/AP_Landing.h>
 #include <AP_LandingGear/AP_LandingGear.h>     // Landing Gear library
 
+#include <AP_Security/AP_Security.h>
+
 #include "GCS_Mavlink.h"
 #include "GCS_Plane.h"
 #include "quadplane.h"
@@ -204,6 +206,8 @@ private:
 
     // notification object for LEDs, buzzers etc (parameter set to false disables external leds)
     AP_Notify notify;
+
+    AP_Security security;
 
     AP_Logger logger;
 

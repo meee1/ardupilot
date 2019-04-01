@@ -7,6 +7,7 @@ import sys, os
 import waflib
 from waflib import Utils
 from waflib.Configure import conf
+from Crypto.PublicKey import ECC
 
 _board_classes = {}
 _board = None
@@ -253,6 +254,52 @@ class Board:
                 cfg.srcnode.find_dir('modules/uavcan/libuavcan/include').abspath()
             ]
 
+        if cfg.options.with_libnpnt is not None:
+            env.AP_LIBRARIES += [
+                'modules/libnpnt/jsmn/*.c',
+                'modules/libnpnt/src/*.c',
+                'modules/libnpnt/mxml/mxml*.c',
+                'libraries/AP_Security/npnt_helpers/*.cpp'
+                ]
+            env.INCLUDES += [
+                cfg.srcnode.find_dir('modules/libnpnt/').abspath(),
+                cfg.srcnode.find_dir('modules/libnpnt/inc').abspath()
+            ]
+            env.GIT_SUBMODULES += ['libnpnt']
+            env.ROMFS_FILES += [ ('server_pubkey.der', cfg.options.with_libnpnt) ]
+            env.CXXFLAGS += ['-DHAL_IS_REGISTERED_FLIGHT_MODULE']
+
+        #setup wolfssl for security methods
+        if cfg.options.with_libnpnt is not None or cfg.options.secure_key is not None:
+            cfg.define('WOLFSSL_USER_SETTINGS', 1)
+            cfg.define('SKIP_WOLFSSL_BINDINGS', 1)
+            cfg.define('SECURE', 1)
+            env.INCLUDES += [ cfg.srcnode.find_dir('modules/wolfssl').abspath() ]
+            env.GIT_SUBMODULES += ['wolfssl']
+            env.LIB += ['wolfssl']
+            env.BUILD_WOLFSSL = True
+            cfg.load('wolfssl')
+            env.SECURE_KEY = cfg.options.secure_key
+        if cfg.options.secure_key is not None:
+            pubkey = ECC.import_key(open(cfg.options.secure_key, 'rb').read())
+            X = hex(pubkey._point.x)
+            Y = hex(pubkey._point.y)
+            pubkey_str = "{"
+            for i in range(2, len(X) - 1, 2):
+                pubkey_str += "0x"
+                pubkey_str += X[i]
+                pubkey_str += X[i+1]
+                pubkey_str += ","
+
+            for i in range(2, len(Y) - 1, 2):
+                pubkey_str += "0x"
+                pubkey_str += Y[i]
+                pubkey_str += Y[i+1]
+                pubkey_str += ","
+
+            pubkey_str = pubkey_str[:-1] + "}"
+            env.DEFINES.update(BL_SECURE_PUBLIC_KEY=pubkey_str)
+
         if cfg.env.build_dates:
             env.build_dates = True
 
@@ -273,6 +320,8 @@ class Board:
             bld.ap_version_append_int('BUILD_DATE_YEAR', ltime.tm_year)
             bld.ap_version_append_int('BUILD_DATE_MONTH', ltime.tm_mon)
             bld.ap_version_append_int('BUILD_DATE_DAY', ltime.tm_mday)
+        if bld.env.BUILD_WOLFSSL:
+            bld.load('wolfssl')
 
     def embed_ROMFS_files(self, ctx):
         '''embed some files using AP_ROMFS'''
@@ -526,6 +575,7 @@ class chibios(Board):
         env.GIT_SUBMODULES += [
             'ChibiOS',
         ]
+        env.NUM_PAD_BYTES = int(cfg.options.num_pad_bytes)
 
         try:
             import intelhex

@@ -101,6 +101,16 @@ def options(opt):
         default=False,
         help='Configure for building a bootloader.')
 
+    g.add_option('--secure-key',
+        action='store',
+        default=None,
+        help='Configure for building a secure bootloader, needs public certificate to be included.')
+
+    g.add_option('--with-libnpnt',
+        action='store',
+        default=None,
+        help='Configure for building with libnpnt, also suplement the manager public key to build with.')
+
     g.add_option('--no-autoconfig',
         dest='autoconfig',
         action='store_false',
@@ -109,6 +119,11 @@ def options(opt):
 triggers a reconfiguration whenever it thinks it's necessary - this
 option disables that.
 ''')
+
+    g.add_option('--num-pad-bytes',
+        action='store',
+        default=0,
+         help='Number of padding bytes to add before firmware.')
 
     g.add_option('--no-submodule-update',
         dest='submodule_update',
@@ -130,6 +145,14 @@ submodules at specific revisions.
                  action='store_true',
                  default=False,
                  help="Enable checking of math indexes")
+
+    g.add_option('--add-rsa-cert',
+            dest='add_rsa_cert',
+            action='store_true',
+            default=False,
+            help='''Embed RSA certificate for authentications. The
+    file should be in X509 format and stored in rsa.cer file.
+    ''')
 
     g.add_option('--disable-scripting', action='store_true',
                  default=False,

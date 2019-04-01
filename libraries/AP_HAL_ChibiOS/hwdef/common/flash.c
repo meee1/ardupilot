@@ -376,6 +376,100 @@ bool stm32_flash_erasepage(uint32_t page)
     return stm32_flash_ispageerased(page);
 }
 
+bool stm32_flash_eraseregion(uint32_t addr, uint32_t count)
+{
+    uint32_t written = count;
+
+    /* STM32 requires half-word access */
+    if (count & 1) {
+        return false;
+    }
+
+    if ((addr+count) >= STM32_FLASH_BASE+STM32_FLASH_SIZE) {
+        return false;
+    }
+
+    /* Get flash ready and begin flashing */
+
+    if (!(RCC->CR & RCC_CR_HSION)) {
+        return false;
+    }
+
+#if STM32_FLASH_DISABLE_ISR
+    syssts_t sts = chSysGetStatusAndLockX();
+#endif
+    
+    stm32_flash_unlock();
+
+    // clear previous errors
+    FLASH->SR = 0xF3;
+
+    stm32_flash_wait_idle();
+
+    // do as much as possible with 32 bit writes
+    while (count >= 4 && (addr & 3) == 0) {
+        FLASH->CR &= ~(FLASH_CR_PSIZE);
+        FLASH->CR |= FLASH_CR_PSIZE_1 | FLASH_CR_PG;
+
+        putreg32(0xFFFFFFFFUL, addr);
+
+        // ensure write ordering with cache
+        __DSB();
+        
+        stm32_flash_wait_idle();
+
+        if (FLASH->SR) {
+            // we got an error
+            FLASH->SR = 0xF3;
+            FLASH->CR &= ~(FLASH_CR_PG);
+            goto failed;
+        }
+
+        if (getreg32(addr) != 0xFFFFFFFFUL) {
+            FLASH->CR &= ~(FLASH_CR_PG);
+            goto failed;
+        }
+
+        count -= 4;
+        addr += 4;
+    }
+
+    // the rest as 16 bit
+    while (count >= 2) {
+        FLASH->CR &= ~(FLASH_CR_PSIZE);
+        FLASH->CR |= FLASH_CR_PSIZE_0 | FLASH_CR_PG;
+
+        putreg16(0xFFFF, addr);
+
+        // ensure write ordering with cache
+        __DSB();
+        
+        stm32_flash_wait_idle();
+
+        if (getreg16(addr) != 0xFFFF) {
+            FLASH->CR &= ~(FLASH_CR_PG);
+            goto failed;
+        }
+
+        count -= 2;
+        addr += 2;
+    }
+
+    FLASH->CR &= ~(FLASH_CR_PG);
+
+    stm32_flash_lock();
+#if STM32_FLASH_DISABLE_ISR
+    chSysRestoreStatusX(sts);
+#endif
+    return written > 0;
+
+failed:
+    stm32_flash_lock();
+#if STM32_FLASH_DISABLE_ISR
+    chSysRestoreStatusX(sts);
+#endif
+    return false;
+}
 
 #if defined(STM32H7)
 /*
@@ -532,6 +626,21 @@ failed:
     return false;
 }
 #endif // not STM32H7
+
+
+void stm32_flash_program_option_bytes(uint32_t data)
+{
+	//TODO
+    // flash_wait_for_last_operation();
+
+	// if (FLASH_OPTCR & FLASH_OPTCR_OPTLOCK) {
+	// 	flash_unlock_option_bytes();
+	// }
+
+	// FLASH_OPTCR = data & ~0x3;
+	// FLASH_OPTCR |= FLASH_OPTCR_OPTSTRT;  /* Enable option byte prog. */
+	// flash_wait_for_last_operation();
+}
 
 void stm32_flash_keep_unlocked(bool set)
 {

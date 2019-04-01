@@ -92,6 +92,10 @@ STM32_ST_USE_TIMER 5
 # flash size
 FLASH_SIZE_KB 2048
 
+# key flash page
+define KEY_FLASH_PAGE 4
+define HAL_WITH_KEYMANAGER 1
+
 # Now define which UART is used for printf(). We rarely use printf()
 # in ChibiOS, so this is really only for debugging very early startup
 # in drivers.

@@ -2,7 +2,7 @@
 #include "AP_Math/matrixN.h"
 
 
-float ExtendedKalmanFilter::measurementpredandjacobian(VectorN<float,N> &A)
+float ExtendedKalmanFilter::measurementpredandjacobian(VectorN<float,NUM_EKF_STATES> &A)
 {
     // This function computes the Jacobian using equations from
     // analytical derivation of Gaussian updraft distribution
@@ -20,7 +20,7 @@ float ExtendedKalmanFilter::measurementpredandjacobian(VectorN<float,N> &A)
 }
 
 
-void ExtendedKalmanFilter::reset(const VectorN<float,N> &x, const MatrixN<float,N> &p, const MatrixN<float,N> q, float r)
+void ExtendedKalmanFilter::reset(const VectorN<float,NUM_EKF_STATES> &x, const MatrixN<float,NUM_EKF_STATES> &p, const MatrixN<float,NUM_EKF_STATES> q, float r)
 {
     P = p;
     X = x;
@@ -31,10 +31,10 @@ void ExtendedKalmanFilter::reset(const VectorN<float,N> &x, const MatrixN<float,
 
 void ExtendedKalmanFilter::update(float z, float Vx, float Vy)
 {
-    MatrixN<float,N> tempM;
-    VectorN<float,N> H;
-    VectorN<float,N> P12;
-    VectorN<float,N> K;
+    MatrixN<float,NUM_EKF_STATES> tempM;
+    VectorN<float,NUM_EKF_STATES> H;
+    VectorN<float,NUM_EKF_STATES> P12;
+    VectorN<float,NUM_EKF_STATES> K;
     
     // LINE 28
     // Estimate new state from old.

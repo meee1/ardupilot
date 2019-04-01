@@ -12,6 +12,8 @@ parser.add_argument(
 parser.add_argument(
     '--bootloader', action='store_true', default=False, help='configure for bootloader')
 parser.add_argument(
+    '--secure', action='store_true', default=False, help='configure for security')
+parser.add_argument(
     'hwdef', type=str, default=None, help='hardware definition file')
 
 args = parser.parse_args()
@@ -81,6 +83,7 @@ baro_list = []
 
 mcu_type = None
 
+flash_reserve_start = 0
 
 def is_int(str):
     '''check if a string is an integer'''
@@ -577,10 +580,17 @@ def write_mcu_config(f):
 
     flash_reserve_start = get_config(
         'FLASH_RESERVE_START_KB', default=16, type=int)
+
+    if args.secure and flash_reserve_start < 128 and not args.bootloader:
+        flash_reserve_start = 128
+
     f.write('\n// location of loaded firmware\n')
     f.write('#define FLASH_LOAD_ADDRESS 0x%08x\n' % (0x08000000 + flash_reserve_start*1024))
     if args.bootloader:
-        f.write('#define FLASH_BOOTLOADER_LOAD_KB %u\n' % get_config('FLASH_BOOTLOADER_LOAD_KB', type=int))
+        flash_bootloader_kb = get_config('FLASH_BOOTLOADER_LOAD_KB', type=int)
+        if args.secure and flash_bootloader_kb < 128:
+            flash_bootloader_kb = 128
+        f.write('#define FLASH_BOOTLOADER_LOAD_KB %u\n' % flash_bootloader_kb)
     f.write('\n')
 
     ram_map = get_mcu_config('RAM_MAP', True)
@@ -656,6 +666,9 @@ def write_ldscript(fname):
     flash_reserve_start = get_config(
         'FLASH_RESERVE_START_KB', default=16, type=int)
 
+    if args.secure and flash_reserve_start < 128 and not args.bootloader:
+        flash_reserve_start = 128
+
     env_vars['FLASH_RESERVE_START_KB'] = str(flash_reserve_start)
 
     # space to reserve for storage at end of flash
@@ -670,6 +683,8 @@ def write_ldscript(fname):
         flash_length = flash_size - (flash_reserve_start + flash_reserve_end)
     else:
         flash_length = get_config('FLASH_BOOTLOADER_LOAD_KB', type=int)
+        if args.secure and flash_length < 128:
+            flash_length = 128
 
     print("Generating ldscript.ld")
     f = open(fname, 'w')

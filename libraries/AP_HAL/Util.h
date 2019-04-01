@@ -87,6 +87,17 @@ public:
     // overwrite bootloader (probably with one from ROMFS)
     virtual bool flash_bootloader() { return false; }
 
+    // erase flash region using address and length in bytes
+    virtual bool erase_flash_region(void *addr, uint32_t count) { return false; }
+
+    // write flash region
+    virtual bool write_flash_region(void *addr, uint8_t* data, uint32_t count) { return false; }
+    
+    //Security Methods
+    virtual bool generate_ecc_key(uint8_t* priv_key, uint32_t &length) { return false; }
+    virtual bool validate_package(uint8_t* package, uint32_t &length) { return false; }
+    virtual bool init_key_from_raw(uint8_t* priv_key, uint32_t length) { return false; }
+
     /*
       get system identifier (eg. serial number)
       return false if a system identifier is not available

@@ -21,6 +21,10 @@ STM32_ST_USE_TIMER 5
 # flash size
 FLASH_SIZE_KB 2048
 
+# key flash page
+define KEY_FLASH_PAGE 4
+define HAL_WITH_KEYMANAGER 1
+
 env OPTIMIZE -O3
 
 # serial port for stdout disabled, use USB console

@@ -71,7 +71,7 @@ void peripheral_power_enable(void);
 
 // initialise allocation subsystem
 void malloc_init(void);
-
+void late_init_cb(void);
 /*
   read mode of a pin. This allows a pin config to be read, changed and
   then written back

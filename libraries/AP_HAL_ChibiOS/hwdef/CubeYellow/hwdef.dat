@@ -488,9 +488,11 @@ DMA_PRIORITY USART6*
 
 # start on 4th sector (1st sector for bootloader, 2 for extra storage)
 FLASH_RESERVE_START_KB 96
+FLASH_RESERVE_END_KB 256
 
 # fallback storage in case FRAM is not populated
 define STORAGE_FLASH_PAGE 1
+define KEY_FLASH_PAGE 11
 
 # list of files to put in ROMFS. For fmuv3 we need an IO firmware so
 # we can automatically update the IOMCU firmware on boot. The format

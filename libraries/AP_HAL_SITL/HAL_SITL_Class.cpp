@@ -23,6 +23,7 @@
 #include <AP_HAL_Empty/AP_HAL_Empty.h>
 #include <AP_HAL_Empty/AP_HAL_Empty_Private.h>
 #include <AP_InternalError/AP_InternalError.h>
+#include <AP_Security/KeyManager.h>
 
 using namespace HALSITL;
 
@@ -70,7 +71,7 @@ HAL_SITL::HAL_SITL() :
         &sitlScheduler,     /* scheduler */
         &utilInstance,      /* util */
         &emptyOpticalFlow, /* onboard optical flow */
-        &emptyFlash, /* flash driver */
+        &emptyFlash,       /* flash driver */
         nullptr),           /* CAN */
     _sitl_state(&sitlState)
 {}
@@ -151,6 +152,11 @@ void HAL_SITL::run(int argc, char * const argv[], Callbacks* callbacks) const
     
     callbacks->setup();
     scheduler->system_initialized();
+
+#if HAL_WITH_KEYMANAGER
+    //Initialise Key Manager
+    AP::keymgr().init();
+#endif
 
     if (getenv("SITL_WATCHDOG_RESET")) {
         const AP_HAL::Util::PersistentData &pd = util->persistent_data;

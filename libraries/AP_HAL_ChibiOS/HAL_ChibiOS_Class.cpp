@@ -95,7 +95,11 @@ static ChibiOS::Flash flashDriver;
 static Empty::Flash flashDriver;
 #endif
 
-
+#if HAL_WITH_KEYMANAGER
+static ChibiOS::KeyManager keyManager;
+#else
+static Empty::KeyManager keyManager;
+#endif
 #if HAL_WITH_IO_MCU
 HAL_UART_IO_DRIVER;
 #include <AP_IOMCU/AP_IOMCU.h>
@@ -123,6 +127,11 @@ HAL_ChibiOS::HAL_ChibiOS() :
         &utilInstance,
         &opticalFlowDriver,
         &flashDriver,
+#ifdef HAL_IS_REGISTERED_FLIGHT_MODULE
+        &keyManager,
+#else
+        nullptr,
+#endif
         nullptr
         )
 {}
@@ -228,6 +237,11 @@ static void main_loop()
     schedulerInstance.watchdog_pat();
 
     hal.scheduler->system_initialized();
+
+#if HAL_WITH_KEYMANAGER
+    //Initialise Key Manager
+    hal.key_mgr->init();
+#endif
 
     thread_running = true;
     chRegSetThreadName(SKETCHNAME);

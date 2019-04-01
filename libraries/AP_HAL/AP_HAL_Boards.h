@@ -253,3 +253,6 @@
 #define HAL_SUPPORT_RCOUT_SERIAL 0
 #endif
 
+#ifndef HAL_WITH_KEYMANAGER
+#define HAL_WITH_KEYMANAGER 1
+#endif

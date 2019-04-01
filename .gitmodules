@@ -15,4 +15,10 @@
 	url = git://github.com/ArduPilot/googletest
 [submodule "modules/ChibiOS"]
 	path = modules/ChibiOS
-	url = git://github.com/ArduPilot/ChibiOS.git
+	url = git://github.com/bugobliterator/ChibiOS.git
+[submodule "modules/wolfssl"]
+	path = modules/wolfssl
+	url = https://github.com/wolfssl/wolfssl
+[submodule "modules/libnpnt"]
+	path = modules/libnpnt
+	url = http://github.com/ispirt/libnpnt

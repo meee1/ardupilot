@@ -232,6 +232,7 @@ HAL_Linux::HAL_Linux() :
         &utilInstance,
         &opticalFlow,
         &flashDriver,
+        nullptr,
         nullptr)
 {}
 
