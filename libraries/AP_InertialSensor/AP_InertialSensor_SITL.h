@@ -28,8 +28,8 @@ private:
     SITL::SITL *sitl;
 
     // simulated sensor rates in Hz. This matches a pixhawk1
-    const uint16_t gyro_sample_hz[INS_SITL_INSTANCES]  { 1000 };
-    const uint16_t accel_sample_hz[INS_SITL_INSTANCES] { 1000 };
+    const uint16_t gyro_sample_hz[INS_SITL_INSTANCES]  { 400 };
+    const uint16_t accel_sample_hz[INS_SITL_INSTANCES] { 400 };
 
     uint8_t gyro_instance[INS_SITL_INSTANCES];
     uint8_t accel_instance[INS_SITL_INSTANCES];

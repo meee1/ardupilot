@@ -51,7 +51,7 @@ Aircraft::Aircraft(const char *home_str, const char *frame_str) :
     time_now_us(0),
     gyro_noise(radians(0.1f)),
     accel_noise(0.3f),
-    rate_hz(1200.0f),
+    rate_hz(400.0f),
     autotest_dir(nullptr),
     frame(frame_str),
 #if defined(__CYGWIN__) || defined(__CYGWIN64__)
@@ -295,7 +295,7 @@ void Aircraft::sync_frame_time(void)
         } else {
             scaled_frame_time_us /= 0.999f;
         }
-#if 0
+#if 1
         ::printf("achieved_rate_hz=%.3f rate=%.2f rate_hz=%.3f sft=%.1f\n",
                  static_cast<double>(achieved_rate_hz),
                  static_cast<double>(rate),
