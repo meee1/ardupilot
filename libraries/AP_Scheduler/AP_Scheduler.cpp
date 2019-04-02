@@ -263,11 +263,6 @@ void AP_Scheduler::loop()
     const uint32_t time_available = (sample_time_us + loop_us) - AP_HAL::micros();
     run(time_available > loop_us ? 0u : time_available);
 
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    // move result of AP_HAL::micros() forward:
-    hal.scheduler->delay_microseconds(1);
-#endif
-
     // check loop time
     perf_info.check_loop_time(sample_time_us - _loop_timer_start_us);
         

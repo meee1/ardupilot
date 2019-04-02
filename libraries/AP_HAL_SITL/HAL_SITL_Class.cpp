@@ -92,6 +92,7 @@ void HAL_SITL::run(int argc, char * const argv[], Callbacks* callbacks) const
     while (!HALSITL::Scheduler::_should_reboot) {
         callbacks->loop();
         HALSITL::Scheduler::_run_io_procs();
+		sched_yield();
     }
 
     // form a new argv, removing problem parameters

@@ -329,6 +329,7 @@ void Aircraft::add_noise(float throttle)
 */
 double Aircraft::rand_normal(double mean, double stddev)
 {
+	return 0;
     static double n2 = 0.0;
     static int n2_cached = 0;
     if (!n2_cached) {
@@ -360,7 +361,7 @@ double Aircraft::rand_normal(double mean, double stddev)
 void Aircraft::fill_fdm(struct sitl_fdm &fdm)
 {
     if (use_smoothing) {
-        smooth_sensors();
+        //smooth_sensors();
     }
     fdm.timestamp_us = time_now_us;
     if (fdm.home.lat == 0 && fdm.home.lng == 0) {
@@ -495,9 +496,10 @@ void Aircraft::update_dynamics(const Vector3f &rot_accel)
     Vector3f accel_earth = dcm * accel_body;
     accel_earth += Vector3f(0.0f, 0.0f, GRAVITY_MSS);
 
+    const bool was_on_ground = on_ground();
     // if we're on the ground, then our vertical acceleration is limited
     // to zero. This effectively adds the force of the ground on the aircraft
-    if (on_ground() && accel_earth.z > 0) {
+    if (was_on_ground && accel_earth.z > 0) {
         accel_earth.z = 0;
     }
 
@@ -508,7 +510,6 @@ void Aircraft::update_dynamics(const Vector3f &rot_accel)
     // new velocity vector
     velocity_ef += accel_earth * delta_time;
 
-    const bool was_on_ground = on_ground();
     // new position vector
     position += velocity_ef * delta_time;
 

@@ -181,7 +181,7 @@ void SITL_State::_fdm_input_step(void)
                     _sitl->state.altitude,
                     _sitl->state.speedN, _sitl->state.speedE, _sitl->state.speedD,
                     !_sitl->gps_disable);
-        _update_airspeed(_sitl->state.airspeed);
+        //_update_airspeed(_sitl->state.airspeed);
         _update_rangefinder(_sitl->state.range);
 
         if (_sitl->adsb_plane_count >= 0 &&
