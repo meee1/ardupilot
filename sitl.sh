@@ -17,6 +17,7 @@ do
 	echo SCHED_LOOP_RATE=50 >> defaults.parm
 	echo SCHED_DEBUG=3 >> defaults.parm
     echo SIM_TERRAIN=0 >> defaults.parm
+    echo TERRAIN_ENABLE=0 >> defaults.parm
 	../build/sitl/bin/arducopter  -M+ -s1 --home $homeloc --instance $counter --uartA udpclient:127.0.0.1:14550  --defaults defaults.parm  --disable-fgview  &
 	echo --uartD $parentport
 	cd ..
