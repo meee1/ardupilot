@@ -66,7 +66,7 @@ const AP_Param::GroupInfo SITL::var_info[] = {
     AP_GROUPINFO("BARO_GLITCH",   31, SITL,  baro_glitch, 0),
     AP_GROUPINFO("SONAR_SCALE",   32, SITL,  sonar_scale, 12.1212f),
     AP_GROUPINFO("FLOW_ENABLE",   33, SITL,  flow_enable, 0),
-    AP_GROUPINFO("TERRAIN",       34, SITL,  terrain_enable, 1),
+    AP_GROUPINFO("TERRAIN",       34, SITL,  terrain_enable, 0),
     AP_GROUPINFO("FLOW_RATE",     35, SITL,  flow_rate, 10),
     AP_GROUPINFO("FLOW_DELAY",    36, SITL,  flow_delay, 0),
     AP_GROUPINFO("GPS_DRIFTALT",  37, SITL,  gps_drift_alt, 0),
