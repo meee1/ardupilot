@@ -5,7 +5,7 @@
 #include "AP_InertialSensor.h"
 #include "AP_InertialSensor_Backend.h"
 
-#define INS_SITL_INSTANCES 2
+#define INS_SITL_INSTANCES 1
 
 class AP_InertialSensor_SITL : public AP_InertialSensor_Backend
 {
@@ -28,8 +28,8 @@ private:
     SITL::SITL *sitl;
 
     // simulated sensor rates in Hz. This matches a pixhawk1
-    const uint16_t gyro_sample_hz[INS_SITL_INSTANCES]  { 1000, 760 };
-    const uint16_t accel_sample_hz[INS_SITL_INSTANCES] { 1000, 800 };
+    const uint16_t gyro_sample_hz[INS_SITL_INSTANCES]  { 1000 };
+    const uint16_t accel_sample_hz[INS_SITL_INSTANCES] { 1000 };
 
     uint8_t gyro_instance[INS_SITL_INSTANCES];
     uint8_t accel_instance[INS_SITL_INSTANCES];

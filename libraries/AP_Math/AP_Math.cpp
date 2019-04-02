@@ -224,6 +224,7 @@ uint16_t get_random16(void)
 // generate a random float between -1 and 1, for use in SITL
 float rand_float(void)
 {
+    return 0;
     return ((((unsigned)random()) % 2000000) - 1.0e6) / 1.0e6;
 }
 

@@ -195,6 +195,7 @@ void AP_InertialSensor_SITL::timer_update(void)
 
 float AP_InertialSensor_SITL::gyro_drift(void)
 {
+    return 0;
     if (is_zero(sitl->drift_speed) ||
         is_zero(sitl->drift_time)) {
         return 0;
