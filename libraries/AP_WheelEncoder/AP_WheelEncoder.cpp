@@ -191,14 +191,7 @@ void AP_WheelEncoder::Log_Write()
         return;
     }
 
-    struct log_WheelEncoder pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_WHEELENCODER_MSG),
-        time_us     : AP_HAL::micros64(),
-        distance_0  : get_distance(0),
-        quality_0   : (uint8_t)get_signal_quality(0),
-        distance_1  : get_distance(1),
-        quality_1   : (uint8_t)get_signal_quality(1),
-    };
+    struct log_WheelEncoder pkt = {};
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 

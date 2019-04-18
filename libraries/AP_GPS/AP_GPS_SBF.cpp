@@ -30,15 +30,15 @@ extern const AP_HAL::HAL& hal;
 #define SBF_DEBUGGING 0
 
 #if SBF_DEBUGGING
- # define Debug(fmt, args ...)                  \
+ # define Debug(fmt, ...)                  \
 do {                                            \
     hal.console->printf("%s:%d: " fmt "\n",     \
                         __FUNCTION__, __LINE__, \
-                        ## args);               \
+                        ##  __VA_ARGS__);               \
     hal.scheduler->delay(1);                    \
 } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 #define SBF_EXCESS_COMMAND_BYTES 5 // 2 start bytes + validity byte + space byte + endline byte
@@ -243,22 +243,7 @@ AP_GPS_SBF::log_ExtEventPVTGeodetic(const msg4007 &temp)
 
     uint64_t now = AP_HAL::micros64();
 
-    struct log_GPS_SBF_EVENT header = {
-        LOG_PACKET_HEADER_INIT(LOG_GPS_SBF_EVENT_MSG),
-        time_us:now,
-        TOW:temp.TOW,
-        WNc:temp.WNc,
-        Mode:temp.Mode,
-        Error:temp.Error,
-        Latitude:temp.Latitude*RAD_TO_DEG_DOUBLE,
-        Longitude:temp.Longitude*RAD_TO_DEG_DOUBLE,
-        Height:temp.Height,
-        Undulation:temp.Undulation,
-        Vn:temp.Vn,
-        Ve:temp.Ve,
-        Vu:temp.Vu,
-        COG:temp.COG
-    };
+    struct log_GPS_SBF_EVENT header = {};
 
     AP::logger().WriteBlock(&header, sizeof(header));
 }

@@ -395,36 +395,10 @@ void SoloGimbal::write_logs()
     _ekf.getQuat(quatEst);
     quatEst.to_euler(eulerEst.x, eulerEst.y, eulerEst.z);
 
-    struct log_Gimbal1 pkt1 = {
-        LOG_PACKET_HEADER_INIT(LOG_GIMBAL1_MSG),
-        time_ms : tstamp,
-        delta_time      : _log_dt,
-        delta_angles_x  : _log_del_ang.x,
-        delta_angles_y  : _log_del_ang.y,
-        delta_angles_z  : _log_del_ang.z,
-        delta_velocity_x : _log_del_vel.x,
-        delta_velocity_y : _log_del_vel.y,
-        delta_velocity_z : _log_del_vel.z,
-        joint_angles_x  : _measurement.joint_angles.x,
-        joint_angles_y  : _measurement.joint_angles.y,
-        joint_angles_z  : _measurement.joint_angles.z
-    };
+    struct log_Gimbal1 pkt1 = {};
     logger->WriteBlock(&pkt1, sizeof(pkt1));
 
-    struct log_Gimbal2 pkt2 = {
-        LOG_PACKET_HEADER_INIT(LOG_GIMBAL2_MSG),
-        time_ms : tstamp,
-        est_sta : (uint8_t) _ekf.getStatus(),
-        est_x   : eulerEst.x,
-        est_y   : eulerEst.y,
-        est_z   : eulerEst.z,
-        rate_x  : _ang_vel_dem_rads.x,
-        rate_y  : _ang_vel_dem_rads.y,
-        rate_z  : _ang_vel_dem_rads.z,
-        target_x: _att_target_euler_rad.x,
-        target_y: _att_target_euler_rad.y,
-        target_z: _att_target_euler_rad.z
-    };
+    struct log_Gimbal2 pkt2 = {};
     logger->WriteBlock(&pkt2, sizeof(pkt2));
 
     _log_dt = 0;

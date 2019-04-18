@@ -41,9 +41,9 @@ AP_IOMCU::AP_IOMCU(AP_HAL::UARTDriver &_uart) :
 {}
 
 #if 0
-#define debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
+#define debug(fmt, ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
 #else
-#define debug(fmt, args ...)
+#define debug(fmt, ...)
 #endif
 
 /*

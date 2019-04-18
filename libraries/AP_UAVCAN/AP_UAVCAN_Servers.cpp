@@ -65,7 +65,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define debug_uavcan(fmt, args...) do { hal.console->printf(fmt, ##args); } while (0)
+#define debug_uavcan(fmt, ...) do { hal.console->printf(fmt, ## __VA_ARGS__); } while (0)
 
 class AP_UAVCAN_CentralizedServer : public uavcan::dynamic_node_id_server::CentralizedServer
 {

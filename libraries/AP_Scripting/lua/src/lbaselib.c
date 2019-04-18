@@ -428,7 +428,7 @@ static int luaB_pcall (lua_State *L) {
 
 /*
 ** Do a protected call with error handling. After 'lua_rotate', the
-** stack will have <f, err, true, f, [args...]>; so, the function passes
+** stack will have <f, err, true, f, [...]>; so, the function passes
 ** 2 to 'finishpcall' to skip the 2 first values when returning results.
 */
 static int luaB_xpcall (lua_State *L) {

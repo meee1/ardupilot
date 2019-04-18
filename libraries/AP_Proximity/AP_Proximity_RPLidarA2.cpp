@@ -36,9 +36,9 @@
 
 #if RP_DEBUG_LEVEL
   #include <GCS_MAVLink/GCS.h>
-  #define Debug(level, fmt, args ...)  do { if (level <= RP_DEBUG_LEVEL) { gcs().send_text(MAV_SEVERITY_INFO, fmt, ## args); } } while (0)
+  #define Debug(level, fmt, ...)  do { if (level <= RP_DEBUG_LEVEL) { gcs().send_text(MAV_SEVERITY_INFO, fmt, ##  __VA_ARGS__); } } while (0)
 #else
-  #define Debug(level, fmt, args ...)
+  #define Debug(level, fmt, ...)
 #endif
 
 #define COMM_ACTIVITY_TIMEOUT_MS        200

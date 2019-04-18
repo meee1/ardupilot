@@ -23,9 +23,9 @@
 #define FLASHSTORAGE_DEBUG 0
 
 #if FLASHSTORAGE_DEBUG
-#define debug(fmt, args...)  do { printf(fmt, ##args); } while(0)
+#define debug(fmt, ...)  do { printf(fmt, ## __VA_ARGS__); } while(0)
 #else
-#define debug(fmt, args...)  do { } while(0)
+#define debug(fmt, ...)  do { } while(0)
 #endif
 
 // constructor.

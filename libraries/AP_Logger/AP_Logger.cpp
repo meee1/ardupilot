@@ -197,7 +197,7 @@ void AP_Logger::Init(const struct LogStructure *structures, uint8_t num_types)
 #define DEBUG_LOG_STRUCTURES 0
 
 extern const AP_HAL::HAL& hal;
-#define Debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+#define Debug(fmt, ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); hal.scheduler->delay(1); } while(0)
 
 /// return the number of commas present in string
 static uint8_t count_commas(const char *string)
@@ -1036,17 +1036,7 @@ bool AP_Logger::Write_ISBH(const uint16_t seqno,
     if (_next_backend == 0) {
         return false;
     }
-    struct log_ISBH pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ISBH_MSG),
-        time_us        : AP_HAL::micros64(),
-        seqno          : seqno,
-        sensor_type    : (uint8_t)sensor_type,
-        instance       : sensor_instance,
-        multiplier     : mult,
-        sample_count   : sample_count,
-        sample_us      : sample_us,
-        sample_rate_hz : sample_rate_hz,
-    };
+    struct log_ISBH pkt = {};
 
     // only the first backend need succeed for us to be successful
     for (uint8_t i=1; i<_next_backend; i++) {
@@ -1067,12 +1057,7 @@ bool AP_Logger::Write_ISBD(const uint16_t isb_seqno,
     if (_next_backend == 0) {
         return false;
     }
-    struct log_ISBD pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ISBD_MSG),
-        time_us    : AP_HAL::micros64(),
-        isb_seqno  : isb_seqno,
-        seqno      : seqno
-    };
+    struct log_ISBD pkt = {};
     memcpy(pkt.x, x, sizeof(pkt.x));
     memcpy(pkt.y, y, sizeof(pkt.y));
     memcpy(pkt.z, z, sizeof(pkt.z));
@@ -1088,11 +1073,7 @@ bool AP_Logger::Write_ISBD(const uint16_t isb_seqno,
 // Wrote an event packet
 void AP_Logger::Write_Event(Log_Event id)
 {
-    struct log_Event pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_EVENT_MSG),
-        time_us  : AP_HAL::micros64(),
-        id       : id
-    };
+    struct log_Event pkt = {};
     WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 
@@ -1100,12 +1081,7 @@ void AP_Logger::Write_Event(Log_Event id)
 void AP_Logger::Write_Error(LogErrorSubsystem sub_system,
                             LogErrorCode error_code)
 {
-  struct log_Error pkt = {
-      LOG_PACKET_HEADER_INIT(LOG_ERROR_MSG),
-      time_us       : AP_HAL::micros64(),
-      sub_system    : uint8_t(sub_system),
-      error_code    : uint8_t(error_code),
-  };
+  struct log_Error pkt = {};
   WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 

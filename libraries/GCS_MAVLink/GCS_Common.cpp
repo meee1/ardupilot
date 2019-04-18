@@ -1638,14 +1638,7 @@ void GCS_MAVLINK::log_mavlink_stats()
         return;
     }
 
-    const struct log_MAV pkt = {
-    LOG_PACKET_HEADER_INIT(LOG_MAV_MSG),
-    time_us                : AP_HAL::micros64(),
-    chan                   : (uint8_t)chan,
-    packet_tx_count        : send_packet_count,
-    packet_rx_success_count: status->packet_rx_success_count,
-    packet_rx_drop_count   : status->packet_rx_drop_count
-    };
+    const struct log_MAV pkt = {};
 
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }

@@ -22,20 +22,20 @@
 #include <AP_Common/AP_FWVersion.h>
 
 const AP_FWVersion AP_FWVersion::fwver{
-    .major = FW_MAJOR,
-    .minor = FW_MINOR,
-    .patch = FW_PATCH,
-    .fw_type = FW_TYPE,
+     FW_MAJOR,
+    FW_MINOR,
+   FW_PATCH,
+   FW_TYPE,
 #ifndef GIT_VERSION
-    .fw_string = THISFIRMWARE,
+    THISFIRMWARE,
 #else
-    .fw_string = THISFIRMWARE " (" GIT_VERSION ")",
-    .fw_hash_str = GIT_VERSION,
+  THISFIRMWARE " (" GIT_VERSION ")",
+   GIT_VERSION,
 #endif
 #ifdef CHIBIOS_GIT_VERSION
-    .middleware_name = nullptr,
-    .middleware_hash_str = nullptr,
-    .os_name = "ChibiOS",
-    .os_hash_str = CHIBIOS_GIT_VERSION,
+    nullptr,
+     nullptr,
+   "ChibiOS",
+     CHIBIOS_GIT_VERSION,
 #endif
 };

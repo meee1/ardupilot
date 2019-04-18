@@ -56,7 +56,7 @@
 #include <AP_ROMFS/AP_ROMFS.h>
 #include <AP_Math/crc.h>
 
-#define debug(fmt, args ...)  do { hal.console->printf("IOMCU: " fmt "\n", ## args); } while(0)
+#define debug(fmt, ...)  do { hal.console->printf("IOMCU: " fmt "\n", ##  __VA_ARGS__); } while(0)
 
 extern const AP_HAL::HAL &hal;
 

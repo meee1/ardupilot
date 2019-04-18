@@ -43,7 +43,7 @@ const AP_HAL::HAL& hal = AP_HAL::get_HAL();
 #define UAVCAN_NODE_POOL_SIZE 8192
 #define UAVCAN_NODE_POOL_BLOCK_SIZE 256
 
-#define debug_uavcan(fmt, args...) do { hal.console->printf(fmt, ##args); } while (0)
+#define debug_uavcan(fmt, ...) do { hal.console->printf(fmt, ## __VA_ARGS__); } while (0)
 
 class UAVCAN_sniffer {
 public:

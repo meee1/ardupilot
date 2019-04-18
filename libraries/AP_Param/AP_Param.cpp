@@ -39,9 +39,9 @@ extern const AP_HAL::HAL &hal;
 #define ENABLE_DEBUG 1
 
 #if ENABLE_DEBUG
- # define Debug(fmt, args ...)  do {::printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
+ # define Debug(fmt, ...)  do {::printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 // Note about AP_Vector3f handling.

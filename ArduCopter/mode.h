@@ -219,7 +219,7 @@ class ModeAcro : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     virtual void run() override;
 
@@ -252,7 +252,7 @@ class ModeAcro_Heli : public ModeAcro {
 
 public:
     // inherit constructor
-    using Copter::ModeAcro::Mode;
+    // Copter::ModeAcro::Mode;
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -267,7 +267,7 @@ class ModeAltHold : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -294,7 +294,7 @@ class ModeAuto : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -485,7 +485,7 @@ class ModeAutoTune : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
 
@@ -509,7 +509,7 @@ class ModeBrake : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -538,7 +538,7 @@ class ModeCircle : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -567,7 +567,7 @@ class ModeDrift : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -593,7 +593,7 @@ class ModeFlip : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -720,7 +720,7 @@ class ModeGuided : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -784,7 +784,7 @@ class ModeGuidedNoGPS : public ModeGuided {
 
 public:
     // inherit constructor
-    using Copter::ModeGuided::Mode;
+    // Copter::ModeGuided::Mode;
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -808,7 +808,7 @@ class ModeLand : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -838,7 +838,7 @@ class ModeLoiter : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -879,7 +879,7 @@ class ModePosHold : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -912,7 +912,7 @@ class ModeRTL : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override {
@@ -984,7 +984,7 @@ class ModeSmartRTL : public ModeRTL {
 
 public:
     // inherit constructor
-    using Copter::ModeRTL::Mode;
+    //pter::ModeRTL::Mode;
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -1021,7 +1021,7 @@ class ModeSport : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -1048,7 +1048,7 @@ class ModeStabilize : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     virtual void run() override;
 
@@ -1071,7 +1071,7 @@ class ModeStabilize_Heli : public ModeStabilize {
 
 public:
     // inherit constructor
-    using Copter::ModeStabilize::Mode;
+    // Copter::ModeStabilize::Mode;
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -1088,7 +1088,7 @@ class ModeThrow : public Mode {
 
 public:
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -1139,7 +1139,7 @@ class ModeAvoidADSB : public ModeGuided {
 
 public:
     // inherit constructor
-    using Copter::ModeGuided::Mode;
+    // Copter::ModeGuided::Mode;
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -1165,7 +1165,7 @@ class ModeFollow : public ModeGuided {
 public:
 
     // inherit constructor
-    using Copter::ModeGuided::Mode;
+    // Copter::ModeGuided::Mode;
 
     bool init(bool ignore_checks) override;
     void run() override;
@@ -1191,7 +1191,7 @@ class ModeZigZag : public Mode {
 public:
 
     // inherit constructor
-    using Copter::Mode::Mode;
+    
 
     bool init(bool ignore_checks) override;
     void run() override;

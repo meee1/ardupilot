@@ -11,11 +11,11 @@ extern const AP_HAL::HAL &hal;
 
 #ifdef SPIUART_DEBUG
 #include <stdio.h>
-#define debug(fmt, args ...)  do {hal.console->printf("[SPIUARTDriver]: %s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
-#define error(fmt, args ...)  do {fprintf(stderr,"%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
+#define debug(fmt, ...)  do {hal.console->printf("[SPIUARTDriver]: %s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
+#define error(fmt, ...)  do {fprintf(stderr,"%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
 #else
-#define debug(fmt, args ...)
-#define error(fmt, args ...)
+#define debug(fmt, ...)
+#define error(fmt, ...)
 #endif
 
 using namespace Linux;

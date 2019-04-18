@@ -39,9 +39,9 @@
 extern const AP_HAL::HAL& hal;
 
 #if UBLOX_DEBUGGING
- # define Debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+ # define Debug(fmt, ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); hal.scheduler->delay(1); } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 AP_GPS_UBLOX::AP_GPS_UBLOX(AP_GPS &_gps, AP_GPS::GPS_State &_state, AP_HAL::UARTDriver *_port) :
@@ -483,16 +483,7 @@ void AP_GPS_UBLOX::log_mon_hw(void)
     if (!should_log()) {
         return;
     }
-    struct log_Ubx1 pkt = {
-        LOG_PACKET_HEADER_INIT(_ubx_msg_log_index(LOG_GPS_UBX1_MSG)),
-        time_us    : AP_HAL::micros64(),
-        instance   : state.instance,
-        noisePerMS : _buffer.mon_hw_60.noisePerMS,
-        jamInd     : _buffer.mon_hw_60.jamInd,
-        aPower     : _buffer.mon_hw_60.aPower,
-        agcCnt     : _buffer.mon_hw_60.agcCnt,
-        config     : _unconfigured_messages,
-    };
+    struct log_Ubx1 pkt = {};
     if (_payload_length == 68) {
         pkt.noisePerMS = _buffer.mon_hw_68.noisePerMS;
         pkt.jamInd     = _buffer.mon_hw_68.jamInd;
@@ -508,15 +499,7 @@ void AP_GPS_UBLOX::log_mon_hw2(void)
         return;
     }
 
-    struct log_Ubx2 pkt = {
-        LOG_PACKET_HEADER_INIT(_ubx_msg_log_index(LOG_GPS_UBX2_MSG)),
-        time_us   : AP_HAL::micros64(),
-        instance  : state.instance,
-        ofsI      : _buffer.mon_hw2.ofsI,
-        magI      : _buffer.mon_hw2.magI,
-        ofsQ      : _buffer.mon_hw2.ofsQ,
-        magQ      : _buffer.mon_hw2.magQ,
-    };
+    struct log_Ubx2 pkt = {};
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -529,20 +512,7 @@ void AP_GPS_UBLOX::log_rxm_raw(const struct ubx_rxm_raw &raw)
 
     uint64_t now = AP_HAL::micros64();
     for (uint8_t i=0; i<raw.numSV; i++) {
-        struct log_GPS_RAW pkt = {
-            LOG_PACKET_HEADER_INIT(LOG_GPS_RAW_MSG),
-            time_us    : now,
-            iTOW       : raw.iTOW,
-            week       : raw.week,
-            numSV      : raw.numSV,
-            sv         : raw.svinfo[i].sv,
-            cpMes      : raw.svinfo[i].cpMes,
-            prMes      : raw.svinfo[i].prMes,
-            doMes      : raw.svinfo[i].doMes,
-            mesQI      : raw.svinfo[i].mesQI,
-            cno        : raw.svinfo[i].cno,
-            lli        : raw.svinfo[i].lli
-        };
+        struct log_GPS_RAW pkt = {};
         AP::logger().WriteBlock(&pkt, sizeof(pkt));
     }
 }
@@ -555,34 +525,11 @@ void AP_GPS_UBLOX::log_rxm_rawx(const struct ubx_rxm_rawx &raw)
 
     uint64_t now = AP_HAL::micros64();
 
-    struct log_GPS_RAWH header = {
-        LOG_PACKET_HEADER_INIT(LOG_GPS_RAWH_MSG),
-        time_us    : now,
-        rcvTow     : raw.rcvTow,
-        week       : raw.week,
-        leapS      : raw.leapS,
-        numMeas    : raw.numMeas,
-        recStat    : raw.recStat
-    };
+    struct log_GPS_RAWH header = {};
     AP::logger().WriteBlock(&header, sizeof(header));
 
     for (uint8_t i=0; i<raw.numMeas; i++) {
-        struct log_GPS_RAWS pkt = {
-            LOG_PACKET_HEADER_INIT(LOG_GPS_RAWS_MSG),
-            time_us    : now,
-            prMes      : raw.svinfo[i].prMes,
-            cpMes      : raw.svinfo[i].cpMes,
-            doMes      : raw.svinfo[i].doMes,
-            gnssId     : raw.svinfo[i].gnssId,
-            svId       : raw.svinfo[i].svId,
-            freqId     : raw.svinfo[i].freqId,
-            locktime   : raw.svinfo[i].locktime,
-            cno        : raw.svinfo[i].cno,
-            prStdev    : raw.svinfo[i].prStdev,
-            cpStdev    : raw.svinfo[i].cpStdev,
-            doStdev    : raw.svinfo[i].doStdev,
-            trkStat    : raw.svinfo[i].trkStat
-        };
+        struct log_GPS_RAWS pkt = {};
         AP::logger().WriteBlock(&pkt, sizeof(pkt));
     }
 }

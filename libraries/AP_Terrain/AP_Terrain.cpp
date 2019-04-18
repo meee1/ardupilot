@@ -353,18 +353,7 @@ void AP_Terrain::log_terrain_data()
     height_above_terrain(current_height, true);
     get_statistics(pending, loaded);
 
-    struct log_TERRAIN pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_TERRAIN_MSG),
-        time_us        : AP_HAL::micros64(),
-        status         : (uint8_t)status(),
-        lat            : loc.lat,
-        lng            : loc.lng,
-        spacing        : (uint16_t)grid_spacing,
-        terrain_height : terrain_height,
-        current_height : current_height,
-        pending        : pending,
-        loaded         : loaded
-    };
+    struct log_TERRAIN pkt = {};
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 

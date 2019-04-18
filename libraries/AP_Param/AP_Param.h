@@ -91,7 +91,7 @@
 #define AP_CLASSTYPE(clazz, element) ((uint8_t)(((const clazz *) 1)->element.vtype))
 
 // declare a group var_info line
-#define AP_GROUPINFO_FLAGS(name, idx, clazz, element, def, flags) { AP_CLASSTYPE(clazz, element), idx, name, AP_VAROFFSET(clazz, element), {def_value : def}, flags }
+#define AP_GROUPINFO_FLAGS(name, idx, clazz, element, def, flags) { AP_CLASSTYPE(clazz, element), idx, name, AP_VAROFFSET(clazz, element), {nullptr}, flags }
 
 // declare a group var_info line with a frame type mask
 #define AP_GROUPINFO_FRAME(name, idx, clazz, element, def, frame_flags) AP_GROUPINFO_FLAGS(name, idx, clazz, element, def, (frame_flags)<<AP_PARAM_FRAME_TYPE_SHIFT )
@@ -103,24 +103,24 @@
 #define AP_GROUPINFO(name, idx, clazz, element, def) AP_GROUPINFO_FLAGS(name, idx, clazz, element, def, 0)
 
 // declare a nested group entry in a group var_info
-#define AP_NESTEDGROUPINFO(clazz, idx) { AP_PARAM_GROUP, idx, "", 0, { group_info : clazz::var_info }, 0 }
+#define AP_NESTEDGROUPINFO(clazz, idx) { AP_PARAM_GROUP, idx, "", 0, {  clazz::var_info }, 0 }
 
 // declare a subgroup entry in a group var_info. This is for having another arbitrary object as a member of the parameter list of
 // an object
-#define AP_SUBGROUPINFO(element, name, idx, thisclazz, elclazz) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), { group_info : elclazz::var_info }, AP_PARAM_FLAG_NESTED_OFFSET }
-#define AP_SUBGROUPINFO_FLAGS(element, name, idx, thisclazz, elclazz, flags) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), { group_info : elclazz::var_info }, AP_PARAM_FLAG_NESTED_OFFSET | flags }
+#define AP_SUBGROUPINFO(element, name, idx, thisclazz, elclazz) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {  elclazz::var_info }, AP_PARAM_FLAG_NESTED_OFFSET }
+#define AP_SUBGROUPINFO_FLAGS(element, name, idx, thisclazz, elclazz, flags) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {  elclazz::var_info }, AP_PARAM_FLAG_NESTED_OFFSET | flags }
 
 // declare a second parameter table for the same object
-#define AP_SUBGROUPEXTENSION(name, idx, clazz, vinfo) { AP_PARAM_GROUP, idx, name, 0, { group_info : clazz::vinfo }, AP_PARAM_FLAG_NESTED_OFFSET }
+#define AP_SUBGROUPEXTENSION(name, idx, clazz, vinfo) { AP_PARAM_GROUP, idx, name, 0, {  clazz::vinfo }, AP_PARAM_FLAG_NESTED_OFFSET }
 
 // declare a pointer subgroup entry in a group var_info
-#define AP_SUBGROUPPTR(element, name, idx, thisclazz, elclazz) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), { group_info : elclazz::var_info }, AP_PARAM_FLAG_POINTER }
+#define AP_SUBGROUPPTR(element, name, idx, thisclazz, elclazz) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {  elclazz::var_info }, AP_PARAM_FLAG_POINTER }
 
 // declare a pointer subgroup entry in a group var_info with a pointer var_info
-#define AP_SUBGROUPVARPTR(element, name, idx, thisclazz, var_info) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), { group_info_ptr : &var_info }, AP_PARAM_FLAG_POINTER | AP_PARAM_FLAG_INFO_POINTER }
+#define AP_SUBGROUPVARPTR(element, name, idx, thisclazz, var_info) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {  &var_info }, AP_PARAM_FLAG_POINTER | AP_PARAM_FLAG_INFO_POINTER }
 
-#define AP_GROUPEND     { AP_PARAM_NONE, 0xFF, "", 0, { group_info : nullptr } }
-#define AP_VAREND       { AP_PARAM_NONE, "", 0, nullptr, { group_info : nullptr } }
+#define AP_GROUPEND     { AP_PARAM_NONE, 0xFF, "", 0, {  nullptr } }
+#define AP_VAREND       { AP_PARAM_NONE, "", 0, nullptr, {  nullptr } }
 
 enum ap_var_type {
     AP_PARAM_NONE    = 0,

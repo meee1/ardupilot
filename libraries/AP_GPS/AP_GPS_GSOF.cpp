@@ -29,15 +29,15 @@ extern const AP_HAL::HAL& hal;
 #define gsof_DEBUGGING 0
 
 #if gsof_DEBUGGING
-# define Debug(fmt, args ...)                  \
+# define Debug(fmt, ...)                  \
 do {                                            \
     hal.console->printf("%s:%d: " fmt "\n",     \
                         __FUNCTION__, __LINE__, \
-                        ## args);               \
+                        ##  __VA_ARGS__);               \
     hal.scheduler->delay(1);                    \
 } while(0)
 #else
-# define Debug(fmt, args ...)
+# define Debug(fmt, ...)
 #endif
 
 AP_GPS_GSOF::AP_GPS_GSOF(AP_GPS &_gps, AP_GPS::GPS_State &_state,

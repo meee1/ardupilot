@@ -738,7 +738,7 @@ void NavEKF3::UpdateFilter(void)
 
     const AP_InertialSensor &ins = AP::ins();
 
-    bool statePredictEnabled[num_cores];
+    bool* statePredictEnabled= new bool[num_cores];
     for (uint8_t i=0; i<num_cores; i++) {
         // if we have not overrun by more than 3 IMU frames, and we
         // have already used more than 1/3 of the CPU budget for this

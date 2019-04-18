@@ -24,9 +24,9 @@
 
 #define DEBUG 0
 #if DEBUG
-#define debug(fmt, args...) ::printf(fmt "\n", ##args)
+#define debug(fmt, ...) ::printf(fmt "\n", ## __VA_ARGS__)
 #else
-#define debug(fmt, args...)
+#define debug(fmt, ...)
 #endif
 
 extern const AP_HAL::HAL& hal;

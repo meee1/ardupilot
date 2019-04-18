@@ -25,16 +25,16 @@
 #include <AP_Math/AP_Math.h>
 #include "PerfInfo.h"       // loop perf monitoring
 
-#define AP_SCHEDULER_NAME_INITIALIZER(_name) .name = #_name,
+#define AP_SCHEDULER_NAME_INITIALIZER(_name) #_name,
 
 /*
   useful macro for creating scheduler task table
  */
 #define SCHED_TASK_CLASS(classname, classptr, func, _rate_hz, _max_time_micros) { \
-    .function = FUNCTOR_BIND(classptr, &classname::func, void),\
+    FUNCTOR_BIND(classptr, &classname::func, void),\
     AP_SCHEDULER_NAME_INITIALIZER(func)\
-    .rate_hz = _rate_hz,\
-    .max_time_micros = _max_time_micros\
+     _rate_hz,\
+     _max_time_micros\
 }
 
 /*

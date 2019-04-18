@@ -77,9 +77,9 @@ AP_AutoTune::AP_AutoTune(ATGains &_gains, ATType _type,
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 #include <stdio.h>
-# define Debug(fmt, args ...)  do {::printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
+# define Debug(fmt, ...)  do {::printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 /*
@@ -332,15 +332,6 @@ void AP_AutoTune::write_log(float servo, float demanded, float achieved)
         return;
     }
 
-    struct log_ATRP pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ATRP_MSG),
-        time_us    : AP_HAL::micros64(),
-        type       : static_cast<uint8_t>(type),
-    	state      : (uint8_t)state,
-        servo      : (int16_t)(servo*100),
-        demanded   : demanded,
-        achieved   : achieved,
-        P          : current.P.get()
-    };
+    struct log_ATRP pkt = {};
     logger->WriteBlock(&pkt, sizeof(pkt));
 }

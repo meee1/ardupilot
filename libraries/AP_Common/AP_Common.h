@@ -24,22 +24,22 @@
 #include <stdlib.h>
 
 // used to pack structures
-#define PACKED __attribute__((__packed__))
+#define PACKED 
 
 // used to weaken symbols
-#define WEAK __attribute__((__weak__))
+#define WEAK 
 
 // used to mark a function that may be unused in some builds
-#define UNUSED_FUNCTION __attribute__((unused))
+#define UNUSED_FUNCTION 
 
 // this can be used to optimize individual functions
-#define OPTIMIZE(level) __attribute__((optimize(level)))
+#define OPTIMIZE(level) 
 
 // sometimes we need to prevent inlining to prevent large stack usage
-#define NOINLINE __attribute__((noinline))
+#define NOINLINE 
 
-#define FMT_PRINTF(a,b) __attribute__((format(printf, a, b)))
-#define FMT_SCANF(a,b) __attribute__((format(scanf, a, b)))
+#define FMT_PRINTF(a,b) 
+#define FMT_SCANF(a,b) 
 
 #ifdef __has_cpp_attribute
 #  if __has_cpp_attribute(fallthrough)
@@ -58,7 +58,7 @@
  #define WARN_IF_UNUSED
 #endif
 
-#define NORETURN __attribute__ ((noreturn))
+#define  __attribute__ ((noreturn))
 
 #define ToRad(x) radians(x)	// *pi/180
 #define ToDeg(x) degrees(x)	// *180/pi
@@ -133,3 +133,17 @@ template<typename s, size_t t> struct assert_storage_size {
   False otherwise.
 */
 bool is_bounded_int32(int32_t value, int32_t lower_bound, int32_t upper_bound);
+#include <intrin.h>
+#define __builtin_popcount __popcnt
+#define __builtin_popcountl __popcnt64
+#define __builtin_popcountll __popcnt64
+
+#    define __builtin_ffsll(v) psnip_builtin_ffsll(v)
+#    define __builtin_ffsl(v)  psnip_builtin_ffsl(v)
+#    define __builtin_ffs(v)   psnip_builtin_ffs(v)
+#ifndef strcasecmp
+#define strcasecmp _stricmp
+#endif
+
+#define strncasecmp _strnicmp
+#define strtok_r strtok_s

@@ -43,9 +43,9 @@ extern AP_IOMCU iomcu;
 #define VOLTAGE_SCALING (3.3f/(1<<12))
 
 #if ANLOGIN_DEBUGGING
- # define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
+ # define Debug(fmt, ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 extern const AP_HAL::HAL& hal;

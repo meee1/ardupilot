@@ -33,15 +33,15 @@ extern const AP_HAL::HAL& hal;
 #define SBP_TIMEOUT_PVT       500
 
 #if SBP_DEBUGGING
- # define Debug(fmt, args ...)                  \
+ # define Debug(fmt, ...)                  \
 do {                                            \
     hal.console->printf("%s:%d: " fmt "\n",     \
                         __FUNCTION__, __LINE__, \
-                        ## args);               \
+                        ##  __VA_ARGS__);               \
     hal.scheduler->delay(1);                    \
 } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 AP_GPS_SBP::AP_GPS_SBP(AP_GPS &_gps, AP_GPS::GPS_State &_state,
@@ -396,13 +396,7 @@ AP_GPS_SBP::logging_log_full_update()
         return;
     }
 
-    struct log_SbpHealth pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_MSG_SBPHEALTH),
-        time_us                    : AP_HAL::micros64(),
-        crc_error_counter          : crc_error_counter,
-        last_injected_data_ms      : last_injected_data_ms,
-        last_iar_num_hypotheses    : last_iar_num_hypotheses,
-    };
+    struct log_SbpHealth pkt = {};
 
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 };
@@ -428,28 +422,12 @@ AP_GPS_SBP::logging_log_raw_sbp(uint16_t msg_type,
         pages += (msg_len - 48) / 104 + 1;
     }
 
-    struct log_SbpRAWH pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_MSG_SBPRAWH),
-        time_us         : time_us,
-        msg_type        : msg_type,
-        sender_id       : sender_id,
-        index           : 1,
-        pages           : pages,
-        msg_len         : msg_len,
-    };
+    struct log_SbpRAWH pkt = {};
     memcpy(pkt.data, msg_buff, MIN(msg_len, 48));
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 
     for (uint8_t i = 0; i < pages - 1; i++) {
-        struct log_SbpRAWM pkt2 = {
-            LOG_PACKET_HEADER_INIT(LOG_MSG_SBPRAWM),
-            time_us         : time_us,
-            msg_type        : msg_type,
-            sender_id       : sender_id,
-            index           : uint8_t(i + 2),
-            pages           : pages,
-            msg_len         : msg_len,
-        };
+        struct log_SbpRAWM pkt2 = {};
         memcpy(pkt2.data, &msg_buff[48 + i * 104], MIN(msg_len - (48 + i * 104), 104));
         AP::logger().WriteBlock(&pkt2, sizeof(pkt2));
     }

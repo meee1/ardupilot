@@ -29,7 +29,7 @@
 #include "AP_OpticalFlow_Pixart_SROM.h"
 #include <stdio.h>
 
-#define debug(fmt, args ...)  do {printf(fmt, ## args); } while(0)
+#define debug(fmt, ...)  do {printf(fmt, ##  __VA_ARGS__); } while(0)
 
 extern const AP_HAL::HAL& hal;
 

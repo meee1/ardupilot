@@ -35,7 +35,7 @@
 #define SCHEDULER_DEFAULT_LOOP_RATE  50
 #endif
 
-#define debug(level, fmt, args...)   do { if ((level) <= _debug.get()) { hal.console->printf(fmt, ##args); }} while (0)
+#define debug(level, fmt, ...)   do { if ((level) <= _debug.get()) { hal.console->printf(fmt, ## __VA_ARGS__); }} while (0)
 
 extern const AP_HAL::HAL& hal;
 
@@ -290,16 +290,7 @@ void AP_Scheduler::update_logging()
 // Write a performance monitoring packet
 void AP_Scheduler::Log_Write_Performance()
 {
-    struct log_Performance pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_PERFORMANCE_MSG),
-        time_us          : AP_HAL::micros64(),
-        num_long_running : perf_info.get_num_long_running(),
-        num_loops        : perf_info.get_num_loops(),
-        max_time         : perf_info.get_max_time(),
-        mem_avail        : hal.util->available_memory(),
-        load             : (uint16_t)(load_average() * 1000),
-        internal_errors  : AP::internalerror().errors()
-    };
+    struct log_Performance pkt = {};
     AP::logger().WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 

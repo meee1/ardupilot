@@ -40,7 +40,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define debug_can(level_debug, fmt, args...) do { if ((level_debug) <= AP::can().get_debug_level_driver(_driver_index)) { printf(fmt, ##args); }} while (0)
+#define debug_can(level_debug, fmt, ...) do { if ((level_debug) <= AP::can().get_debug_level_driver(_driver_index)) { printf(fmt, ## __VA_ARGS__); }} while (0)
 
 #define DEFAULT_NUM_POLES 14
 

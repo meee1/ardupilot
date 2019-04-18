@@ -142,18 +142,7 @@ void AP_LoggerTest_AllTypes::Log_Write_TypeMessages()
     };
     logger.WriteBlock(&typ1, sizeof(typ1));
 
-    struct log_TYP2 typ2 = {
-        LOG_PACKET_HEADER_INIT(LOG_TYP2_MSG),
-        time_us : AP_HAL::micros64(),
-        c : -9823, // int16_t * 100
-        C : 5436,  // uint16_t * 100
-        e : -9209238,  // int32_t * 100
-        E : 19239872,  // uint32_t * 100
-        L : -3576543,   // uint32_t latitude/longitude;
-        M : 5,          //   uint8_t;   // flight mode;
-        q : -98239832498328,   // int64_t
-        Q : 3432345232233432   // uint64_t
-    };
+    struct log_TYP2 typ2 = {};
     logger.WriteBlock(&typ2, sizeof(typ2));
 
     flush_logger(logger);

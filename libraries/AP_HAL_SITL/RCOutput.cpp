@@ -7,9 +7,9 @@
 
 #if ENABLE_DEBUG
 # include <stdio.h>
-# define Debug(fmt, args ...)  do {::printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while (0)
+# define Debug(fmt, ...)  do {::printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while (0)
 #else
-# define Debug(fmt, args ...)
+# define Debug(fmt, ...)
 #endif
 
 using namespace HALSITL;

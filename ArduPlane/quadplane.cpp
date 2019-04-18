@@ -2573,20 +2573,7 @@ void QuadPlane::Log_Write_QControl_Tuning()
         target_climb_rate_cms = pos_control->get_vel_target_z();
     }
 
-    struct log_QControl_Tuning pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_QTUN_MSG),
-        time_us             : AP_HAL::micros64(),
-        throttle_in         : attitude_control->get_throttle_in(),
-        angle_boost         : attitude_control->angle_boost(),
-        throttle_out        : motors->get_throttle(),
-        throttle_hover      : motors->get_throttle_hover(),
-        desired_alt         : des_alt_m,
-        inav_alt            : inertial_nav.get_altitude() / 100.0f,
-        baro_alt            : int32_t(plane.barometer.get_altitude() * 100),
-        target_climb_rate   : target_climb_rate_cms,
-        climb_rate          : int16_t(inertial_nav.get_velocity_z()),
-        throttle_mix        : attitude_control->get_throttle_mix(),
-    };
+    struct log_QControl_Tuning pkt = {};
     plane.logger.WriteBlock(&pkt, sizeof(pkt));
 
     // write multicopter position control message

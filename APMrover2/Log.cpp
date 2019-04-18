@@ -13,12 +13,7 @@ struct PACKED log_Arm_Disarm {
 
 void Rover::Log_Write_Arm_Disarm()
 {
-    struct log_Arm_Disarm pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ARM_DISARM_MSG),
-        time_us                 : AP_HAL::micros64(),
-        arm_state               : arming.is_armed(),
-        arm_checks              : arming.get_enabled_checks()
-    };
+    struct log_Arm_Disarm pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -99,17 +94,7 @@ struct PACKED log_GuidedTarget {
 // Write a Guided mode target
 void Rover::Log_Write_GuidedTarget(uint8_t target_type, const Vector3f& pos_target, const Vector3f& vel_target)
 {
-    struct log_GuidedTarget pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_GUIDEDTARGET_MSG),
-        time_us         : AP_HAL::micros64(),
-        type            : target_type,
-        pos_target_x    : pos_target.x,
-        pos_target_y    : pos_target.y,
-        pos_target_z    : pos_target.z,
-        vel_target_x    : vel_target.x,
-        vel_target_y    : vel_target.y,
-        vel_target_z    : vel_target.z
-    };
+    struct log_GuidedTarget pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -126,15 +111,7 @@ struct PACKED log_Nav_Tuning {
 // Write a navigation tuning packet
 void Rover::Log_Write_Nav_Tuning()
 {
-    struct log_Nav_Tuning pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_NTUN_MSG),
-        time_us             : AP_HAL::micros64(),
-        wp_distance         : control_mode->get_distance_to_destination(),
-        wp_bearing_cd       : (uint16_t)wrap_360_cd(nav_controller->target_bearing_cd()),
-        nav_bearing_cd      : (uint16_t)wrap_360_cd(nav_controller->nav_bearing_cd()),
-        yaw                 : (uint16_t)ahrs.yaw_sensor,
-        xtrack_error        : nav_controller->crosstrack_error()
-    };
+    struct log_Nav_Tuning pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -187,12 +164,7 @@ struct PACKED log_Startup {
 
 void Rover::Log_Write_Startup(uint8_t type)
 {
-    struct log_Startup pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_STARTUP_MSG),
-        time_us         : AP_HAL::micros64(),
-        startup_type    : type,
-        command_total   : mode_auto.mission.num_commands()
-    };
+    struct log_Startup pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -201,16 +173,7 @@ void Rover::Log_Write_Steering()
 {
     float lat_accel = logger.quiet_nanf();
     g2.attitude_control.get_lat_accel(lat_accel);
-    struct log_Steering pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_STEERING_MSG),
-        time_us        : AP_HAL::micros64(),
-        steering_in        : channel_steer->get_control_in(),
-        steering_out       : g2.motors.get_steering(),
-        desired_lat_accel  : g2.attitude_control.get_desired_lat_accel(),
-        lat_accel          : lat_accel,
-        desired_turn_rate  : degrees(g2.attitude_control.get_desired_turn_rate()),
-        turn_rate          : degrees(ahrs.get_yaw_rate_earth())
-    };
+    struct log_Steering pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -230,15 +193,7 @@ void Rover::Log_Write_Throttle()
     const Vector3f accel = ins.get_accel();
     float speed = logger.quiet_nanf();
     g2.attitude_control.get_forward_speed(speed);
-    struct log_Throttle pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_THR_MSG),
-        time_us         : AP_HAL::micros64(),
-        throttle_in     : channel_throttle->get_control_in(),
-        throttle_out    : g2.motors.get_throttle(),
-        desired_speed   : g2.attitude_control.get_desired_speed(),
-        speed           : speed,
-        accel_y         : accel.y
-    };
+    struct log_Throttle pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -264,18 +219,7 @@ void Rover::Log_Write_Rangefinder()
     }
     AP_RangeFinder_Backend *s0 = rangefinder.get_backend(0);
     AP_RangeFinder_Backend *s1 = rangefinder.get_backend(1);
-    struct log_Rangefinder pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RANGEFINDER_MSG),
-        time_us               : AP_HAL::micros64(),
-        lateral_accel         : g2.attitude_control.get_desired_lat_accel(),
-        rangefinder1_distance : s0 ? s0->distance_cm() : (uint16_t)0,
-        rangefinder2_distance : s1 ? s1->distance_cm() : (uint16_t)0,
-        detected_count        : obstacle.detected_count,
-        turn_angle            : static_cast<int8_t>(obstacle.turn_angle),
-        turn_time             : turn_time,
-        ground_speed          : static_cast<uint16_t>(fabsf(ground_speed * 100.0f)),
-        throttle              : int8_t(SRV_Channels::get_output_scaled(SRV_Channel::k_throttle))
-    };
+    struct log_Rangefinder pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 

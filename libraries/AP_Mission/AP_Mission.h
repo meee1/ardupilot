@@ -256,8 +256,11 @@ public:
         // do-winch
         Winch_Command winch;
 
-        // location
-        Location location{};      // Waypoint location
+        Location location;
+        
+        Content(): location(Location()){
+            
+        }
     };
 
     // command structure
@@ -269,6 +272,7 @@ public:
 
         // return a human-readable interpretation of the ID stored in this command
         const char *type() const;
+        //Mission_Command():Content.location( Location()) {}
     };
 
 

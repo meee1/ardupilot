@@ -26,9 +26,9 @@
 #include "Util_RPI.h"
 
 #ifdef DEBUG
-#define debug(fmt, args ...) do { fprintf(stderr,"[RCInput_RPI]: %s:%d: " fmt, __FUNCTION__, __LINE__, ## args); } while (0)
+#define debug(fmt, ...) do { fprintf(stderr,"[RCInput_RPI]: %s:%d: " fmt, __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while (0)
 #else
-#define debug(fmt, args ...)
+#define debug(fmt, ...)
 #endif
 
 //Parametres

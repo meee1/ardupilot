@@ -66,12 +66,7 @@ struct PACKED log_Startup {
 
 void Plane::Log_Write_Startup(uint8_t type)
 {
-    struct log_Startup pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_STARTUP_MSG),
-        time_us         : AP_HAL::micros64(),
-        startup_type    : type,
-        command_total   : mission.num_commands()
-    };
+    struct log_Startup pkt = {};
     logger.WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 
@@ -94,18 +89,7 @@ void Plane::Log_Write_Control_Tuning()
     float est_airspeed = 0;
     ahrs.airspeed_estimate(&est_airspeed);
     
-    struct log_Control_Tuning pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_CTUN_MSG),
-        time_us         : AP_HAL::micros64(),
-        nav_roll_cd     : (int16_t)nav_roll_cd,
-        roll            : (int16_t)ahrs.roll_sensor,
-        nav_pitch_cd    : (int16_t)nav_pitch_cd,
-        pitch           : (int16_t)ahrs.pitch_sensor,
-        throttle_out    : (int16_t)SRV_Channels::get_output_scaled(SRV_Channel::k_throttle),
-        rudder_out      : (int16_t)SRV_Channels::get_output_scaled(SRV_Channel::k_rudder),
-        throttle_dem    : (int16_t)SpdHgt_Controller->get_throttle_demand(),
-        airspeed_estimate : est_airspeed
-    };
+    struct log_Control_Tuning pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -128,21 +112,7 @@ struct PACKED log_Nav_Tuning {
 // Write a navigation tuning packet
 void Plane::Log_Write_Nav_Tuning()
 {
-    struct log_Nav_Tuning pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_NTUN_MSG),
-        time_us             : AP_HAL::micros64(),
-        wp_distance         : auto_state.wp_distance,
-        target_bearing_cd   : (int16_t)nav_controller->target_bearing_cd(),
-        nav_bearing_cd      : (int16_t)nav_controller->nav_bearing_cd(),
-        altitude_error_cm   : (int16_t)altitude_error_cm,
-        xtrack_error        : nav_controller->crosstrack_error(),
-        xtrack_error_i      : nav_controller->crosstrack_error_integrator(),
-        airspeed_error      : airspeed_error,
-        target_lat          : next_WP_loc.lat,
-        target_lng          : next_WP_loc.lng,
-        target_alt          : next_WP_loc.alt,
-        target_airspeed     : target_airspeed_cm,
-    };
+    struct log_Nav_Tuning pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -161,18 +131,7 @@ struct PACKED log_Status {
 
 void Plane::Log_Write_Status()
 {
-    struct log_Status pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_STATUS_MSG)
-        ,time_us   : AP_HAL::micros64()
-        ,is_flying   : is_flying()
-        ,is_flying_probability : isFlyingProbability
-        ,armed       : hal.util->get_soft_armed()
-        ,safety      : static_cast<uint8_t>(hal.util->safety_switch_state())
-        ,is_crashed  : crash_state.is_crashed
-        ,is_still    : AP::ins().is_still()
-        ,stage       : static_cast<uint8_t>(flight_stage)
-        ,impact      : crash_state.impact_detected
-        };
+    struct log_Status pkt = {};
 
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
@@ -195,14 +154,7 @@ void Plane::Log_Write_Sonar()
         distance = rangefinder.distance_cm_orient(ROTATION_PITCH_270);
     }
 
-    struct log_Sonar pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_SONAR_MSG),
-        time_us     : AP_HAL::micros64(),
-        distance    : (float)distance*0.01f,
-        voltage     : rangefinder.voltage_mv_orient(ROTATION_PITCH_270)*0.001f,
-        count       : rangefinder_state.in_range_count,
-        correction  : rangefinder_state.correction
-    };
+    struct log_Sonar pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -214,12 +166,7 @@ struct PACKED log_Arm_Disarm {
 };
 
 void Plane::Log_Arm_Disarm() {
-    struct log_Arm_Disarm pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ARM_DISARM_MSG),
-        time_us                 : AP_HAL::micros64(),
-        arm_state               : arming.is_armed(),
-        arm_checks              : arming.get_enabled_checks()      
-    };
+    struct log_Arm_Disarm pkt = {};
     logger.WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 
@@ -236,15 +183,7 @@ struct PACKED log_AETR {
 
 void Plane::Log_Write_AETR()
 {
-    struct log_AETR pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_AETR_MSG)
-        ,time_us  : AP_HAL::micros64()
-        ,aileron  : SRV_Channels::get_output_scaled(SRV_Channel::k_aileron)
-        ,elevator : SRV_Channels::get_output_scaled(SRV_Channel::k_elevator)
-        ,throttle : SRV_Channels::get_output_scaled(SRV_Channel::k_throttle)
-        ,rudder   : SRV_Channels::get_output_scaled(SRV_Channel::k_rudder)
-        ,flap     : SRV_Channels::get_output_scaled(SRV_Channel::k_flap_auto)
-        };
+    struct log_AETR pkt = {};
 
     logger.WriteBlock(&pkt, sizeof(pkt));
 }

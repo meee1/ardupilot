@@ -20,9 +20,9 @@
 
 #define DEBUG 1
 #if DEBUG
-# define debug(fmt, args...)     printf(fmt "\n", ##args)
+# define debug(fmt, ...)     printf(fmt "\n", ## __VA_ARGS__)
 #else
-# define debug(fmt, args...)
+# define debug(fmt, ...)
 #endif
 
 #define streq(x, y) (!strcmp(x, y))

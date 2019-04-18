@@ -267,7 +267,7 @@ void AP_Follow::handle_msg(const mavlink_message_t &msg)
         // get estimated location and velocity (for logging)
         Location loc_estimate{};
         Vector3f vel_estimate;
-        UNUSED_RESULT(get_target_location_and_velocity(loc_estimate, vel_estimate));
+        (get_target_location_and_velocity(loc_estimate, vel_estimate));
 
         // decode message
         mavlink_global_position_int_t packet;

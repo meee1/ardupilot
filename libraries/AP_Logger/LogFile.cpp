@@ -82,12 +82,7 @@ bool AP_Logger_Backend::Write_Unit(const struct UnitStructure *s)
  */
 bool AP_Logger_Backend::Write_Multiplier(const struct MultiplierStructure *s)
 {
-    struct log_Format_Multiplier pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_MULT_MSG),
-        time_us      : AP_HAL::micros64(),
-        type         : s->ID,
-        multiplier   : s->multiplier,
-    };
+    struct log_Format_Multiplier pkt = {};
 
     return WriteCriticalBlock(&pkt, sizeof(pkt));
 }
@@ -137,22 +132,7 @@ void AP_Logger::Write_GPS(uint8_t i, uint64_t time_us)
         time_us = AP_HAL::micros64();
     }
     const struct Location &loc = gps.location(i);
-    struct log_GPS pkt = {
-        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_GPS_MSG+i)),
-        time_us       : time_us,
-        status        : (uint8_t)gps.status(i),
-        gps_week_ms   : gps.time_week_ms(i),
-        gps_week      : gps.time_week(i),
-        num_sats      : gps.num_sats(i),
-        hdop          : gps.get_hdop(i),
-        latitude      : loc.lat,
-        longitude     : loc.lng,
-        altitude      : loc.alt,
-        ground_speed  : gps.ground_speed(i),
-        ground_course : gps.ground_course(i),
-        vel_z         : gps.velocity(i).z,
-        used          : (uint8_t)(gps.primary_sensor() == i)
-    };
+    struct log_GPS pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 
     /* write auxiliary accuracy information as well */
@@ -160,17 +140,7 @@ void AP_Logger::Write_GPS(uint8_t i, uint64_t time_us)
     gps.horizontal_accuracy(i, hacc);
     gps.vertical_accuracy(i, vacc);
     gps.speed_accuracy(i, sacc);
-    struct log_GPA pkt2 = {
-        LOG_PACKET_HEADER_INIT((uint8_t)(LOG_GPA_MSG+i)),
-        time_us       : time_us,
-        vdop          : gps.get_vdop(i),
-        hacc          : (uint16_t)MIN((hacc*100), UINT16_MAX),
-        vacc          : (uint16_t)MIN((vacc*100), UINT16_MAX),
-        sacc          : (uint16_t)MIN((sacc*100), UINT16_MAX),
-        have_vv       : (uint8_t)gps.have_vertical_velocity(i),
-        sample_ms     : gps.last_message_time_ms(i),
-        delta_ms      : gps.last_message_delta_time_ms(i)
-    };
+    struct log_GPA pkt2 = {};
     WriteBlock(&pkt2, sizeof(pkt2));
 }
 
@@ -180,48 +150,14 @@ void AP_Logger::Write_RCIN(void)
 {
     uint16_t values[14] = {};
     rc().get_radio_in(values, ARRAY_SIZE(values));
-    struct log_RCIN pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RCIN_MSG),
-        time_us       : AP_HAL::micros64(),
-        chan1         : values[0],
-        chan2         : values[1],
-        chan3         : values[2],
-        chan4         : values[3],
-        chan5         : values[4],
-        chan6         : values[5],
-        chan7         : values[6],
-        chan8         : values[7],
-        chan9         : values[8],
-        chan10        : values[9],
-        chan11        : values[10],
-        chan12        : values[11],
-        chan13        : values[12],
-        chan14        : values[13]
-    };
+    struct log_RCIN pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
 // Write an SERVO packet
 void AP_Logger::Write_RCOUT(void)
 {
-    struct log_RCOUT pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RCOUT_MSG),
-        time_us       : AP_HAL::micros64(),
-        chan1         : hal.rcout->read(0),
-        chan2         : hal.rcout->read(1),
-        chan3         : hal.rcout->read(2),
-        chan4         : hal.rcout->read(3),
-        chan5         : hal.rcout->read(4),
-        chan6         : hal.rcout->read(5),
-        chan7         : hal.rcout->read(6),
-        chan8         : hal.rcout->read(7),
-        chan9         : hal.rcout->read(8),
-        chan10        : hal.rcout->read(9),
-        chan11        : hal.rcout->read(10),
-        chan12        : hal.rcout->read(11),
-        chan13        : hal.rcout->read(12),
-        chan14        : hal.rcout->read(13)
-    };
+    struct log_RCOUT pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -233,11 +169,7 @@ void AP_Logger::Write_RSSI()
         return;
     }
 
-    struct log_RSSI pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RSSI_MSG),
-        time_us       : AP_HAL::micros64(),
-        RXRSSI        : rssi->read_receiver_rssi()
-    };
+    struct log_RSSI pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -247,17 +179,7 @@ void AP_Logger::Write_Baro_instance(uint64_t time_us, uint8_t baro_instance, enu
     float climbrate = baro.get_climb_rate();
     float drift_offset = baro.get_baro_drift_offset();
     float ground_temp = baro.get_ground_temperature();
-    struct log_BARO pkt = {
-        LOG_PACKET_HEADER_INIT(type),
-        time_us       : time_us,
-        altitude      : baro.get_altitude(baro_instance),
-        pressure      : baro.get_pressure(baro_instance),
-        temperature   : (int16_t)(baro.get_temperature(baro_instance) * 100 + 0.5f),
-        climbrate     : climbrate,
-        sample_time_ms: baro.get_last_update(baro_instance),
-        drift_offset  : drift_offset,
-        ground_temp   : ground_temp,
-    };
+    struct log_BARO pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -282,23 +204,7 @@ void AP_Logger::Write_IMU_instance(const uint64_t time_us, const uint8_t imu_ins
     const AP_InertialSensor &ins = AP::ins();
     const Vector3f &gyro = ins.get_gyro(imu_instance);
     const Vector3f &accel = ins.get_accel(imu_instance);
-    struct log_IMU pkt = {
-        LOG_PACKET_HEADER_INIT(type),
-        time_us : time_us,
-        gyro_x  : gyro.x,
-        gyro_y  : gyro.y,
-        gyro_z  : gyro.z,
-        accel_x : accel.x,
-        accel_y : accel.y,
-        accel_z : accel.z,
-        gyro_error  : ins.get_gyro_error_count(imu_instance),
-        accel_error : ins.get_accel_error_count(imu_instance),
-        temperature : ins.get_temperature(imu_instance),
-        gyro_health : (uint8_t)ins.get_gyro_health(imu_instance),
-        accel_health : (uint8_t)ins.get_accel_health(imu_instance),
-        gyro_rate : ins.get_gyro_rate_hz(imu_instance),
-        accel_rate : ins.get_accel_rate_hz(imu_instance),
-    };
+    struct log_IMU pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -334,19 +240,7 @@ void AP_Logger::Write_IMUDT_instance(const uint64_t time_us, const uint8_t imu_i
     ins.get_delta_angle(imu_instance, delta_angle);
     ins.get_delta_velocity(imu_instance, delta_velocity);
 
-    struct log_IMUDT pkt = {
-        LOG_PACKET_HEADER_INIT(type),
-        time_us : time_us,
-        delta_time   : delta_t,
-        delta_vel_dt : delta_vel_t,
-        delta_ang_dt : delta_ang_t,
-        delta_ang_x  : delta_angle.x,
-        delta_ang_y  : delta_angle.y,
-        delta_ang_z  : delta_angle.z,
-        delta_vel_x  : delta_velocity.x,
-        delta_vel_y  : delta_velocity.y,
-        delta_vel_z  : delta_velocity.z
-    };
+    struct log_IMUDT pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -378,16 +272,7 @@ void AP_Logger::Write_Vibration()
     uint64_t time_us = AP_HAL::micros64();
     const AP_InertialSensor &ins = AP::ins();
     const Vector3f vibration = ins.get_vibration_levels();
-    struct log_Vibe pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_VIBE_MSG),
-        time_us     : time_us,
-        vibe_x      : vibration.x,
-        vibe_y      : vibration.y,
-        vibe_z      : vibration.z,
-        clipping_0  : ins.get_accel_clip_count(0),
-        clipping_1  : ins.get_accel_clip_count(1),
-        clipping_2  : ins.get_accel_clip_count(2)
-    };
+    struct log_Vibe pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -396,21 +281,7 @@ bool AP_Logger_Backend::Write_Mission_Cmd(const AP_Mission &mission,
 {
     mavlink_mission_item_int_t mav_cmd = {};
     AP_Mission::mission_cmd_to_mavlink_int(cmd,mav_cmd);
-    struct log_Cmd pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_CMD_MSG),
-        time_us         : AP_HAL::micros64(),
-        command_total   : mission.num_commands(),
-        sequence        : mav_cmd.seq,
-        command         : mav_cmd.command,
-        param1          : mav_cmd.param1,
-        param2          : mav_cmd.param2,
-        param3          : mav_cmd.param3,
-        param4          : mav_cmd.param4,
-        latitude        : mav_cmd.x,
-        longitude       : mav_cmd.y,
-        altitude        : mav_cmd.z,
-        frame           : mav_cmd.frame
-    };
+    struct log_Cmd pkt = {};
     return WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -441,14 +312,7 @@ void AP_Logger::Write_Power(void)
         // encode armed state in bit 3
         safety_and_armed |= 1U<<2;
     }
-    struct log_POWR pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_POWR_MSG),
-        time_us : AP_HAL::micros64(),
-        Vcc     : hal.analogin->board_voltage(),
-        Vservo  : hal.analogin->servorail_voltage(),
-        flags   : hal.analogin->power_status_flags(),
-        safety_and_arm : safety_and_armed
-    };
+    struct log_POWR pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 #endif
 }
@@ -462,20 +326,7 @@ void AP_Logger::Write_AHRS2(AP_AHRS &ahrs)
     if (!ahrs.get_secondary_attitude(euler) || !ahrs.get_secondary_position(loc) || !ahrs.get_secondary_quaternion(quat)) {
         return;
     }
-    struct log_AHRS pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_AHR2_MSG),
-        time_us : AP_HAL::micros64(),
-        roll  : (int16_t)(degrees(euler.x)*100),
-        pitch : (int16_t)(degrees(euler.y)*100),
-        yaw   : (uint16_t)(wrap_360_cd(degrees(euler.z)*100)),
-        alt   : loc.alt*1.0e-2f,
-        lat   : loc.lat,
-        lng   : loc.lng,
-        q1    : quat.q1,
-        q2    : quat.q2,
-        q3    : quat.q3,
-        q4    : quat.q4,
-    };
+    struct log_AHRS pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -488,15 +339,7 @@ void AP_Logger::Write_POS(AP_AHRS &ahrs)
     }
     float home, origin;
     ahrs.get_relative_position_D_home(home);
-    struct log_POS pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_POS_MSG),
-        time_us        : AP_HAL::micros64(),
-        lat            : loc.lat,
-        lng            : loc.lng,
-        alt            : loc.alt*1.0e-2f,
-        rel_home_alt   : -home,
-        rel_origin_alt : ahrs.get_relative_position_D_origin(origin) ? -origin : quiet_nanf(),
-    };
+    struct log_POS pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -554,24 +397,7 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
     if (!ahrs.get_NavEKF2().getOriginLLH(0,originLLH)) {
         originLLH.alt = 0;
     }
-    struct log_EKF1 pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_NKF1_MSG),
-        time_us : time_us,
-        roll    : (int16_t)(100*degrees(euler.x)), // roll angle (centi-deg, displayed as deg due to format string)
-        pitch   : (int16_t)(100*degrees(euler.y)), // pitch angle (centi-deg, displayed as deg due to format string)
-        yaw     : (uint16_t)wrap_360_cd(100*degrees(euler.z)), // yaw angle (centi-deg, displayed as deg due to format string)
-        velN    : (float)(velNED.x), // velocity North (m/s)
-        velE    : (float)(velNED.y), // velocity East (m/s)
-        velD    : (float)(velNED.z), // velocity Down (m/s)
-        posD_dot : (float)(posDownDeriv), // first derivative of down position
-        posN    : (float)(posNE.x), // metres North
-        posE    : (float)(posNE.y), // metres East
-        posD    : (float)(posD), // metres Down
-        gyrX    : (int16_t)(100*degrees(gyroBias.x)), // cd/sec, displayed as deg/sec due to format string
-        gyrY    : (int16_t)(100*degrees(gyroBias.y)), // cd/sec, displayed as deg/sec due to format string
-        gyrZ    : (int16_t)(100*degrees(gyroBias.z)), // cd/sec, displayed as deg/sec due to format string
-        originHgt : originLLH.alt // WGS-84 altitude of EKF origin in cm
-    };
+    struct log_EKF1 pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 
     // Write second EKF packet
@@ -586,23 +412,7 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
     ahrs.get_NavEKF2().getMagNED(0,magNED);
     ahrs.get_NavEKF2().getMagXYZ(0,magXYZ);
     ahrs.get_NavEKF2().getGyroScaleErrorPercentage(0,gyroScaleFactor);
-    struct log_NKF2 pkt2 = {
-        LOG_PACKET_HEADER_INIT(LOG_NKF2_MSG),
-        time_us : time_us,
-        AZbias  : (int8_t)(100*azbias),
-        scaleX  : (int16_t)(100*gyroScaleFactor.x),
-        scaleY  : (int16_t)(100*gyroScaleFactor.y),
-        scaleZ  : (int16_t)(100*gyroScaleFactor.z),
-        windN   : (int16_t)(100*wind.x),
-        windE   : (int16_t)(100*wind.y),
-        magN    : (int16_t)(magNED.x),
-        magE    : (int16_t)(magNED.y),
-        magD    : (int16_t)(magNED.z),
-        magX    : (int16_t)(magXYZ.x),
-        magY    : (int16_t)(magXYZ.y),
-        magZ    : (int16_t)(magXYZ.z),
-        index   : (uint8_t)(magIndex)
-    };
+    struct log_NKF2 pkt2 = {};
     WriteBlock(&pkt2, sizeof(pkt2));
 
     // Write third EKF packet
@@ -612,21 +422,7 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
     float tasInnov = 0;
     float yawInnov = 0;
     ahrs.get_NavEKF2().getInnovations(0,velInnov, posInnov, magInnov, tasInnov, yawInnov);
-    struct log_NKF3 pkt3 = {
-        LOG_PACKET_HEADER_INIT(LOG_NKF3_MSG),
-        time_us : time_us,
-        innovVN : (int16_t)(100*velInnov.x),
-        innovVE : (int16_t)(100*velInnov.y),
-        innovVD : (int16_t)(100*velInnov.z),
-        innovPN : (int16_t)(100*posInnov.x),
-        innovPE : (int16_t)(100*posInnov.y),
-        innovPD : (int16_t)(100*posInnov.z),
-        innovMX : (int16_t)(magInnov.x),
-        innovMY : (int16_t)(magInnov.y),
-        innovMZ : (int16_t)(magInnov.z),
-        innovYaw : (int16_t)(100*degrees(yawInnov)),
-        innovVT : (int16_t)(100*tasInnov)
-    };
+    struct log_NKF3 pkt3 = {};
     WriteBlock(&pkt3, sizeof(pkt3));
 
     // Write fourth EKF packet
@@ -649,23 +445,7 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
     float tiltError;
     ahrs.get_NavEKF2().getTiltError(0,tiltError);
     int8_t primaryIndex = ahrs.get_NavEKF2().getPrimaryCoreIndex();
-    struct log_NKF4 pkt4 = {
-        LOG_PACKET_HEADER_INIT(LOG_NKF4_MSG),
-        time_us : time_us,
-        sqrtvarV : (int16_t)(100*velVar),
-        sqrtvarP : (int16_t)(100*posVar),
-        sqrtvarH : (int16_t)(100*hgtVar),
-        sqrtvarM : (int16_t)(100*tempVar),
-        sqrtvarVT : (int16_t)(100*tasVar),
-        tiltErr : (float)tiltError,
-        offsetNorth : (int8_t)(offset.x),
-        offsetEast : (int8_t)(offset.y),
-        faults : (uint16_t)(faultStatus),
-        timeouts : (uint8_t)(timeoutStatus),
-        solution : (uint16_t)(solutionStatus.value),
-        gps : (uint16_t)(gpsStatus.value),
-        primary : (int8_t)primaryIndex
-    };
+    struct log_NKF4 pkt4 = {};
     WriteBlock(&pkt4, sizeof(pkt4));
 
     // Write fifth EKF packet - take data from the primary instance
@@ -680,35 +460,13 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
     Vector3f predictorErrors; // output predictor angle, velocity and position tracking error
     ahrs.get_NavEKF2().getFlowDebug(-1,normInnov, gndOffset, flowInnovX, flowInnovY, auxFlowInnov, HAGL, rngInnov, range, gndOffsetErr);
     ahrs.get_NavEKF2().getOutputTrackingError(-1,predictorErrors);
-    struct log_NKF5 pkt5 = {
-        LOG_PACKET_HEADER_INIT(LOG_NKF5_MSG),
-        time_us : time_us,
-        normInnov : (uint8_t)(MIN(100*normInnov,255)),
-        FIX : (int16_t)(1000*flowInnovX),
-        FIY : (int16_t)(1000*flowInnovY),
-        AFI : (int16_t)(1000*auxFlowInnov),
-        HAGL : (int16_t)(100*HAGL),
-        offset : (int16_t)(100*gndOffset),
-        RI : (int16_t)(100*rngInnov),
-        meaRng : (uint16_t)(100*range),
-        errHAGL : (uint16_t)(100*gndOffsetErr),
-        angErr : (float)predictorErrors.x,
-        velErr : (float)predictorErrors.y,
-        posErr : (float)predictorErrors.z
-     };
+    struct log_NKF5 pkt5 = {};
     WriteBlock(&pkt5, sizeof(pkt5));
 
     // log quaternion
     Quaternion quat;
     ahrs.get_NavEKF2().getQuaternion(0, quat);
-    struct log_Quaternion pktq1 = {
-        LOG_PACKET_HEADER_INIT(LOG_NKQ1_MSG),
-        time_us : time_us,
-        q1 : quat.q1,
-        q2 : quat.q2,
-        q3 : quat.q3,
-        q4 : quat.q4
-    };
+    struct log_Quaternion pktq1 = {};
     WriteBlock(&pktq1, sizeof(pktq1));
 
     // log innovations for the second IMU if enabled
@@ -723,24 +481,7 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
         if (!ahrs.get_NavEKF2().getOriginLLH(1,originLLH)) {
             originLLH.alt = 0;
         }
-        struct log_EKF1 pkt6 = {
-            LOG_PACKET_HEADER_INIT(LOG_NKF6_MSG),
-            time_us : time_us,
-            roll    : (int16_t)(100*degrees(euler.x)), // roll angle (centi-deg, displayed as deg due to format string)
-            pitch   : (int16_t)(100*degrees(euler.y)), // pitch angle (centi-deg, displayed as deg due to format string)
-            yaw     : (uint16_t)wrap_360_cd(100*degrees(euler.z)), // yaw angle (centi-deg, displayed as deg due to format string)
-            velN    : (float)(velNED.x), // velocity North (m/s)
-            velE    : (float)(velNED.y), // velocity East (m/s)
-            velD    : (float)(velNED.z), // velocity Down (m/s)
-            posD_dot : (float)(posDownDeriv), // first derivative of down position
-            posN    : (float)(posNE.x), // metres North
-            posE    : (float)(posNE.y), // metres East
-            posD    : (float)(posD), // metres Down
-            gyrX    : (int16_t)(100*degrees(gyroBias.x)), // cd/sec, displayed as deg/sec due to format string
-            gyrY    : (int16_t)(100*degrees(gyroBias.y)), // cd/sec, displayed as deg/sec due to format string
-            gyrZ    : (int16_t)(100*degrees(gyroBias.z)), // cd/sec, displayed as deg/sec due to format string
-            originHgt : originLLH.alt // WGS-84 altitude of EKF origin in cm
-        };
+        struct log_EKF1 pkt6 = {};
         WriteBlock(&pkt6, sizeof(pkt6));
 
         // Write 7th EKF packet
@@ -750,42 +491,12 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
         ahrs.get_NavEKF2().getMagXYZ(1,magXYZ);
         ahrs.get_NavEKF2().getGyroScaleErrorPercentage(1,gyroScaleFactor);
         magIndex = ahrs.get_NavEKF2().getActiveMag(1);
-        struct log_NKF2 pkt7 = {
-            LOG_PACKET_HEADER_INIT(LOG_NKF7_MSG),
-            time_us : time_us,
-            AZbias  : (int8_t)(100*azbias),
-            scaleX  : (int16_t)(100*gyroScaleFactor.x),
-            scaleY  : (int16_t)(100*gyroScaleFactor.y),
-            scaleZ  : (int16_t)(100*gyroScaleFactor.z),
-            windN   : (int16_t)(100*wind.x),
-            windE   : (int16_t)(100*wind.y),
-            magN    : (int16_t)(magNED.x),
-            magE    : (int16_t)(magNED.y),
-            magD    : (int16_t)(magNED.z),
-            magX    : (int16_t)(magXYZ.x),
-            magY    : (int16_t)(magXYZ.y),
-            magZ    : (int16_t)(magXYZ.z),
-            index   : (uint8_t)(magIndex)
-        };
+        struct log_NKF2 pkt7 = {};
         WriteBlock(&pkt7, sizeof(pkt7));
 
         // Write 8th EKF packet
         ahrs.get_NavEKF2().getInnovations(1,velInnov, posInnov, magInnov, tasInnov, yawInnov);
-        struct log_NKF3 pkt8 = {
-            LOG_PACKET_HEADER_INIT(LOG_NKF8_MSG),
-            time_us : time_us,
-            innovVN : (int16_t)(100*velInnov.x),
-            innovVE : (int16_t)(100*velInnov.y),
-            innovVD : (int16_t)(100*velInnov.z),
-            innovPN : (int16_t)(100*posInnov.x),
-            innovPE : (int16_t)(100*posInnov.y),
-            innovPD : (int16_t)(100*posInnov.z),
-            innovMX : (int16_t)(magInnov.x),
-            innovMY : (int16_t)(magInnov.y),
-            innovMZ : (int16_t)(magInnov.z),
-            innovYaw : (int16_t)(100*degrees(yawInnov)),
-            innovVT : (int16_t)(100*tasInnov)
-        };
+        struct log_NKF3 pkt8 = {};
         WriteBlock(&pkt8, sizeof(pkt8));
 
         // Write 9th EKF packet
@@ -796,34 +507,11 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
         ahrs.get_NavEKF2().getFilterStatus(1,solutionStatus);
         ahrs.get_NavEKF2().getFilterGpsStatus(1,gpsStatus);
         ahrs.get_NavEKF2().getTiltError(1,tiltError);
-        struct log_NKF4 pkt9 = {
-            LOG_PACKET_HEADER_INIT(LOG_NKF9_MSG),
-            time_us : time_us,
-            sqrtvarV : (int16_t)(100*velVar),
-            sqrtvarP : (int16_t)(100*posVar),
-            sqrtvarH : (int16_t)(100*hgtVar),
-            sqrtvarM : (int16_t)(100*tempVar),
-            sqrtvarVT : (int16_t)(100*tasVar),
-            tiltErr : (float)tiltError,
-            offsetNorth : (int8_t)(offset.x),
-            offsetEast : (int8_t)(offset.y),
-            faults : (uint16_t)(faultStatus),
-            timeouts : (uint8_t)(timeoutStatus),
-            solution : (uint16_t)(solutionStatus.value),
-            gps : (uint16_t)(gpsStatus.value),
-            primary : (int8_t)primaryIndex
-        };
+        struct log_NKF4 pkt9 = {};
         WriteBlock(&pkt9, sizeof(pkt9));
 
         ahrs.get_NavEKF2().getQuaternion(1, quat);
-        struct log_Quaternion pktq2 = {
-            LOG_PACKET_HEADER_INIT(LOG_NKQ2_MSG),
-            time_us : time_us,
-            q1 : quat.q1,
-            q2 : quat.q2,
-            q3 : quat.q3,
-            q4 : quat.q4
-        };
+        struct log_Quaternion pktq2 = {};
         WriteBlock(&pktq2, sizeof(pktq2));
     }
 
@@ -839,23 +527,7 @@ void AP_Logger::Write_EKF2(AP_AHRS_NavEKF &ahrs)
         float bcnPosOffsetLow;
         if (ahrs.get_NavEKF2().getRangeBeaconDebug(-1, ID, rng, innov, innovVar, testRatio, beaconPosNED, bcnPosOffsetHigh, bcnPosOffsetLow)) {
             if (rng > 0.0f) {
-                struct log_RngBcnDebug pkt10 = {
-                    LOG_PACKET_HEADER_INIT(LOG_NKF10_MSG),
-                    time_us : time_us,
-                    ID : (uint8_t)ID,
-                    rng : (int16_t)(100*rng),
-                    innov : (int16_t)(100*innov),
-                    sqrtInnovVar : (uint16_t)(100*safe_sqrt(innovVar)),
-                    testRatio : (uint16_t)(100*constrain_float(testRatio,0.0f,650.0f)),
-                    beaconPosN : (int16_t)(100*beaconPosNED.x),
-                    beaconPosE : (int16_t)(100*beaconPosNED.y),
-                    beaconPosD : (int16_t)(100*beaconPosNED.z),
-                    offsetHigh : (int16_t)(100*bcnPosOffsetHigh),
-                    offsetLow : (int16_t)(100*bcnPosOffsetLow),
-                    posN : 0,
-                    posE : 0,
-                    posD : 0
-                };
+                struct log_RngBcnDebug pkt10 = {};
                 WriteBlock(&pkt10, sizeof(pkt10));
             }
         }
@@ -894,24 +566,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     if (!ahrs.get_NavEKF3().getOriginLLH(0,originLLH)) {
         originLLH.alt = 0;
     }
-    struct log_EKF1 pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_XKF1_MSG),
-        time_us : time_us,
-        roll    : (int16_t)(100*degrees(euler.x)), // roll angle (centi-deg, displayed as deg due to format string)
-        pitch   : (int16_t)(100*degrees(euler.y)), // pitch angle (centi-deg, displayed as deg due to format string)
-        yaw     : (uint16_t)wrap_360_cd(100*degrees(euler.z)), // yaw angle (centi-deg, displayed as deg due to format string)
-        velN    : (float)(velNED.x), // velocity North (m/s)
-        velE    : (float)(velNED.y), // velocity East (m/s)
-        velD    : (float)(velNED.z), // velocity Down (m/s)
-        posD_dot : (float)(posDownDeriv), // first derivative of down position
-        posN    : (float)(posNE.x), // metres North
-        posE    : (float)(posNE.y), // metres East
-        posD    : (float)(posD), // metres Down
-        gyrX    : (int16_t)(100*degrees(gyroBias.x)), // cd/sec, displayed as deg/sec due to format string
-        gyrY    : (int16_t)(100*degrees(gyroBias.y)), // cd/sec, displayed as deg/sec due to format string
-        gyrZ    : (int16_t)(100*degrees(gyroBias.z)), // cd/sec, displayed as deg/sec due to format string
-        originHgt : originLLH.alt // WGS-84 altitude of EKF origin in cm
-    };
+    struct log_EKF1 pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 
     // Write second EKF packet
@@ -924,22 +579,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     ahrs.get_NavEKF3().getWind(0,wind);
     ahrs.get_NavEKF3().getMagNED(0,magNED);
     ahrs.get_NavEKF3().getMagXYZ(0,magXYZ);
-    struct log_NKF2a pkt2 = {
-        LOG_PACKET_HEADER_INIT(LOG_XKF2_MSG),
-        time_us : time_us,
-        accBiasX  : (int16_t)(100*accelBias.x),
-        accBiasY  : (int16_t)(100*accelBias.y),
-        accBiasZ  : (int16_t)(100*accelBias.z),
-        windN   : (int16_t)(100*wind.x),
-        windE   : (int16_t)(100*wind.y),
-        magN    : (int16_t)(magNED.x),
-        magE    : (int16_t)(magNED.y),
-        magD    : (int16_t)(magNED.z),
-        magX    : (int16_t)(magXYZ.x),
-        magY    : (int16_t)(magXYZ.y),
-        magZ    : (int16_t)(magXYZ.z),
-        index   : (uint8_t)(magIndex)
-    };
+    struct log_NKF2a pkt2 = {};
     WriteBlock(&pkt2, sizeof(pkt2));
 
     // Write third EKF packet
@@ -949,21 +589,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     float tasInnov = 0;
     float yawInnov = 0;
     ahrs.get_NavEKF3().getInnovations(0,velInnov, posInnov, magInnov, tasInnov, yawInnov);
-    struct log_NKF3 pkt3 = {
-        LOG_PACKET_HEADER_INIT(LOG_XKF3_MSG),
-        time_us : time_us,
-        innovVN : (int16_t)(100*velInnov.x),
-        innovVE : (int16_t)(100*velInnov.y),
-        innovVD : (int16_t)(100*velInnov.z),
-        innovPN : (int16_t)(100*posInnov.x),
-        innovPE : (int16_t)(100*posInnov.y),
-        innovPD : (int16_t)(100*posInnov.z),
-        innovMX : (int16_t)(magInnov.x),
-        innovMY : (int16_t)(magInnov.y),
-        innovMZ : (int16_t)(magInnov.z),
-        innovYaw : (int16_t)(100*degrees(yawInnov)),
-        innovVT : (int16_t)(100*tasInnov)
-    };
+    struct log_NKF3 pkt3 = {};
     WriteBlock(&pkt3, sizeof(pkt3));
 
     // Write fourth EKF packet
@@ -986,23 +612,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     float tiltError;
     ahrs.get_NavEKF3().getTiltError(0,tiltError);
     uint8_t primaryIndex = ahrs.get_NavEKF3().getPrimaryCoreIndex();
-    struct log_NKF4 pkt4 = {
-        LOG_PACKET_HEADER_INIT(LOG_XKF4_MSG),
-        time_us : time_us,
-        sqrtvarV : (int16_t)(100*velVar),
-        sqrtvarP : (int16_t)(100*posVar),
-        sqrtvarH : (int16_t)(100*hgtVar),
-        sqrtvarM : (int16_t)(100*tempVar),
-        sqrtvarVT : (int16_t)(100*tasVar),
-        tiltErr : (float)tiltError,
-        offsetNorth : (int8_t)(offset.x),
-        offsetEast : (int8_t)(offset.y),
-        faults : (uint16_t)(faultStatus),
-        timeouts : (uint8_t)(timeoutStatus),
-        solution : (uint16_t)(solutionStatus.value),
-        gps : (uint16_t)(gpsStatus.value),
-        primary : (int8_t)primaryIndex
-    };
+    struct log_NKF4 pkt4 = {};
     WriteBlock(&pkt4, sizeof(pkt4));
 
     // Write fifth EKF packet - take data from the primary instance
@@ -1017,35 +627,13 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     Vector3f predictorErrors; // output predictor angle, velocity and position tracking error
     ahrs.get_NavEKF3().getFlowDebug(-1,normInnov, gndOffset, flowInnovX, flowInnovY, auxFlowInnov, HAGL, rngInnov, range, gndOffsetErr);
     ahrs.get_NavEKF3().getOutputTrackingError(-1,predictorErrors);
-    struct log_NKF5 pkt5 = {
-        LOG_PACKET_HEADER_INIT(LOG_XKF5_MSG),
-        time_us : time_us,
-        normInnov : (uint8_t)(MIN(100*normInnov,255)),
-        FIX : (int16_t)(1000*flowInnovX),
-        FIY : (int16_t)(1000*flowInnovY),
-        AFI : (int16_t)(1000*auxFlowInnov),
-        HAGL : (int16_t)(100*HAGL),
-        offset : (int16_t)(100*gndOffset),
-        RI : (int16_t)(100*rngInnov),
-        meaRng : (uint16_t)(100*range),
-        errHAGL : (uint16_t)(100*gndOffsetErr),
-        angErr : (float)predictorErrors.x,
-        velErr : (float)predictorErrors.y,
-        posErr : (float)predictorErrors.z
-     };
+    struct log_NKF5 pkt5 = {};
     WriteBlock(&pkt5, sizeof(pkt5));
 
     // log quaternion
     Quaternion quat;
     ahrs.get_NavEKF3().getQuaternion(0, quat);
-    struct log_Quaternion pktq1 = {
-        LOG_PACKET_HEADER_INIT(LOG_XKQ1_MSG),
-        time_us : time_us,
-        q1 : quat.q1,
-        q2 : quat.q2,
-        q3 : quat.q3,
-        q4 : quat.q4
-    };
+    struct log_Quaternion pktq1 = {};
     WriteBlock(&pktq1, sizeof(pktq1));
     
     // log innovations for the second IMU if enabled
@@ -1060,24 +648,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
         if (!ahrs.get_NavEKF3().getOriginLLH(1,originLLH)) {
             originLLH.alt = 0;
         }
-        struct log_EKF1 pkt6 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKF6_MSG),
-            time_us : time_us,
-            roll    : (int16_t)(100*degrees(euler.x)), // roll angle (centi-deg, displayed as deg due to format string)
-            pitch   : (int16_t)(100*degrees(euler.y)), // pitch angle (centi-deg, displayed as deg due to format string)
-            yaw     : (uint16_t)wrap_360_cd(100*degrees(euler.z)), // yaw angle (centi-deg, displayed as deg due to format string)
-            velN    : (float)(velNED.x), // velocity North (m/s)
-            velE    : (float)(velNED.y), // velocity East (m/s)
-            velD    : (float)(velNED.z), // velocity Down (m/s)
-            posD_dot : (float)(posDownDeriv), // first derivative of down position
-            posN    : (float)(posNE.x), // metres North
-            posE    : (float)(posNE.y), // metres East
-            posD    : (float)(posD), // metres Down
-            gyrX    : (int16_t)(100*degrees(gyroBias.x)), // cd/sec, displayed as deg/sec due to format string
-            gyrY    : (int16_t)(100*degrees(gyroBias.y)), // cd/sec, displayed as deg/sec due to format string
-            gyrZ    : (int16_t)(100*degrees(gyroBias.z)), // cd/sec, displayed as deg/sec due to format string
-            originHgt : originLLH.alt // WGS-84 altitude of EKF origin in cm
-        };
+        struct log_EKF1 pkt6 = {};
         WriteBlock(&pkt6, sizeof(pkt6));
 
         // Write 7th EKF packet
@@ -1086,41 +657,12 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
         ahrs.get_NavEKF3().getMagNED(1,magNED);
         ahrs.get_NavEKF3().getMagXYZ(1,magXYZ);
         magIndex = ahrs.get_NavEKF3().getActiveMag(1);
-        struct log_NKF2a pkt7 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKF7_MSG),
-            time_us : time_us,
-            accBiasX  : (int16_t)(100*accelBias.x),
-            accBiasY  : (int16_t)(100*accelBias.y),
-            accBiasZ  : (int16_t)(100*accelBias.z),
-            windN   : (int16_t)(100*wind.x),
-            windE   : (int16_t)(100*wind.y),
-            magN    : (int16_t)(magNED.x),
-            magE    : (int16_t)(magNED.y),
-            magD    : (int16_t)(magNED.z),
-            magX    : (int16_t)(magXYZ.x),
-            magY    : (int16_t)(magXYZ.y),
-            magZ    : (int16_t)(magXYZ.z),
-            index   : (uint8_t)(magIndex)
-        };
+        struct log_NKF2a pkt7 = {};
         WriteBlock(&pkt7, sizeof(pkt7));
 
         // Write 8th EKF packet
         ahrs.get_NavEKF3().getInnovations(1,velInnov, posInnov, magInnov, tasInnov, yawInnov);
-        struct log_NKF3 pkt8 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKF8_MSG),
-            time_us : time_us,
-            innovVN : (int16_t)(100*velInnov.x),
-            innovVE : (int16_t)(100*velInnov.y),
-            innovVD : (int16_t)(100*velInnov.z),
-            innovPN : (int16_t)(100*posInnov.x),
-            innovPE : (int16_t)(100*posInnov.y),
-            innovPD : (int16_t)(100*posInnov.z),
-            innovMX : (int16_t)(magInnov.x),
-            innovMY : (int16_t)(magInnov.y),
-            innovMZ : (int16_t)(magInnov.z),
-            innovYaw : (int16_t)(100*degrees(yawInnov)),
-            innovVT : (int16_t)(100*tasInnov)
-        };
+        struct log_NKF3 pkt8 = {};
         WriteBlock(&pkt8, sizeof(pkt8));
 
         // Write 9th EKF packet
@@ -1131,35 +673,12 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
         ahrs.get_NavEKF3().getFilterStatus(1,solutionStatus);
         ahrs.get_NavEKF3().getFilterGpsStatus(1,gpsStatus);
         ahrs.get_NavEKF3().getTiltError(1,tiltError);
-        struct log_NKF4 pkt9 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKF9_MSG),
-            time_us : time_us,
-            sqrtvarV : (int16_t)(100*velVar),
-            sqrtvarP : (int16_t)(100*posVar),
-            sqrtvarH : (int16_t)(100*hgtVar),
-            sqrtvarM : (int16_t)(100*tempVar),
-            sqrtvarVT : (int16_t)(100*tasVar),
-            tiltErr : (float)tiltError,
-            offsetNorth : (int8_t)(offset.x),
-            offsetEast : (int8_t)(offset.y),
-            faults : (uint16_t)(faultStatus),
-            timeouts : (uint8_t)(timeoutStatus),
-            solution : (uint16_t)(solutionStatus.value),
-            gps : (uint16_t)(gpsStatus.value),
-            primary : (int8_t)primaryIndex
-        };
+        struct log_NKF4 pkt9 = {};
         WriteBlock(&pkt9, sizeof(pkt9));
 
         // log quaternion
         ahrs.get_NavEKF3().getQuaternion(1, quat);
-        struct log_Quaternion pktq2 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKQ2_MSG),
-            time_us : time_us,
-            q1 : quat.q1,
-            q2 : quat.q2,
-            q3 : quat.q3,
-            q4 : quat.q4
-        };
+        struct log_Quaternion pktq2 = {};
         WriteBlock(&pktq2, sizeof(pktq2));        
     }
     // write range beacon fusion debug packet if the range value is non-zero
@@ -1174,24 +693,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     Vector3f posNED;
      if (ahrs.get_NavEKF3().getRangeBeaconDebug(-1, ID, rng, innov, innovVar, testRatio, beaconPosNED, bcnPosOffsetHigh, bcnPosOffsetLow, posNED)) {
         if (rng > 0.0f) {
-            struct log_RngBcnDebug pkt10 = {
-                LOG_PACKET_HEADER_INIT(LOG_XKF10_MSG),
-                time_us : time_us,
-                ID : (uint8_t)ID,
-                rng : (int16_t)(100*rng),
-                innov : (int16_t)(100*innov),
-                sqrtInnovVar : (uint16_t)(100*sqrtf(innovVar)),
-                testRatio : (uint16_t)(100*constrain_float(testRatio,0.0f,650.0f)),
-                beaconPosN : (int16_t)(100*beaconPosNED.x),
-                beaconPosE : (int16_t)(100*beaconPosNED.y),
-                beaconPosD : (int16_t)(100*beaconPosNED.z),
-                offsetHigh : (int16_t)(100*bcnPosOffsetHigh),
-                offsetLow : (int16_t)(100*bcnPosOffsetLow),
-                posN : (int16_t)(100*posNED.x),
-                posE : (int16_t)(100*posNED.y),
-                posD : (int16_t)(100*posNED.z)
-
-             };
+            struct log_RngBcnDebug pkt10 = {};
             WriteBlock(&pkt10, sizeof(pkt10));
         }
     }
@@ -1200,16 +702,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
     static uint32_t lastUpdateTime_ms = 0;
     uint32_t updateTime_ms = ahrs.get_NavEKF3().getBodyFrameOdomDebug(-1, velBodyInnov, velBodyInnovVar);
     if (updateTime_ms > lastUpdateTime_ms) {
-        struct log_ekfBodyOdomDebug pkt11 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKFD_MSG),
-            time_us : time_us,
-            velInnovX : velBodyInnov.x,
-            velInnovY : velBodyInnov.y,
-            velInnovZ : velBodyInnov.z,
-            velInnovVarX : velBodyInnovVar.x,
-            velInnovVarY : velBodyInnovVar.y,
-            velInnovVarZ : velBodyInnovVar.z
-         };
+        struct log_ekfBodyOdomDebug pkt11 = {};
         WriteBlock(&pkt11, sizeof(pkt11));
         lastUpdateTime_ms = updateTime_ms;
     }
@@ -1220,39 +713,9 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
         lastEkfStateVarLogTime_ms = AP_HAL::millis();
         float stateVar[24];
         ahrs.get_NavEKF3().getStateVariances(-1, stateVar);
-        struct log_ekfStateVar pktv1 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKV1_MSG),
-            time_us : time_us,
-            v00 : stateVar[0],
-            v01 : stateVar[1],
-            v02 : stateVar[2],
-            v03 : stateVar[3],
-            v04 : stateVar[4],
-            v05 : stateVar[5],
-            v06 : stateVar[6],
-            v07 : stateVar[7],
-            v08 : stateVar[8],
-            v09 : stateVar[9],
-            v10 : stateVar[10],
-            v11 : stateVar[11]
-        };
+        struct log_ekfStateVar pktv1 = {};
         WriteBlock(&pktv1, sizeof(pktv1));
-        struct log_ekfStateVar pktv2 = {
-            LOG_PACKET_HEADER_INIT(LOG_XKV2_MSG),
-            time_us : time_us,
-            v00 : stateVar[12],
-            v01 : stateVar[13],
-            v02 : stateVar[14],
-            v03 : stateVar[15],
-            v04 : stateVar[16],
-            v05 : stateVar[17],
-            v06 : stateVar[18],
-            v07 : stateVar[19],
-            v08 : stateVar[20],
-            v09 : stateVar[21],
-            v10 : stateVar[22],
-            v11 : stateVar[23]
-        };
+        struct log_ekfStateVar pktv2 = {};
         WriteBlock(&pktv2, sizeof(pktv2));
     }
 
@@ -1272,17 +735,7 @@ void AP_Logger::Write_EKF3(AP_AHRS_NavEKF &ahrs)
 
 void AP_Logger::Write_Radio(const mavlink_radio_t &packet)
 {
-    struct log_Radio pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RADIO_MSG),
-        time_us      : AP_HAL::micros64(),
-        rssi         : packet.rssi,
-        remrssi      : packet.remrssi,
-        txbuf        : packet.txbuf,
-        noise        : packet.noise,
-        remnoise     : packet.remnoise,
-        rxerrors     : packet.rxerrors,
-        fixed        : packet.fixed
-    };
+    struct log_Radio pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -1304,20 +757,7 @@ void AP_Logger::Write_CameraInfo(enum LogMessages msg, const AP_AHRS &ahrs, cons
         altitude_gps = 0;
     }
 
-    struct log_Camera pkt = {
-        LOG_PACKET_HEADER_INIT(static_cast<uint8_t>(msg)),
-        time_us     : timestamp_us?timestamp_us:AP_HAL::micros64(),
-        gps_time    : gps.time_week_ms(),
-        gps_week    : gps.time_week(),
-        latitude    : current_loc.lat,
-        longitude   : current_loc.lng,
-        altitude    : altitude,
-        altitude_rel: altitude_rel,
-        altitude_gps: altitude_gps,
-        roll        : (int16_t)ahrs.roll_sensor,
-        pitch       : (int16_t)ahrs.pitch_sensor,
-        yaw         : (uint16_t)ahrs.yaw_sensor
-    };
+    struct log_Camera pkt = {};
     WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 
@@ -1336,36 +776,14 @@ void AP_Logger::Write_Trigger(const AP_AHRS &ahrs, const Location &current_loc)
 // Write an attitude packet
 void AP_Logger::Write_Attitude(AP_AHRS &ahrs, const Vector3f &targets)
 {
-    struct log_Attitude pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MSG),
-        time_us         : AP_HAL::micros64(),
-        control_roll    : (int16_t)targets.x,
-        roll            : (int16_t)ahrs.roll_sensor,
-        control_pitch   : (int16_t)targets.y,
-        pitch           : (int16_t)ahrs.pitch_sensor,
-        control_yaw     : (uint16_t)wrap_360_cd(targets.z),
-        yaw             : (uint16_t)wrap_360_cd(ahrs.yaw_sensor),
-        error_rp        : (uint16_t)(ahrs.get_error_rp() * 100),
-        error_yaw       : (uint16_t)(ahrs.get_error_yaw() * 100)
-    };
+    struct log_Attitude pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
 // Write an attitude packet
 void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)
 {
-    struct log_Attitude pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MSG),
-        time_us         : AP_HAL::micros64(),
-        control_roll    : (int16_t)targets.x,
-        roll            : (int16_t)ahrs.roll_sensor,
-        control_pitch   : (int16_t)targets.y,
-        pitch           : (int16_t)ahrs.pitch_sensor,
-        control_yaw     : (uint16_t)wrap_360_cd(targets.z),
-        yaw             : (uint16_t)wrap_360_cd(ahrs.yaw_sensor),
-        error_rp        : (uint16_t)(ahrs.get_error_rp() * 100),
-        error_yaw       : (uint16_t)(ahrs.get_error_yaw() * 100)
-    };
+    struct log_Attitude pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -1377,27 +795,13 @@ void AP_Logger::Write_Current_instance(const uint64_t time_us,
     AP_BattMonitor &battery = AP::battery();
     float temp;
     bool has_temp = battery.get_temperature(temp, battery_instance);
-    struct log_Current pkt = {
-        LOG_PACKET_HEADER_INIT(type),
-        time_us             : time_us,
-        voltage             : battery.voltage(battery_instance),
-        voltage_resting     : battery.voltage_resting_estimate(battery_instance),
-        current_amps        : battery.current_amps(battery_instance),
-        current_total       : battery.consumed_mah(battery_instance),
-        consumed_wh         : battery.consumed_wh(battery_instance),
-        temperature         : (int16_t)(has_temp ? (temp * 100) : 0),
-        resistance          : battery.get_resistance(battery_instance)
-    };
+    struct log_Current pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 
     // individual cell voltages
     if (battery.has_cell_voltages(battery_instance)) {
         const AP_BattMonitor::cells &cells = battery.get_cell_voltages(battery_instance);
-        struct log_Current_Cells cell_pkt = {
-            LOG_PACKET_HEADER_INIT(celltype),
-            time_us             : time_us,
-            voltage             : battery.voltage(battery_instance)
-        };
+        struct log_Current_Cells cell_pkt = {};
         for (uint8_t i = 0; i < ARRAY_SIZE(cells.cells); i++) {
             cell_pkt.cell_voltages[i] = cells.cells[i] + 1;
         }
@@ -1439,21 +843,7 @@ void AP_Logger::Write_Compass_instance(const uint64_t time_us, const uint8_t mag
     const Vector3f &mag_field = compass.get_field(mag_instance);
     const Vector3f &mag_offsets = compass.get_offsets(mag_instance);
     const Vector3f &mag_motor_offsets = compass.get_motor_offsets(mag_instance);
-    struct log_Compass pkt = {
-        LOG_PACKET_HEADER_INIT(type),
-        time_us         : time_us,
-        mag_x           : (int16_t)mag_field.x,
-        mag_y           : (int16_t)mag_field.y,
-        mag_z           : (int16_t)mag_field.z,
-        offset_x        : (int16_t)mag_offsets.x,
-        offset_y        : (int16_t)mag_offsets.y,
-        offset_z        : (int16_t)mag_offsets.z,
-        motor_offset_x  : (int16_t)mag_motor_offsets.x,
-        motor_offset_y  : (int16_t)mag_motor_offsets.y,
-        motor_offset_z  : (int16_t)mag_motor_offsets.z,
-        health          : (uint8_t)compass.healthy(mag_instance),
-        SUS             : compass.last_update_usec(mag_instance)
-    };
+    struct log_Compass pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -1480,13 +870,7 @@ void AP_Logger::Write_Compass(uint64_t time_us)
 // Write a mode packet.
 bool AP_Logger_Backend::Write_Mode(uint8_t mode, uint8_t reason)
 {
-    struct log_Mode pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_MODE_MSG),
-        time_us  : AP_HAL::micros64(),
-        mode     : mode,
-        mode_num : mode,
-        mode_reason : reason
-    };
+    struct log_Mode pkt = {};
     return WriteCriticalBlock(&pkt, sizeof(pkt));
 }
 
@@ -1503,56 +887,27 @@ void AP_Logger::Write_ESC(uint8_t id, uint64_t time_us, int32_t rpm, uint16_t vo
     if (id >= 8) {
         return;
     }
-    struct log_Esc pkt = {
-        LOG_PACKET_HEADER_INIT(uint8_t(LOG_ESC1_MSG+id)),
-        time_us     : time_us,
-        rpm         : rpm,
-        voltage     : voltage,
-        current     : current,
-        temperature : temperature,
-        current_tot : current_tot
-    };
+    struct log_Esc pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
 // Write a Yaw PID packet
 void AP_Logger::Write_PID(uint8_t msg_type, const PID_Info &info)
 {
-    struct log_PID pkt = {
-        LOG_PACKET_HEADER_INIT(msg_type),
-        time_us         : AP_HAL::micros64(),
-        desired         : info.desired,
-        actual          : info.actual,
-        P               : info.P,
-        I               : info.I,
-        D               : info.D,
-        FF              : info.FF
-    };
+    struct log_PID pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
 void AP_Logger::Write_Origin(uint8_t origin_type, const Location &loc)
 {
     uint64_t time_us = AP_HAL::micros64();
-    struct log_ORGN pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_ORGN_MSG),
-        time_us     : time_us,
-        origin_type : origin_type,
-        latitude    : loc.lat,
-        longitude   : loc.lng,
-        altitude    : loc.alt
-    };
+    struct log_ORGN pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
 void AP_Logger::Write_RPM(const AP_RPM &rpm_sensor)
 {
-    struct log_RPM pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_RPM_MSG),
-        time_us     : AP_HAL::micros64(),
-        rpm1        : rpm_sensor.get_rpm(0),
-        rpm2        : rpm_sensor.get_rpm(1)
-    };
+    struct log_RPM pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -1564,52 +919,21 @@ void AP_Logger::Write_Rate(const AP_AHRS_View *ahrs,
 {
     const Vector3f &rate_targets = attitude_control.rate_bf_targets();
     const Vector3f &accel_target = pos_control.get_accel_target();
-    struct log_Rate pkt_rate = {
-        LOG_PACKET_HEADER_INIT(LOG_RATE_MSG),
-        time_us         : AP_HAL::micros64(),
-        control_roll    : degrees(rate_targets.x),
-        roll            : degrees(ahrs->get_gyro().x),
-        roll_out        : motors.get_roll(),
-        control_pitch   : degrees(rate_targets.y),
-        pitch           : degrees(ahrs->get_gyro().y),
-        pitch_out       : motors.get_pitch(),
-        control_yaw     : degrees(rate_targets.z),
-        yaw             : degrees(ahrs->get_gyro().z),
-        yaw_out         : motors.get_yaw(),
-        control_accel   : (float)accel_target.z,
-        accel           : (float)(-(ahrs->get_accel_ef_blended().z + GRAVITY_MSS) * 100.0f),
-        accel_out       : motors.get_throttle()
-    };
+    struct log_Rate pkt_rate = {};
     WriteBlock(&pkt_rate, sizeof(pkt_rate));
 }
 
 // Write visual odometry sensor data
 void AP_Logger::Write_VisualOdom(float time_delta, const Vector3f &angle_delta, const Vector3f &position_delta, float confidence)
 {
-    struct log_VisualOdom pkt_visualodom = {
-        LOG_PACKET_HEADER_INIT(LOG_VISUALODOM_MSG),
-        time_us             : AP_HAL::micros64(),
-        time_delta          : time_delta,
-        angle_delta_x       : angle_delta.x,
-        angle_delta_y       : angle_delta.y,
-        angle_delta_z       : angle_delta.z,
-        position_delta_x    : position_delta.x,
-        position_delta_y    : position_delta.y,
-        position_delta_z    : position_delta.z,
-        confidence          : confidence
-    };
+    struct log_VisualOdom pkt_visualodom = {};
     WriteBlock(&pkt_visualodom, sizeof(log_VisualOdom));
 }
 
 // Write AOA and SSA
 void AP_Logger::Write_AOA_SSA(AP_AHRS &ahrs)
 {
-    struct log_AOA_SSA aoa_ssa = {
-        LOG_PACKET_HEADER_INIT(LOG_AOA_SSA_MSG),
-        time_us         : AP_HAL::micros64(),
-        AOA             : ahrs.getAOA(),
-        SSA             : ahrs.getSSA()
-    };
+    struct log_AOA_SSA aoa_ssa = {};
 
     WriteBlock(&aoa_ssa, sizeof(aoa_ssa));
 }
@@ -1625,19 +949,7 @@ void AP_Logger::Write_Beacon(AP_Beacon &beacon)
     float accuracy = 0.0f;
     beacon.get_vehicle_position_ned(pos, accuracy);
 
-    struct log_Beacon pkt_beacon = {
-       LOG_PACKET_HEADER_INIT(LOG_BEACON_MSG),
-       time_us         : AP_HAL::micros64(),
-       health          : (uint8_t)beacon.healthy(),
-       count           : (uint8_t)beacon.count(),
-       dist0           : beacon.beacon_distance(0),
-       dist1           : beacon.beacon_distance(1),
-       dist2           : beacon.beacon_distance(2),
-       dist3           : beacon.beacon_distance(3),
-       posx            : pos.x,
-       posy            : pos.y,
-       posz            : pos.z
-    };
+    struct log_Beacon pkt_beacon = {};
     WriteBlock(&pkt_beacon, sizeof(pkt_beacon));
 }
 
@@ -1660,37 +972,12 @@ void AP_Logger::Write_Proximity(AP_Proximity &proximity)
     float close_ang = 0.0f, close_dist = 0.0f;
     proximity.get_closest_object(close_ang, close_dist);
 
-    struct log_Proximity pkt_proximity = {
-            LOG_PACKET_HEADER_INIT(LOG_PROXIMITY_MSG),
-            time_us         : AP_HAL::micros64(),
-            health          : (uint8_t)proximity.get_status(),
-            dist0           : dist_array.distance[0],
-            dist45          : dist_array.distance[1],
-            dist90          : dist_array.distance[2],
-            dist135         : dist_array.distance[3],
-            dist180         : dist_array.distance[4],
-            dist225         : dist_array.distance[5],
-            dist270         : dist_array.distance[6],
-            dist315         : dist_array.distance[7],
-            distup          : dist_up,
-            closest_angle   : close_ang,
-            closest_dist    : close_dist
-    };
+    struct log_Proximity pkt_proximity = {};
     WriteBlock(&pkt_proximity, sizeof(pkt_proximity));
 }
 
 void AP_Logger::Write_SRTL(bool active, uint16_t num_points, uint16_t max_points, uint8_t action, const Vector3f& breadcrumb)
 {
-    struct log_SRTL pkt_srtl = {
-        LOG_PACKET_HEADER_INIT(LOG_SRTL_MSG),
-        time_us         : AP_HAL::micros64(),
-        active          : active,
-        num_points      : num_points,
-        max_points      : max_points,
-        action          : action,
-        N               : breadcrumb.x,
-        E               : breadcrumb.y,
-        D               : breadcrumb.z
-    };
+    struct log_SRTL pkt_srtl = {};
     WriteBlock(&pkt_srtl, sizeof(pkt_srtl));
 }

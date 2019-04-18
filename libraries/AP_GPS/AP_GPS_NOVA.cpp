@@ -27,15 +27,15 @@ extern const AP_HAL::HAL& hal;
 
 #if NOVA_DEBUGGING
 #include <cstdio>
- # define Debug(fmt, args ...)                  \
+ # define Debug(fmt, ...)                  \
 do {                                            \
     printf("%s:%d: " fmt "\n",     \
                         __FUNCTION__, __LINE__, \
-                        ## args);               \
+                        ##  __VA_ARGS__);               \
     hal.scheduler->delay(1);                    \
 } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 AP_GPS_NOVA::AP_GPS_NOVA(AP_GPS &_gps, AP_GPS::GPS_State &_state,

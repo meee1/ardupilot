@@ -49,9 +49,9 @@ static unsigned dsm_channel_shift;			/**< Channel resolution, 0=unknown, 10=10 b
 //#define DEBUG
 
 #ifdef DEBUG
-# define debug(fmt, args...)	printf(fmt "\n", ##args)
+# define debug(fmt, ...)	printf(fmt "\n", ## __VA_ARGS__)
 #else
-# define debug(fmt, args...)	do {} while(0)
+# define debug(fmt, ...)	do {} while(0)
 #endif
 
 /**

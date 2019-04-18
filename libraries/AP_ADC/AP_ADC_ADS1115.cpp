@@ -84,11 +84,11 @@
 #define ADS1115_DEBUG 0
 #if ADS1115_DEBUG
 #include <cstdio>
-#define debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
-#define error(fmt, args ...)  do {fprintf(stderr,"%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); } while(0)
+#define debug(fmt, ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
+#define error(fmt, ...)  do {fprintf(stderr,"%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); } while(0)
 #else
-#define debug(fmt, args ...)
-#define error(fmt, args ...)
+#define debug(fmt, ...)
+#define error(fmt, ...)
 #endif
 
 extern const AP_HAL::HAL &hal;

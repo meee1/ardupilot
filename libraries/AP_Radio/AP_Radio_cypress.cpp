@@ -41,7 +41,7 @@ static THD_WORKING_AREA(_irq_handler_wa, 512);
 
 extern const AP_HAL::HAL& hal;
 
-#define Debug(level, fmt, args...)   do { if ((level) <= get_debug_level()) { hal.console->printf(fmt, ##args); }} while (0)
+#define Debug(level, fmt, ...)   do { if ((level) <= get_debug_level()) { hal.console->printf(fmt, ## __VA_ARGS__); }} while (0)
 
 #define LP_FIFO_SIZE  16      // Physical data FIFO lengths in Radio
 

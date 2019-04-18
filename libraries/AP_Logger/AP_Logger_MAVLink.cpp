@@ -12,9 +12,9 @@
 
 #if REMOTE_LOG_DEBUGGING
 #include <stdio.h>
- # define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+ # define Debug(fmt, ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); hal.scheduler->delay(1); } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 #include <AP_InternalError/AP_InternalError.h>
@@ -323,23 +323,7 @@ void AP_Logger_MAVLink::Write_logger_MAV(AP_Logger_MAVLink &logger_mav)
     if (logger_mav.stats.collection_count == 0) {
         return;
     }
-    struct log_MAV_Stats pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_MAV_STATS),
-        timestamp         : AP_HAL::millis(),
-        seqno             : logger_mav._next_seq_num-1,
-        dropped           : logger_mav._dropped,
-        retries           : logger_mav._blocks_retry.sent_count,
-        resends           : logger_mav.stats.resends,
-        state_free_avg    : (uint8_t)(logger_mav.stats.state_free/logger_mav.stats.collection_count),
-        state_free_min    : logger_mav.stats.state_free_min,
-        state_free_max    : logger_mav.stats.state_free_max,
-        state_pending_avg : (uint8_t)(logger_mav.stats.state_pending/logger_mav.stats.collection_count),
-        state_pending_min : logger_mav.stats.state_pending_min,
-        state_pending_max : logger_mav.stats.state_pending_max,
-        state_sent_avg    : (uint8_t)(logger_mav.stats.state_sent/logger_mav.stats.collection_count),
-        state_sent_min    : logger_mav.stats.state_sent_min,
-        state_sent_max    : logger_mav.stats.state_sent_max,
-    };
+    struct log_MAV_Stats pkt = {};
     WriteBlock(&pkt,sizeof(pkt));
 }
 

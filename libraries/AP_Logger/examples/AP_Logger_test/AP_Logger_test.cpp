@@ -71,15 +71,7 @@ void AP_LoggerTest::setup(void)
         uint32_t start = AP_HAL::micros();
         // note that we use g++ style initialisers to make larger
         // structures easier to follow        
-        struct log_Test pkt = {
-            LOG_PACKET_HEADER_INIT(LOG_TEST_MSG),
-            v1    : (uint16_t)(2000 + i),
-            v2    : (uint16_t)(2001 + i),
-            v3    : (uint16_t)(2002 + i),
-            v4    : (uint16_t)(2003 + i),
-            l1    : (int32_t)(i * 5000),
-            l2    : (int32_t)(i * 16268)
-        };
+        struct log_Test pkt = {};
         logger.WriteBlock(&pkt, sizeof(pkt));
         total_micros += AP_HAL::micros() - start;
         hal.scheduler->delay(20);

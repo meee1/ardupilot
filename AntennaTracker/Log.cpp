@@ -29,12 +29,7 @@ struct PACKED log_Vehicle_Baro {
 // Write a vehicle baro packet
 void Tracker::Log_Write_Vehicle_Baro(float pressure, float altitude)
 {
-    struct log_Vehicle_Baro pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_V_BAR_MSG),
-        time_us         : AP_HAL::micros64(),
-        press           : pressure,
-        alt_diff        : altitude
-    };
+    struct log_Vehicle_Baro pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
@@ -52,16 +47,7 @@ struct PACKED log_Vehicle_Pos {
 // Write a vehicle pos packet
 void Tracker::Log_Write_Vehicle_Pos(int32_t lat, int32_t lng, int32_t alt, const Vector3f& vel)
 {
-    struct log_Vehicle_Pos pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_V_POS_MSG),
-        time_us         : AP_HAL::micros64(),
-        vehicle_lat     : lat,
-        vehicle_lng     : lng,
-        vehicle_alt     : alt,
-        vehicle_vel_x   : vel.x,
-        vehicle_vel_y   : vel.y,
-        vehicle_vel_z   : vel.z,
-    };
+    struct log_Vehicle_Pos pkt = {};
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 

@@ -145,16 +145,7 @@ bool AP_Logger_Backend::Write_Emit_FMT(uint8_t msg_type)
     char ls_labels[LS_LABELS_SIZE] = {};
     char ls_units[LS_UNITS_SIZE] = {};
     char ls_multipliers[LS_MULTIPLIERS_SIZE] = {};
-    struct LogStructure logstruct = {
-        // these will be overwritten, but need to keep the compiler happy:
-        0,
-        0,
-        ls_name,
-        ls_format,
-        ls_labels,
-        ls_units,
-        ls_multipliers
-    };
+    struct LogStructure logstruct = {};
     if (!_front.fill_log_write_logstructure(logstruct, msg_type)) {
         // this is a bug; we've been asked to write out the FMT
         // message for a msg_type, but the frontend can't supply the
@@ -416,15 +407,7 @@ bool AP_Logger_Backend::Write_RallyPoint(uint8_t total,
                                          uint8_t sequence,
                                          const RallyLocation &rally_point)
 {
-    struct log_Rally pkt_rally = {
-        LOG_PACKET_HEADER_INIT(LOG_RALLY_MSG),
-        time_us         : AP_HAL::micros64(),
-        total           : total,
-        sequence        : sequence,
-        latitude        : rally_point.lat,
-        longitude       : rally_point.lng,
-        altitude        : rally_point.alt
-    };
+    struct log_Rally pkt_rally = {};
     return WriteBlock(&pkt_rally, sizeof(pkt_rally));
 }
 

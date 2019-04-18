@@ -196,20 +196,7 @@ void SITL::Log_Write_SIMSTATE()
         yaw -= 360;
     }
 
-    struct log_AHRS pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_SIMSTATE_MSG),
-        time_us : AP_HAL::micros64(),
-        roll    : (int16_t)(state.rollDeg*100),
-        pitch   : (int16_t)(state.pitchDeg*100),
-        yaw     : (uint16_t)(wrap_360_cd(yaw*100)),
-        alt     : (float)state.altitude,
-        lat     : (int32_t)(state.latitude*1.0e7),
-        lng     : (int32_t)(state.longitude*1.0e7),
-        q1      : state.quaternion.q1,
-        q2      : state.quaternion.q2,
-        q3      : state.quaternion.q3,
-        q4      : state.quaternion.q4,
-    };
+    struct log_AHRS pkt = {};
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 

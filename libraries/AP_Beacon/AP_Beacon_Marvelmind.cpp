@@ -34,9 +34,9 @@ extern const AP_HAL::HAL& hal;
 
 #if MM_DEBUG_LEVEL
   #include <GCS_MAVLink/GCS.h>
-  #define Debug(level, fmt, args ...)  do { if (level <= MM_DEBUG_LEVEL) { gcs().send_text(MAV_SEVERITY_INFO, fmt, ## args); } } while (0)
+  #define Debug(level, fmt, ...)  do { if (level <= MM_DEBUG_LEVEL) { gcs().send_text(MAV_SEVERITY_INFO, fmt, ##  __VA_ARGS__); } } while (0)
 #else
-  #define Debug(level, fmt, args ...)
+  #define Debug(level, fmt, ...)
 #endif
 
 AP_Beacon_Marvelmind::AP_Beacon_Marvelmind(AP_Beacon &frontend, AP_SerialManager &serial_manager) :

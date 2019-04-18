@@ -25,7 +25,7 @@ void loop();
 
 const AP_HAL::HAL& hal = AP_HAL::get_HAL();
 
-#define debug_can(fmt, args...) do { hal.console->printf(fmt, ##args); } while (0)
+#define debug_can(fmt, ...) do { hal.console->printf(fmt, ## __VA_ARGS__); } while (0)
 
 #define NUM_ESCS 8
 

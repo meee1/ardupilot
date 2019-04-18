@@ -28,7 +28,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define debug_mag_uavcan(level_debug, can_driver, fmt, args...) do { if ((level_debug) <= AP::can().get_debug_level_driver(can_driver)) { printf(fmt, ##args); }} while (0)
+#define debug_mag_uavcan(level_debug, can_driver, fmt, ...) do { if ((level_debug) <= AP::can().get_debug_level_driver(can_driver)) { printf(fmt, ## __VA_ARGS__); }} while (0)
 
 
 // Frontend Registry Binders

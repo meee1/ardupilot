@@ -1093,17 +1093,7 @@ void AP_Logger_File::vehicle_was_disarmed()
 
 void AP_Logger_File::Write_AP_Logger_Stats_File(const struct df_stats &_stats)
 {
-    struct log_DSF pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_DF_FILE_STATS),
-        time_us         : AP_HAL::micros64(),
-        dropped         : _dropped,
-        blocks          : _stats.blocks,
-        bytes           : _stats.bytes,
-        buf_space_min   : _stats.buf_space_min,
-        buf_space_max   : _stats.buf_space_max,
-        buf_space_avg   : (_stats.blocks) ? (_stats.buf_space_sigma / _stats.blocks) : 0,
-
-    };
+    struct log_DSF pkt = {};
     WriteBlock(&pkt, sizeof(pkt));
 }
 

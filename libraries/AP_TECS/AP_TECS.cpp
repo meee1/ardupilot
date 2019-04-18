@@ -5,9 +5,9 @@ extern const AP_HAL::HAL& hal;
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 #include <stdio.h>
-# define Debug(fmt, args ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+# define Debug(fmt, ...)  do {printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); hal.scheduler->delay(1); } while(0)
 #else
-# define Debug(fmt, args ...)
+# define Debug(fmt, ...)
 #endif
 //Debug("%.2f %.2f %.2f %.2f \n", var1, var2, var3, var4);
 

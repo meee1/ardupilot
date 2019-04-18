@@ -21,9 +21,9 @@ extern const AP_HAL::HAL &hal;
 #define DLVR_I2C_ADDR 0x28
 
 #ifdef DLVR_DEBUGGING
- # define Debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
+ # define Debug(fmt, ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ##  __VA_ARGS__); hal.scheduler->delay(1); } while(0)
 #else
- # define Debug(fmt, args ...)
+ # define Debug(fmt, ...)
 #endif
 
 

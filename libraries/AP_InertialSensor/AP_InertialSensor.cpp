@@ -28,9 +28,9 @@
  * Output is on the debug console. */
 #ifdef INS_TIMING_DEBUG
 #include <stdio.h>
-#define timing_printf(fmt, args...)      do { printf("[timing] " fmt, ##args); } while(0)
+#define timing_printf(fmt, ...)      do { printf("[timing] " fmt, ## __VA_ARGS__); } while(0)
 #else
-#define timing_printf(fmt, args...)
+#define timing_printf(fmt, ...)
 #endif
 
 extern const AP_HAL::HAL& hal;

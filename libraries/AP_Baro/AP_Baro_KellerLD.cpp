@@ -23,9 +23,9 @@
 #define KELLER_DEBUG 0
 
 #if KELLER_DEBUG
-# define Debug(fmt, args ...)  do {printf(fmt "\n", ## args);} while(0)
+# define Debug(fmt, ...)  do {printf(fmt "\n", ##  __VA_ARGS__);} while(0)
 #else
-# define Debug(fmt, args ...)
+# define Debug(fmt, ...)
 #endif
 
 extern const AP_HAL::HAL &hal;

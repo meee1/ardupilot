@@ -434,25 +434,7 @@ const AP_Logger::PID_Info& AP_Landing_Deepstall::get_pid_info(void) const
 
 void AP_Landing_Deepstall::Log(void) const {
     const AP_Logger::PID_Info& pid_info = ds_PID.get_pid_info();
-    struct log_DSTL pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_DSTL_MSG),
-        time_us          : AP_HAL::micros64(),
-        stage            : (uint8_t)stage,
-        target_heading   : target_heading_deg,
-        target_lat       : landing_point.lat,
-        target_lng       : landing_point.lng,
-        target_alt       : landing_point.alt,
-        crosstrack_error : (int16_t)(stage >= DEEPSTALL_STAGE_LAND ?
-                             constrain_float(crosstrack_error * 1e2f, (float)INT16_MIN, (float)INT16_MAX) : 0),
-        travel_distance  : (int16_t)(stage >= DEEPSTALL_STAGE_LAND ?
-                             constrain_float(predicted_travel_distance * 1e2f, (float)INT16_MIN, (float)INT16_MAX) : 0),
-        l1_i             : stage >= DEEPSTALL_STAGE_LAND ? L1_xtrack_i : 0.0f,
-        loiter_sum_cd    : stage >= DEEPSTALL_STAGE_ESTIMATE_WIND ? loiter_sum_cd : 0,
-        desired          : pid_info.desired,
-        P                : pid_info.P,
-        I                : pid_info.I,
-        D                : pid_info.D,
-    };
+    struct log_DSTL pkt = {};
     AP::logger().WriteBlock(&pkt, sizeof(pkt));
 }
 

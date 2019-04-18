@@ -57,9 +57,9 @@ extern const AP_HAL::HAL &hal;
 #define BARO_ICM20789_DEBUG 0
 
 #if BARO_ICM20789_DEBUG
-#define debug(fmt, args...)   hal.console->printf(fmt, ##args)
+#define debug(fmt, ...)   hal.console->printf(fmt, ## __VA_ARGS__)
 #else
-#define debug(fmt, args...)
+#define debug(fmt, ...)
 #endif
 
 /*
