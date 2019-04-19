@@ -117,7 +117,7 @@
 #define AP_SUBGROUPPTR(element, name, idx, thisclazz, elclazz) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {  elclazz::var_info }, AP_PARAM_FLAG_POINTER }
 
 // declare a pointer subgroup entry in a group var_info with a pointer var_info
-#define AP_SUBGROUPVARPTR(element, name, idx, thisclazz, var_info) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {  &var_info }, AP_PARAM_FLAG_POINTER | AP_PARAM_FLAG_INFO_POINTER }
+#define AP_SUBGROUPVARPTR(element, name, idx, thisclazz, var_info) { AP_PARAM_GROUP, idx, name, AP_VAROFFSET(thisclazz, element), {nullptr}, AP_PARAM_FLAG_POINTER | AP_PARAM_FLAG_INFO_POINTER }
 
 #define AP_GROUPEND     { AP_PARAM_NONE, 0xFF, "", 0, {  nullptr } }
 #define AP_VAREND       { AP_PARAM_NONE, "", 0, nullptr, {  nullptr } }

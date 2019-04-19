@@ -99,8 +99,8 @@ void AP_RangeFinder_Backend::update_pre_arm_check()
     // Check that the range finder has been exercised through a realistic range of movement
     if (((state.pre_arm_distance_max - state.pre_arm_distance_min) >= RANGEFINDER_PREARM_REQUIRED_CHANGE_CM) &&
          (state.pre_arm_distance_max < RANGEFINDER_PREARM_ALT_MAX_CM) &&
-         ((int16_t)state.pre_arm_distance_min < (MAX(params.ground_clearance_cm,params.min_distance_cm) + 10)) &&
-         ((int16_t)state.pre_arm_distance_min > (MIN(params.ground_clearance_cm,params.min_distance_cm) - 10))) {
+         ((int16_t)state.pre_arm_distance_min < (MAX((int16_t)params.ground_clearance_cm,(int16_t)params.min_distance_cm) + 10)) &&
+         ((int16_t)state.pre_arm_distance_min > (MIN((int16_t)params.ground_clearance_cm,(int16_t)params.min_distance_cm) - 10))) {
         state.pre_arm_check = true;
     }
 }
