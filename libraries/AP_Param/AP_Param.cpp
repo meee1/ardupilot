@@ -1685,7 +1685,7 @@ bool AP_Param::find_old_parameter(const struct ConversionInfo *info, AP_Param *v
 // convert one old vehicle parameter to new object parameter
 void AP_Param::convert_old_parameter(const struct ConversionInfo *info, float scaler, uint8_t flags)
 {
-    uint8_t old_value[type_size(info->type)];
+    uint8_t* old_value = new uint8_t[type_size(info->type)];
     AP_Param *ap = (AP_Param *)&old_value[0];
 
     if (!find_old_parameter(info, ap)) {
@@ -1764,7 +1764,7 @@ void AP_Param::convert_parent_class(uint8_t param_key, void *object_pointer,
         info.type = (ap_var_type)group_info[i].type;
         info.new_name = nullptr;
         info.old_group_element = uint16_t(group_info[i].idx)<<6;
-        uint8_t old_value[type_size(info.type)];
+        uint8_t* old_value = new uint8_t[type_size(info.type)];
         AP_Param *ap = (AP_Param *)&old_value[0];
         
         if (!AP_Param::find_old_parameter(&info, ap)) {
@@ -2207,8 +2207,8 @@ void AP_Param::set_defaults_from_table(const struct defaults_table_struct *table
     for (uint8_t i=0; i<count; i++) {
         if (!AP_Param::set_default_by_name(table[i].name, table[i].value)) {
             char *buf = nullptr;
-            if (asprintf(&buf, "param deflt fail:%s", table[i].name) > 0) {
-                AP_BoardConfig::sensor_config_error(buf);
+          //  if (asprintf(&buf, "param deflt fail:%s", table[i].name) > 0) {
+          //      AP_BoardConfig::sensor_config_error(buf);
             }
         }
     }
