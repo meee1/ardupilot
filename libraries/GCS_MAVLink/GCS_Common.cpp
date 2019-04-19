@@ -3483,7 +3483,7 @@ MAV_RESULT GCS_MAVLINK::handle_command_do_send_banner(const mavlink_command_long
 
 MAV_RESULT GCS_MAVLINK::handle_command_do_set_mode(const mavlink_command_long_t &packet)
 {
-    const MAV_MODE _base_mode = (MAV_MODE)packet.param1;
+    const MAV_MODE _base_mode = (MAV_MODE)(uint32_t)packet.param1;
     const uint32_t _custom_mode = (uint32_t)packet.param2;
 
     return _set_mode_common(_base_mode, _custom_mode);

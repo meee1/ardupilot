@@ -2209,7 +2209,7 @@ void AP_Param::set_defaults_from_table(const struct defaults_table_struct *table
             char *buf = nullptr;
           //  if (asprintf(&buf, "param deflt fail:%s", table[i].name) > 0) {
           //      AP_BoardConfig::sensor_config_error(buf);
-            }
+          //  }
         }
     }
 }
