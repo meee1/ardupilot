@@ -186,7 +186,7 @@ bool AP_Logger_Backend::Write(const uint8_t msg_type, va_list arg_list, bool is_
     if (bufferspace_available() < msg_len) {
         return false;
     }
-    uint8_t buffer[msg_len];
+    uint8_t* buffer = new uint8_t[msg_len];
     uint8_t offset = 0;
     buffer[offset++] = HEAD_BYTE1;
     buffer[offset++] = HEAD_BYTE2;

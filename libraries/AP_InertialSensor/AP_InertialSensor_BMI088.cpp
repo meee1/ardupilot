@@ -120,7 +120,7 @@ bool AP_InertialSensor_BMI088::read_accel_registers(uint8_t reg, uint8_t *data, 
     }
     // for SPI we need to discard the first returned byte. See
     // datasheet for explanation
-    uint8_t b[len+2];
+    uint8_t* b = new uint8_t[len+2];
     b[0] = reg | 0x80;
     memset(&b[1], 0, len+1);
     if (!dev_accel->transfer(b, len+2, b, len+2)) {
@@ -293,7 +293,7 @@ void AP_InertialSensor_BMI088::read_fifo_accel(void)
         return;
     }
     
-    uint8_t data[fifo_length];
+    uint8_t* data = new uint8_t[fifo_length];
     if (!read_accel_registers(REGA_FIFO_DATA, data, fifo_length)) {
         _inc_accel_error_count(accel_instance);
         return;
@@ -377,7 +377,7 @@ void AP_InertialSensor_BMI088::read_fifo_gyro(void)
     if (num_frames == 0) {
         return;
     }
-    uint8_t data[6*num_frames];
+    uint8_t* data = new uint8_t[6*num_frames];
     if (!dev_gyro->read_registers(REGG_FIFO_DATA, data, num_frames*6)) {
         _inc_gyro_error_count(gyro_instance);
         return;

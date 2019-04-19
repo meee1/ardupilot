@@ -250,7 +250,7 @@ void AP_InertialSensor_BMI055::read_fifo_accel(void)
         return;
     }
     
-    uint8_t data[6*num_frames];
+    uint8_t* data = new uint8_t[6*num_frames];
     if (!dev_accel->read_registers(REGA_FIFO_DATA, data, num_frames*6)) {
         _inc_accel_error_count(accel_instance);
         return;
@@ -306,7 +306,7 @@ void AP_InertialSensor_BMI055::read_fifo_gyro(void)
     if (num_frames == 0) {
         return;
     }
-    uint8_t data[6*num_frames];
+    uint8_t* data = new uint8_t[6*num_frames];
     if (!dev_gyro->read_registers(REGG_FIFO_DATA, data, num_frames*6)) {
         _inc_gyro_error_count(gyro_instance);
         return;

@@ -98,7 +98,7 @@ void AP_BattMonitor_SMBus_Solo::timer()
 // read_block - returns number of characters read if successful, zero if unsuccessful
 uint8_t AP_BattMonitor_SMBus_Solo::read_block(uint8_t reg, uint8_t* data, uint8_t max_len, bool append_zero) const
 {
-    uint8_t buff[max_len+2];    // buffer to hold results (2 extra byte returned holding length and PEC)
+    uint8_t* buff = new uint8_t[max_len+2];    // buffer to hold results (2 extra byte returned holding length and PEC)
 
     // read bytes
     if (!_dev->read_registers(reg, buff, sizeof(buff))) {

@@ -104,7 +104,7 @@ uint8_t AP_BattMonitor_SMBus_Maxell::read_block(uint8_t reg, uint8_t* data, bool
 
     // buffer to hold results (2 extra byte returned holding length and PEC)
     const uint8_t read_size = bufflen + 1 + (_pec_supported ? 1 : 0);
-    uint8_t buff[read_size];
+    uint8_t* buff = new uint8_t[read_size];
 
     // read bytes
     if (!_dev->read_registers(reg, buff, read_size)) {

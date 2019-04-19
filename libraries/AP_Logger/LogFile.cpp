@@ -67,10 +67,7 @@ bool AP_Logger_Backend::Write_Format(const struct LogStructure *s)
 bool AP_Logger_Backend::Write_Unit(const struct UnitStructure *s)
 {
     struct log_Unit pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_UNIT_MSG),
-        time_us : AP_HAL::micros64(),
-        type    : s->ID,
-        unit    : { }
+  
     };
     strncpy(pkt.unit, s->unit, sizeof(pkt.unit));
 
@@ -102,12 +99,7 @@ bool AP_Logger_Backend::Write_Format_Units(const struct LogStructure *s)
  */
 bool AP_Logger_Backend::Write_Parameter(const char *name, float value)
 {
-    struct log_Parameter pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_PARAMETER_MSG),
-        time_us : AP_HAL::micros64(),
-        name  : {},
-        value : value
-    };
+    struct log_Parameter pkt = {};
     strncpy(pkt.name, name, sizeof(pkt.name));
     return WriteCriticalBlock(&pkt, sizeof(pkt));
 }
@@ -295,11 +287,7 @@ void AP_Logger_Backend::Write_EntireMission()
 // Write a text message to the log
 bool AP_Logger_Backend::Write_Message(const char *message)
 {
-    struct log_Message pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_MESSAGE_MSG),
-        time_us : AP_HAL::micros64(),
-        msg  : {}
-    };
+    struct log_Message pkt = {};
     strncpy(pkt.msg, message, sizeof(pkt.msg));
     return WriteCriticalBlock(&pkt, sizeof(pkt));
 }

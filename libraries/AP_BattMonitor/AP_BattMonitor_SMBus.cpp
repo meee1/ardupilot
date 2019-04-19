@@ -103,7 +103,7 @@ bool AP_BattMonitor_SMBus::read_word(uint8_t reg, uint16_t& data) const
 {
     // buffer to hold results (1 extra byte returned holding PEC)
     const uint8_t read_size = 2 + (_pec_supported ? 1 : 0);
-    uint8_t buff[read_size];    // buffer to hold results
+    uint8_t* buff = new uint8_t[read_size];    // buffer to hold results
 
     // read the appropriate register from the device
     if (!_dev->read_registers(reg, buff, sizeof(buff))) {

@@ -67,11 +67,11 @@ void AP_LeakDetector::init()
 {
     for (int i = 0; i < LEAKDETECTOR_MAX_INSTANCES; i++) {
         switch (_pin[i]) {
-        case 50 ... 55:
+        case 50 :
             _state[i].instance = i;
             _drivers[i] = new AP_LeakDetector_Digital(*this, _state[i]);
             break;
-        case 13 ... 15:
+        case 13 :
             _state[i].instance = i;
             _drivers[i] = new AP_LeakDetector_Analog(*this, _state[i]);
             break;
