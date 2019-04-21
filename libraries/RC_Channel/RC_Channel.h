@@ -227,7 +227,7 @@ private:
     static const uint16_t AUX_PWM_TRIGGER_HIGH = 1800;
     // pwm value below which the option will be disabled:
     static const uint16_t AUX_PWM_TRIGGER_LOW = 1200;
-    bool read_3pos_switch(aux_switch_pos_t &ret) const WARN_IF_UNUSED;
+    bool read_3pos_switch(aux_switch_pos_t &ret) const ;
 
     //Documentation of Aux Switch Flags:
     // 0 is low or false, 1 is center or true, 2 is high

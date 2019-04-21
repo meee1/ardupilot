@@ -5,7 +5,7 @@
 #include "AC_PrecLand_Backend.h"
 #include "AC_PrecLand_Companion.h"
 #include "AC_PrecLand_IRLock.h"
-#include "AC_PrecLand_SITL_Gazebo.h"
+
 #include "AC_PrecLand_SITL.h"
 
 #include <AP_AHRS/AP_AHRS.h>
@@ -158,9 +158,6 @@ void AC_PrecLand::init(uint16_t update_rate_hz)
             _backend = new AC_PrecLand_IRLock(*this, _backend_state);
             break;
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-        case PRECLAND_TYPE_SITL_GAZEBO:
-            _backend = new AC_PrecLand_SITL_Gazebo(*this, _backend_state);
-            break;
         case PRECLAND_TYPE_SITL:
             _backend = new AC_PrecLand_SITL(*this, _backend_state);
             break;

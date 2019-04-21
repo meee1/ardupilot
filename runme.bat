@@ -17,6 +17,7 @@ rem cl libraries\SITL\SITL.cpp  /showIncludes  /w /GR /MP  -I.. -I..\portable-sn
 cl libraries\AP_Param\*.cpp  /w /GR /MP  -DPSNIP_BUILTIN_EMULATE_NATIVE /FI ..\portable-snippets\builtin\builtin.h -I..\portable-snippets  -I..\pthread  -Ibuild\sitl  -Ibuild\sitl\libraries\GCS_MAVLink   "-Ilibraries"       "-Ilibraries/GCS_MAVLink"      "-I."       "-Ilibraries"       "-Ilibraries/AP_Common/missing"  -I../libunistd/unistd -DCONFIG_HAL_BOARD=HAL_BOARD_SITL -DCONFIG_HAL_BOARD_SUBTYPE=HAL_BOARD_SUBTYPE_NONE /link /LIBPATH:.;..;libcpp
 cl libraries\GCS_MAVLink\*.cpp  /w /GR /MP  -DPSNIP_BUILTIN_EMULATE_NATIVE /FI ..\portable-snippets\builtin\builtin.h -I..\portable-snippets  -I..\pthread  -Ibuild\sitl  -Ibuild\sitl\libraries\GCS_MAVLink   "-Ilibraries"       "-Ilibraries/GCS_MAVLink"      "-I."       "-Ilibraries"       "-Ilibraries/AP_Common/missing"  -I../libunistd/unistd -DCONFIG_HAL_BOARD=HAL_BOARD_SITL -DCONFIG_HAL_BOARD_SUBTYPE=HAL_BOARD_SUBTYPE_NONE /link /LIBPATH:.;..;libcpp
 cl libraries\AP_RangeFinder\*.cpp  /w /GR /MP  -DPSNIP_BUILTIN_EMULATE_NATIVE /FI ..\portable-snippets\builtin\builtin.h -I..\portable-snippets  -I..\pthread  -Ibuild\sitl  -Ibuild\sitl\libraries\GCS_MAVLink   "-Ilibraries"       "-Ilibraries/GCS_MAVLink"      "-I."       "-Ilibraries"       "-Ilibraries/AP_Common/missing"  -I../libunistd/unistd -DCONFIG_HAL_BOARD=HAL_BOARD_SITL -DCONFIG_HAL_BOARD_SUBTYPE=HAL_BOARD_SUBTYPE_NONE /link /LIBPATH:.;..;libcpp
+cl libraries\AP_HAL\utility\*.cpp  /w /GR /MP  -DPSNIP_BUILTIN_EMULATE_NATIVE /FI ..\portable-snippets\builtin\builtin.h -I..\portable-snippets  -I..\pthread  -Ibuild\sitl  -Ibuild\sitl\libraries\GCS_MAVLink   "-Ilibraries"       "-Ilibraries/GCS_MAVLink"      "-I."       "-Ilibraries"       "-Ilibraries/AP_Common/missing"  -I../libunistd/unistd -DCONFIG_HAL_BOARD=HAL_BOARD_SITL -DCONFIG_HAL_BOARD_SUBTYPE=HAL_BOARD_SUBTYPE_NONE /link /LIBPATH:.;..;libcpp
 
 
 pause
@@ -25,6 +26,13 @@ pause
 
 @echo off
 
+for /F %%i in ("AP_HAL\utility") do (
+mkdir libcpp
+mkdir libcpp\%%i
+cl libraries\%%i\*.cpp /c /LD /w  /MP /Folibcpp\%%i\ -DPSNIP_BUILTIN_EMULATE_NATIVE /FI ..\portable-snippets\builtin\builtin.h /FI ..\portable-snippets\random\random.h -I.. -I..\portable-snippets -I..\pthread  -Ibuild\sitl  -Ibuild\sitl\libraries\GCS_MAVLink   "-Ilibraries"       "-Ilibraries/GCS_MAVLink"      "-I."       "-Ilibraries"       "-Ilibraries/AP_Common/missing" -I../libunistd/unistd -DCONFIG_HAL_BOARD=HAL_BOARD_SITL -DCONFIG_HAL_BOARD_SUBTYPE=HAL_BOARD_SUBTYPE_NONE
+lib libcpp\%%i\*.obj /out:libcpp\%%i.lib
+)
+
 for /F %%i in ('dir /b libraries') do (
 mkdir libcpp
 mkdir libcpp\%%i
@@ -32,9 +40,8 @@ cl libraries\%%i\*.cpp /c /LD /w  /MP /Folibcpp\%%i\ -DPSNIP_BUILTIN_EMULATE_NAT
 lib libcpp\%%i\*.obj /out:libcpp\%%i.lib
 )
 
-for /F %%i in ('dir /s /b libraries\*.cpp') do (
-rem cl %%i /std:c++latest /w  /LN /MP -I..\portable-snippets  -I..\pthread -Ibuild\sitl  -Ibuild\sitl\libraries\GCS_MAVLink   "-Ilibraries"       "-Ilibraries/GCS_MAVLink"      "-I."       "-I../../libraries"       "-I../../libraries/AP_Common/missing" -DCONFIG_HAL_BOARD=HAL_BOARD_SITL -DCONFIG_HAL_BOARD_SUBTYPE=HAL_BOARD_SUBTYPE_NONE
-)
+
+
 
 struct\s+([^\s]+)\s+([^\s=]+)\s*=\s*\{([^\}]+)\}\s*;
 

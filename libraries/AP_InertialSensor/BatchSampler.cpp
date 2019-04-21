@@ -53,7 +53,7 @@ void AP_InertialSensor::BatchSampler::init()
         return;
     }
 
-    _required_count -= _required_count % 32; // round down to nearest multiple of 32
+    _required_count = _required_count - (_required_count % 32); // round down to nearest multiple of 32
 
     const uint32_t total_allocation = 3*_required_count*sizeof(uint16_t);
     gcs().send_text(MAV_SEVERITY_DEBUG, "INS: alloc %u bytes for ISB (free=%u)", total_allocation, hal.util->available_memory());

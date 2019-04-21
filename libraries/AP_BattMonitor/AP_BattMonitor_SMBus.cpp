@@ -134,7 +134,7 @@ uint8_t AP_BattMonitor_SMBus::get_PEC(const uint8_t i2c_addr, uint8_t cmd, bool 
     }
 
     // prepare temp buffer for calculating crc
-    uint8_t tmp_buff[len+3];
+    uint8_t* tmp_buff = new uint8_t[len+3];
     tmp_buff[0] = i2c_addr << 1;
     tmp_buff[1] = cmd;
     tmp_buff[2] = tmp_buff[0] | (uint8_t)reading;

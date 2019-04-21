@@ -27,15 +27,15 @@ extern const AP_HAL::HAL& hal;
 void AP_Logger_SITL::Init()
 {
     if (flash_fd == 0) {
-        flash_fd = open(filename, O_RDWR|O_CLOEXEC, 0777);
+ //       flash_fd = open(filename, O_RDWR|O_CLOEXEC, 0777);
         if (flash_fd == -1) {
-            flash_fd = open(filename, O_RDWR | O_CREAT | O_CLOEXEC, 0777);
+   //         flash_fd = open(filename, O_RDWR | O_CREAT | O_CLOEXEC, 0777);
             StartErase();
             erase_started_ms = 0;
         }
-        if (ftruncate(flash_fd, DF_PAGE_SIZE*uint32_t(DF_NUM_PAGES)) != 0) {
-            AP_HAL::panic("Failed to create %s", filename);
-        }
+  //      if (ftruncate(flash_fd, DF_PAGE_SIZE*uint32_t(DF_NUM_PAGES)) != 0) {
+  //          AP_HAL::panic("Failed to create %s", filename);
+   //     }
     }
 
     df_PageSize = DF_PAGE_SIZE;
@@ -53,26 +53,26 @@ bool AP_Logger_SITL::CardInserted(void) const
 void AP_Logger_SITL::PageToBuffer(uint32_t PageAdr)
 {
     assert(PageAdr>0 && PageAdr <= df_NumPages+1);
-    if (pread(flash_fd, buffer, DF_PAGE_SIZE, (PageAdr-1)*DF_PAGE_SIZE) != DF_PAGE_SIZE) {
-        printf("Failed flash read");
-    }
+ //   if (pread(flash_fd, buffer, DF_PAGE_SIZE, (PageAdr-1)*DF_PAGE_SIZE) != DF_PAGE_SIZE) {
+ //       printf("Failed flash read");
+  //  }
 }
 
 void AP_Logger_SITL::BufferToPage(uint32_t PageAdr)
 {
     assert(PageAdr>0 && PageAdr <= df_NumPages+1);
-    if (pwrite(flash_fd, buffer, DF_PAGE_SIZE, (PageAdr-1)*DF_PAGE_SIZE) != DF_PAGE_SIZE) {
-        printf("Failed flash write");
-    }
+  //  if (pwrite(flash_fd, buffer, DF_PAGE_SIZE, (PageAdr-1)*DF_PAGE_SIZE) != DF_PAGE_SIZE) {
+ //       printf("Failed flash write");
+  //  }
 }
 
 void AP_Logger_SITL::SectorErase(uint32_t SectorAdr)
 {
     uint8_t fill[DF_PAGE_SIZE*DF_PAGE_PER_SECTOR];
     memset(fill, 0xFF, sizeof(fill));
-    if (pwrite(flash_fd, fill, sizeof(fill), SectorAdr*DF_PAGE_PER_SECTOR*DF_PAGE_SIZE) != sizeof(fill)) {
-        printf("Failed sector erase");
-    }
+ //   if (pwrite(flash_fd, fill, sizeof(fill), SectorAdr*DF_PAGE_PER_SECTOR*DF_PAGE_SIZE) != sizeof(fill)) {
+  //      printf("Failed sector erase");
+  //  }
 }
 
 void AP_Logger_SITL::StartErase()

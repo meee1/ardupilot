@@ -33,7 +33,7 @@ void Radio_CC2500::ReadRegisterMulti(uint8_t address, uint8_t *data, uint8_t len
 
 void Radio_CC2500::WriteRegisterMulti(uint8_t address, const uint8_t *data, uint8_t length)
 {
-    uint8_t buf[length+1];
+    uint8_t* buf = new uint8_t[length+1];
     buf[0] = address;
     memcpy(&buf[1], data, length);
     dev->transfer(buf, length+1, nullptr, 0);

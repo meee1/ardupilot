@@ -564,7 +564,7 @@ MAV_RESULT AP_Mount::handle_command_do_mount_configure(const mavlink_command_lon
     if (_primary >= AP_MOUNT_MAX_INSTANCES || _backends[_primary] == nullptr) {
         return MAV_RESULT_FAILED;
     }
-    _backends[_primary]->set_mode((MAV_MOUNT_MODE)packet.param1);
+    _backends[_primary]->set_mode((MAV_MOUNT_MODE)(int)packet.param1);
     state[0]._stab_roll = packet.param2;
     state[0]._stab_tilt = packet.param3;
     state[0]._stab_pan = packet.param4;
@@ -580,7 +580,7 @@ MAV_RESULT AP_Mount::handle_command_do_mount_control(const mavlink_command_long_
     }
 
     // send message to backend
-    _backends[_primary]->control(packet.param1, packet.param2, packet.param3, (MAV_MOUNT_MODE) packet.param7);
+    _backends[_primary]->control(packet.param1, packet.param2, packet.param3, (MAV_MOUNT_MODE)(int)packet.param7);
 
     return MAV_RESULT_ACCEPTED;
 }

@@ -77,7 +77,7 @@ void AP_MotorsHeli_Quad::output_test_seq(uint8_t motor_seq, int16_t pwm)
 
     // output to motors and servos
     switch (motor_seq) {
-    case 1 ... AP_MOTORS_HELI_QUAD_NUM_MOTORS:
+    case  AP_MOTORS_HELI_QUAD_NUM_MOTORS:
         rc_write(AP_MOTORS_MOT_1 + (motor_seq-1), pwm);
         break;
     case AP_MOTORS_HELI_QUAD_NUM_MOTORS+1:

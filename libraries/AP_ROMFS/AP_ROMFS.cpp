@@ -22,7 +22,7 @@
 #ifdef HAL_HAVE_AP_ROMFS_EMBEDDED_H
 #include <ap_romfs_embedded.h>
 #else
-const AP_ROMFS::embedded_file AP_ROMFS::files[] = {};
+const AP_ROMFS::embedded_file AP_ROMFS::files[1];
 #endif
 
 /*

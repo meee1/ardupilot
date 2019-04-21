@@ -111,8 +111,8 @@ void AP_Proximity_MAV::handle_msg(mavlink_message_t *msg)
         }
 
         // initialise updated array and proximity sector angles (to closest object) and distances
-        bool sector_updated[_num_sectors];
-        float sector_width_half[_num_sectors];
+        bool* sector_updated = new bool[_num_sectors];
+        float* sector_width_half = new float[_num_sectors];
         for (uint8_t i = 0; i < _num_sectors; i++) {
             sector_updated[i] = false;
             sector_width_half[i] = _sector_width_deg[i] * 0.5f;

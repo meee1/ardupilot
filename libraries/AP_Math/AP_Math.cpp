@@ -186,10 +186,10 @@ T constrain_value(const T amt, const T low, const T high)
     // the check for NaN as a float prevents propagation of floating point
     // errors through any function that uses constrain_value(). The normal
     // float semantics already handle -Inf and +Inf
-    if (isnan(amt)) {
-        AP::internalerror().error(AP_InternalError::error_t::constraining_nan);
-        return (low + high) / 2;
-    }
+//    if (isnan(amt)) {
+//        AP::internalerror().error(AP_InternalError::error_t::constraining_nan);
+//        return (low + high) / 2;
+//    }
 
     if (amt < low) {
         return low;
@@ -227,7 +227,7 @@ uint16_t get_random16(void)
 // generate a random float between -1 and 1, for use in SITL
 float rand_float(void)
 {
-    return ((((unsigned)random()) % 2000000) - 1.0e6) / 1.0e6;
+    return 0.0f;// ((((unsigned)random()) % 2000000) - 1.0e6) / 1.0e6;
 }
 
 Vector3f rand_vec3f(void)

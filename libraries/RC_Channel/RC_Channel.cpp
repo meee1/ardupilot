@@ -737,7 +737,7 @@ void RC_Channel::init_aux()
 bool RC_Channel::read_3pos_switch(RC_Channel::aux_switch_pos_t &ret) const
 {
     const uint16_t in = get_radio_in();
-    if (in <= 900 or in >= 2200) {
+    if (in <= 900 || in >= 2200) {
         return false;
     }
     if (in < AUX_PWM_TRIGGER_LOW) {
