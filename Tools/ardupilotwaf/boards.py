@@ -405,7 +405,6 @@ class chibios(Board):
             '-fno-exceptions',
             '-Wall',
             '-Wextra',
-            '-Wno-sign-compare',
             '-Wfloat-equal',
             '-Wpointer-arith',
             '-Wmissing-declarations',
