@@ -218,9 +218,9 @@ void SITL_State::_parse_command_line(int argc, char * const argv[])
         {0, false, 0, 0}
     };
 
-    if (asprintf(&autotest_dir, SKETCHBOOK "/Tools/autotest") <= 0) {
-        AP_HAL::panic("out of memory");
-    }
+ //  if (asprintf(&autotest_dir, SKETCHBOOK "/Tools/autotest") <= 0) {
+  //      AP_HAL::panic("out of memory");
+  //  }
     _set_signal_handlers();
 
     setvbuf(stdout, (char *)0, _IONBF, 0);
@@ -357,31 +357,11 @@ void SITL_State::_parse_command_line(int argc, char * const argv[])
         exit(1);
     }
 
-    fprintf(stdout, "Starting sketch '%s'\n", SKETCH);
-
-    if (strcmp(SKETCH, "ArduCopter") == 0) {
         _vehicle = ArduCopter;
         if (_framerate == 0) {
             _framerate = 200;
         }
-    } else if (strcmp(SKETCH, "APMrover2") == 0) {
-        _vehicle = APMrover2;
-        if (_framerate == 0) {
-            _framerate = 50;
-        }
-        // set right default throttle for rover (allowing for reverse)
-        pwm_input[2] = 1500;
-    } else if (strcmp(SKETCH, "ArduSub") == 0) {
-        _vehicle = ArduSub;
-        for(uint8_t i = 0; i < 8; i++) {
-            pwm_input[i] = 1500;
-        }
-    } else {
-        _vehicle = ArduPlane;
-        if (_framerate == 0) {
-            _framerate = 50;
-        }
-    }
+   
 
     _sitl_setup(home_str);
 }

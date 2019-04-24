@@ -30,7 +30,7 @@ bool HALSITL::Util::get_system_id_unformatted(uint8_t buf[], uint8_t &len)
     // try first to use machine-id file. Most systems will have this
     const char *paths[] = { "/etc/machine-id", "/var/lib/dbus/machine-id" };
     for (uint8_t i=0; i<ARRAY_SIZE(paths); i++) {
-        int fd = open(paths[i], O_RDONLY);
+        int fd = open(paths[i], 0);
         if (fd == -1) {
             continue;
         }

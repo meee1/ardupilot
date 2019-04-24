@@ -115,15 +115,15 @@ void Scheduler::system_initialized() {
         AP_HAL::panic(
             "PANIC: scheduler system initialized called more than once");
     }
-    int exceptions = FE_OVERFLOW | FE_DIVBYZERO;
+    int exceptions = 0;//FE_OVERFLOW | FE_DIVBYZERO;
 #ifndef __i386__
     // i386 with gcc doesn't work with FE_INVALID
-    exceptions |= FE_INVALID;
+   // exceptions |= FE_INVALID;
 #endif
     if (_sitlState->_sitl == nullptr || _sitlState->_sitl->float_exception) {
-        feenableexcept(exceptions);
+  //      feenableexcept(exceptions);
     } else {
-        feclearexcept(exceptions);
+  //      feclearexcept(exceptions);
     }
     _initialized = true;
 }
@@ -268,9 +268,9 @@ bool Scheduler::thread_create(AP_HAL::MemberProc proc, const char *name, uint32_
     if (!a->f) {
         goto failed;
     }
-    if (posix_memalign(&a->stack, 4096, alloc_stack) != 0) {
-        goto failed;
-    }
+  //  if (posix_memalign(&a->stack, 4096, alloc_stack) != 0) {
+  //      goto failed;
+  //  }
     if (!a->stack) {
         goto failed;
     }
@@ -282,9 +282,9 @@ bool Scheduler::thread_create(AP_HAL::MemberProc proc, const char *name, uint32_
     a->name = name;
     
     pthread_attr_init(&a->attr);
-    if (pthread_attr_setstack(&a->attr, a->stack, alloc_stack) != 0) {
-        AP_HAL::panic("Failed to set stack of size %u for thread %s", alloc_stack, name);
-    }
+  //  if (pthread_attr_setstack(&a->attr, a->stack, alloc_stack) != 0) {
+   //     AP_HAL::panic("Failed to set stack of size %u for thread %s", alloc_stack, name);
+  //  }
     if (pthread_create(&thread, &a->attr, thread_create_trampoline, a) != 0) {
         goto failed;
     }

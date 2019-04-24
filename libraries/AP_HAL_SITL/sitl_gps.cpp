@@ -71,7 +71,7 @@ int SITL_State::gps_pipe(void)
     if (gps_state.client_fd != 0) {
         return gps_state.client_fd;
     }
-    pipe(fd);
+  //  pipe(fd);
     gps_state.gps_fd    = fd[1];
     gps_state.client_fd = fd[0];
     gps_state.last_update = AP_HAL::millis();
@@ -91,7 +91,7 @@ int SITL_State::gps2_pipe(void)
     if (gps2_state.client_fd != 0) {
         return gps2_state.client_fd;
     }
-    pipe(fd);
+ //   pipe(fd);
     gps2_state.gps_fd    = fd[1];
     gps2_state.client_fd = fd[0];
     gps2_state.last_update = AP_HAL::millis();
@@ -107,7 +107,7 @@ void SITL_State::_gps_write(const uint8_t *p, uint16_t size, uint8_t instance)
 {
     while (size--) {
         if (_sitl->gps_byteloss > 0.0f) {
-            float r = ((((unsigned)random()) % 1000000)) / 1.0e4;
+            float r = 999999;//((((unsigned)random()) % 1000000)) / 1.0e4;
             if (r < _sitl->gps_byteloss) {
                 // lose the byte
                 p++;
@@ -477,16 +477,16 @@ void SITL_State::_update_gps_mtk(const struct gps_data *d, uint8_t instance)
     struct timeval tv;
 
     simulation_timeval(&tv);
-    tm = *gmtime(&tv.tv_sec);
+  /*  tm = *gmtime(&tv.tv_sec);
     uint32_t hsec = (tv.tv_usec / (10000*20)) * 20; // always multiple of 20
 
     p.utc_time = hsec + tm.tm_sec*100 + tm.tm_min*100*100 + tm.tm_hour*100*100*100;
-
+*/
     swap_uint32((uint32_t *)&p.latitude, 5);
     swap_uint32((uint32_t *)&p.utc_time, 1);
     mtk_checksum(&p.msg_class, sizeof(p)-4, &p.ck_a, &p.ck_b);
 
-    _gps_write((uint8_t*)&p, sizeof(p), instance);
+   _gps_write((uint8_t*)&p, sizeof(p), instance);
 }
 
 /*
@@ -534,12 +534,12 @@ void SITL_State::_update_gps_mtk16(const struct gps_data *d, uint8_t instance)
     struct timeval tv;
 
     simulation_timeval(&tv);
-    tm = *gmtime(&tv.tv_sec);
+ /*   tm = *gmtime(&tv.tv_sec);
     uint32_t millisec = (tv.tv_usec / (1000*200)) * 200; // always multiple of 200
 
     p.utc_date = (tm.tm_year-100) + ((tm.tm_mon+1)*100) + (tm.tm_mday*100*100);
     p.utc_time = millisec + tm.tm_sec*1000 + tm.tm_min*1000*100 + tm.tm_hour*1000*100*100;
-
+*/
     p.hdop          = 115;
 
     mtk_checksum(&p.size, sizeof(p)-4, &p.ck_a, &p.ck_b);
@@ -592,12 +592,12 @@ void SITL_State::_update_gps_mtk19(const struct gps_data *d, uint8_t instance)
     struct timeval tv;
 
     simulation_timeval(&tv);
-    tm = *gmtime(&tv.tv_sec);
+/*    tm = *gmtime(&tv.tv_sec);
     uint32_t millisec = (tv.tv_usec / (1000*200)) * 200; // always multiple of 200
 
     p.utc_date = (tm.tm_year-100) + ((tm.tm_mon+1)*100) + (tm.tm_mday*100*100);
     p.utc_time = millisec + tm.tm_sec*1000 + tm.tm_min*1000*100 + tm.tm_hour*1000*100*100;
-
+*/
     p.hdop          = 115;
 
     mtk_checksum(&p.size, sizeof(p)-4, &p.ck_a, &p.ck_b);
@@ -630,7 +630,7 @@ void SITL_State::_gps_nmea_printf(uint8_t instance, const char *fmt, ...)
     va_list ap;
 
     va_start(ap, fmt);
-    vasprintf(&s, fmt, ap);
+ //   vasprintf(&s, fmt, ap);
     va_end(ap);
     csum = _gps_nmea_checksum(s);
     snprintf(trailer, sizeof(trailer), "*%02X\r\n", (unsigned)csum);
@@ -654,7 +654,7 @@ void SITL_State::_update_gps_nmea(const struct gps_data *d, uint8_t instance)
 
     simulation_timeval(&tv);
 
-    tm = gmtime(&tv.tv_sec);
+//    tm = gmtime(&tv.tv_sec);
 
     // format time string
     snprintf(tstring, sizeof(tstring), "%02u%02u%06.3f", tm->tm_hour, tm->tm_min, tm->tm_sec + tv.tv_usec*1.0e-6);
@@ -1132,12 +1132,12 @@ void SITL_State::_update_gps_file(uint8_t instance)
     int temp_fd;
     if (instance == 0) {
         if (fd == -1) {
-            fd = open("/tmp/gps.dat", O_RDONLY|O_CLOEXEC);
+//            fd = open("/tmp/gps.dat", O_RDONLY|O_CLOEXEC);
         }
         temp_fd = fd;
     } else {
         if (fd2 == -1) {
-            fd2 = open("/tmp/gps2.dat", O_RDONLY|O_CLOEXEC);
+ //           fd2 = open("/tmp/gps2.dat", O_RDONLY|O_CLOEXEC);
         }
         temp_fd = fd2;
     }

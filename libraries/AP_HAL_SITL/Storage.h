@@ -37,7 +37,7 @@ private:
     void _storage_open(void);
     void _save_backup(void);
     void _mark_dirty(uint16_t loc, uint16_t length);
-    uint8_t _buffer[HAL_STORAGE_SIZE] __attribute__((aligned(4)));
+    uint8_t _buffer[HAL_STORAGE_SIZE] ;//__attribute__((aligned(4)));
     Bitmask _dirty_mask{STORAGE_NUM_LINES};
 
 #if STORAGE_USE_FLASH

@@ -64,7 +64,7 @@ void SITL_State::_sitl_setup(const char *home_str)
     _home_str = home_str;
 
 #if !defined(__CYGWIN__) && !defined(__CYGWIN64__)
-    _parent_pid = getppid();
+ //   _parent_pid = getppid();
 #endif
 
 #ifndef HIL_MODE

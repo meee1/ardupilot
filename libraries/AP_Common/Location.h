@@ -31,10 +31,13 @@ public:
     int32_t lat;
     int32_t lng;
 
+#undef ABSOLUTE
     /// enumeration of possible altitude types
-    enum class AltFrame {
-        ABSOLUTE = 0,
+    enum class AltFrame 
+    {
         ABOVE_HOME = 1,
+        ABSOLUTE = 0,
+        
         ABOVE_ORIGIN = 2,
         ABOVE_TERRAIN = 3
     };

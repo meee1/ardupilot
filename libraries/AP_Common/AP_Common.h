@@ -26,6 +26,8 @@
 // used to pack structures
 #define PACKED 
 
+#define M_PI_4 3.14/4
+
 // used to weaken symbols
 #define WEAK 
 

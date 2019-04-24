@@ -265,10 +265,10 @@ void UARTDriver::_tcp_start_connection(uint16_t port, bool wait_for_connection)
         }
 
         /* we want to be able to re-use ports quickly */
-        if (setsockopt(_listen_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
-            fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
-            exit(1);
-        }
+     //   if (setsockopt(_listen_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
+     //       fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
+     //       exit(1);
+      //  }
 
         fprintf(stderr, "bind port %u for %u\n",
                 (unsigned)ntohs(sockaddr.sin_port),
@@ -301,8 +301,8 @@ void UARTDriver::_tcp_start_connection(uint16_t port, bool wait_for_connection)
             fprintf(stderr, "accept() error - %s", strerror(errno));
             exit(1);
         }
-        setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-        setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+   //     setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    //    setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
         fcntl(_fd, F_SETFD, FD_CLOEXEC);
         _connected = true;
         fprintf(stdout, "Connection on serial port %u\n", _portNumber);
@@ -350,7 +350,7 @@ void UARTDriver::_tcp_start_client(const char *address, uint16_t port)
     }
 
     /* we want to be able to re-use ports quickly */
-    setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+   // setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 
     ret = connect(_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
     if (ret == -1) {
@@ -360,8 +360,8 @@ void UARTDriver::_tcp_start_client(const char *address, uint16_t port)
         exit(1);
     }
 
-    setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-    setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+  //  setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+  //  setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
     fcntl(_fd, F_SETFD, FD_CLOEXEC);
     _connected = true;
 }
@@ -407,7 +407,7 @@ void UARTDriver::_udp_start_client(const char *address, uint16_t port)
 
     // try to setup for broadcast, this may fail if insufficient privileges
     int one = 1;
-    setsockopt(_fd,SOL_SOCKET,SO_BROADCAST,(char *)&one,sizeof(one));
+ //   setsockopt(_fd,SOL_SOCKET,SO_BROADCAST,(char *)&one,sizeof(one));
 
     ret = connect(_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
     if (ret == -1) {
@@ -455,10 +455,10 @@ void UARTDriver::_udp_start_multicast(const char *address, uint16_t port)
         exit(1);
     }
     int one = 1;
-    if (setsockopt(_mc_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
-        fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
-        exit(1);
-    }
+  //  if (setsockopt(_mc_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
+  //      fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
+   //     exit(1);
+  //  }
 
     // close on exec, to allow reboot
     fcntl(_mc_fd, F_SETFD, FD_CLOEXEC);
@@ -475,13 +475,13 @@ void UARTDriver::_udp_start_multicast(const char *address, uint16_t port)
     mreq.imr_multiaddr.s_addr = inet_addr(address);
     mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    ret = setsockopt(_mc_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
-    if (ret == -1) {
-        fprintf(stderr, "multicast membership add failed on port %u - %s\n",
-                (unsigned)ntohs(sockaddr.sin_port),
-                strerror(errno));
-        exit(1);
-    }
+  //  ret = setsockopt(_mc_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+  //  if (ret == -1) {
+  //      fprintf(stderr, "multicast membership add failed on port %u - %s\n",
+  //              (unsigned)ntohs(sockaddr.sin_port),
+  //              strerror(errno));
+  //      exit(1);
+  //  }
 
     // now start the outgoing connection as an ordinary UDP connection
     _udp_start_client(address, port);
@@ -495,7 +495,7 @@ void UARTDriver::_uart_start_connection(void)
 {
     struct termios t {};
     if (!_connected) {
-        _fd = ::open(_uart_path, O_RDWR | O_CLOEXEC);
+        _fd = ::open(_uart_path,  O_CLOEXEC);
         if (_fd == -1) {
             return;
         }
@@ -516,9 +516,9 @@ void UARTDriver::_uart_start_connection(void)
 
     // disable LF -> CR/LF
     tcgetattr(_fd, &t);
-    t.c_iflag &= ~(BRKINT | ICRNL | IMAXBEL | IXON | IXOFF);
+    t.c_iflag &= ~(BRKINT | ICRNL | IXON | IXOFF);
     t.c_oflag &= ~(OPOST | ONLCR);
-    t.c_lflag &= ~(ISIG | ICANON | IEXTEN | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE);
+    t.c_lflag &= ~(ISIG | ICANON | IEXTEN | ECHO | ECHOE  );
     t.c_cc[VMIN] = 0;
     if (_sitlState->use_rtscts()) {
         t.c_cflag |= CRTSCTS;
@@ -546,8 +546,8 @@ void UARTDriver::_check_connection(void)
         if (_fd != -1) {
             int one = 1;
             _connected = true;
-            setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
-            setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+   //         setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+   //         setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
             fcntl(_fd, F_SETFD, FD_CLOEXEC);
             fprintf(stdout, "New connection on serial port %u\n", _portNumber);
         }
@@ -596,7 +596,7 @@ bool UARTDriver::set_unbuffered_writes(bool on) {
 #if defined(__APPLE__) && defined(__MACH__)
     fcntl(_fd, F_SETFL | F_NOCACHE, v | O_SYNC);
 #else
-    fcntl(_fd, F_SETFL, v | O_DIRECT | O_SYNC);
+    fcntl(_fd, F_SETFL, v  | O_SYNC);
 #endif
     return _unbuffered_writes;
 }
@@ -637,12 +637,12 @@ void UARTDriver::_timer_tick(void)
         }
         if (n > 0) {
             // keep as a single UDP packet
-            uint8_t tmpbuf[n];
+            uint8_t* tmpbuf = new uint8_t[n];
             _writebuffer.peekbytes(tmpbuf, n);
-            ssize_t ret = send(_fd, tmpbuf, n, MSG_DONTWAIT);
-            if (ret > 0) {
-                _writebuffer.advance(ret);
-            }
+        //    ssize_t ret = send(_fd, tmpbuf, n, 0);
+       //    if (ret > 0) {
+         //       _writebuffer.advance(ret);
+         //   }
         }
     } else {
         uint32_t navail;
@@ -657,7 +657,7 @@ void UARTDriver::_timer_tick(void)
                     _connected = false;
                 }
             } else {
-                nwritten = send(_fd, readptr, navail, MSG_DONTWAIT);
+          //      nwritten = send(_fd, readptr, navail, 0);
             }
             if (nwritten > 0) {
                 _writebuffer.advance(nwritten);
@@ -671,13 +671,13 @@ void UARTDriver::_timer_tick(void)
     }
     space = MIN(space, max_bytes);
     
-    char buf[space];
+    char* buf = new char[space];
     ssize_t nread = 0;
     if (_mc_fd >= 0) {
         if (_select_check(_mc_fd)) {
             struct sockaddr_in from;
             socklen_t fromlen = sizeof(from);
-            nread = recvfrom(_mc_fd, buf, space, MSG_DONTWAIT, (struct sockaddr *)&from, &fromlen);
+            nread = recvfrom(_mc_fd, buf, space, 0, (struct sockaddr *)&from, &fromlen);
             uint16_t port = ntohs(from.sin_port);
             if (_mc_myport == 0) {
                 // get our own address, so we can recognise packets from ourself
@@ -708,7 +708,7 @@ void UARTDriver::_timer_tick(void)
             _connected = false;
         }
     } else if (_select_check(_fd)) {
-        nread = recv(_fd, buf, space, MSG_DONTWAIT);
+        nread = recv(_fd, buf, space, 0);
         if (nread <= 0 && !_is_udp) {
             // the socket has reached EOF
             close(_fd);

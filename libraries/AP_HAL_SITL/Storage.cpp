@@ -30,7 +30,7 @@ void Storage::_storage_open(void)
     // load from storage backend
     _flash_load();
 #elif STORAGE_USE_POSIX
-    log_fd = open(HAL_STORAGE_FILE, O_RDWR|O_CREAT, 0644);
+    log_fd = open(HAL_STORAGE_FILE, 0, 0644);
     if (log_fd == -1) {
         hal.console->printf("open failed of " HAL_STORAGE_FILE "\n");
         return;

@@ -13,6 +13,8 @@
 #define ALLOW_DOUBLE_MATH_FUNCTIONS
 #endif
 
+#define ALLOW_DOUBLE_MATH_FUNCTIONS
+
 #if !defined(ALLOW_DOUBLE_MATH_FUNCTIONS)
 /* give warnings if we use double precision maths functions without
    specifying ALLOW_DOUBLE_TRIG_FUNCTIONS. Code should use the

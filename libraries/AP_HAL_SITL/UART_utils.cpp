@@ -26,7 +26,7 @@
 #ifdef USE_TERMIOS
 #include <termios.h>
 #else
-#include <asm/termbits.h>
+//#include <asm/termbits.h>
 #endif
 
 #include <string.h>
@@ -45,23 +45,7 @@ bool HALSITL::UARTDriver::set_speed(int speed)
     cfsetspeed(&t, speed);
     tcsetattr(_fd, TCSANOW, &t);
 #else
-    struct termios2 tc;
-    memset(&tc, 0, sizeof(tc));
-    if (ioctl(_fd, TCGETS2, &tc) == -1) {
-        return false;
-    }
-    
-    /* speed is configured by c_[io]speed */
-    tc.c_cflag &= ~CBAUD;
-    tc.c_cflag |= BOTHER;
-    tc.c_ispeed = speed;
-    tc.c_ospeed = speed;
-    if (ioctl(_fd, TCSETS2, &tc) == -1) {
-        return false;
-    }
-    if (ioctl(_fd, TCFLSH, TCIOFLUSH) == -1) {
-        return false;
-    }
+
 #endif
 
     return true;
@@ -77,30 +61,26 @@ void HALSITL::UARTDriver::configure_parity(uint8_t v)
 
     tcgetattr(_fd, &t);
 #else
-    struct termios2 t;
-    memset(&t, 0, sizeof(t));
-    if (ioctl(_fd, TCGETS2, &t) == -1) {
-        return;
-    }
+
 #endif
     if (v != 0) {
         // enable parity
-        t.c_cflag |= PARENB;
+ //       t.c_cflag |= PARENB;
         if (v == 1) {
-            t.c_cflag |= PARODD;
+    //        t.c_cflag |= PARODD;
         } else {
-            t.c_cflag &= ~PARODD;
+    //        t.c_cflag &= ~PARODD;
         }
     }
     else {
         // disable parity
-        t.c_cflag &= ~PARENB;
+    //    t.c_cflag &= ~PARENB;
     }
 
 #ifdef USE_TERMIOS
     tcsetattr(_fd, TCSANOW, &t);
 #else
-    ioctl(_fd, TCSETS2, &t);
+  //  ioctl(_fd, TCSETS2, &t);
 #endif
 }
 
@@ -114,23 +94,19 @@ void HALSITL::UARTDriver::set_stop_bits(int n)
 
     tcgetattr(_fd, &t);
 #else
-    struct termios2 t;
-    memset(&t, 0, sizeof(t));
-    if (ioctl(_fd, TCGETS2, &t) == -1) {
-        return;
-    }
+
 #endif
 
     if (n > 1) {
-        t.c_cflag |= CSTOPB;
+  //      t.c_cflag |= CSTOPB;
     } else {
-        t.c_cflag &= ~CSTOPB;
+    //    t.c_cflag &= ~CSTOPB;
     }
 
 #ifdef USE_TERMIOS
     tcsetattr(_fd, TCSANOW, &t);
 #else
-    ioctl(_fd, TCSETS2, &t);
+ 
 #endif
 }
 
