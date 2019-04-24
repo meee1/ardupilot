@@ -73,6 +73,9 @@ GCS *GCS::_singleton = nullptr;
 GCS_MAVLINK::GCS_MAVLINK()
 {
     AP_Param::setup_object_defaults(this, var_info);
+#if HAL_OS_POSIX_IO || HAL_OS_FATFS_IO
+    _ftp_init();
+#endif
 }
 
 void
@@ -3207,6 +3210,11 @@ void GCS_MAVLINK::handle_common_message(mavlink_message_t *msg)
     case MAVLINK_MSG_ID_OPTICAL_FLOW:
         handle_optical_flow(msg);
         break;
+#if HAL_OS_POSIX_IO || HAL_OS_FATFS_IO
+    case MAVLINK_MSG_ID_FILE_TRANSFER_PROTOCOL:
+        handle_ftp_messages(msg);
+        break;
+#endif
     }
 }
 
@@ -4619,7 +4627,7 @@ uint64_t GCS_MAVLINK::capabilities() const
         // Copter and Sub may also set this bit as they can always terminate
         ret |= MAV_PROTOCOL_CAPABILITY_FLIGHT_TERMINATION;
     }
-
+    ret |= MAV_PROTOCOL_CAPABILITY_FTP;
     return ret;
 }
 

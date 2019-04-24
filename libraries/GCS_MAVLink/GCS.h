@@ -383,6 +383,8 @@ protected:
     void handle_device_op_read(mavlink_message_t *msg);
     void handle_device_op_write(mavlink_message_t *msg);
 
+    void handle_ftp_messages(mavlink_message_t *msg);
+
     void send_timesync();
     // returns the time a timesync message was most likely received:
     uint64_t timesync_receive_timestamp_ns() const;
@@ -708,6 +710,95 @@ private:
     } try_send_message_stats;
     uint16_t max_slowdown_ms;
 #endif
+
+#if HAL_OS_POSIX_IO || HAL_OS_FATFS_IO
+    //MAVFTP Private members
+    struct {
+        int		    fd;
+        uint32_t	file_size;
+        bool		stream_download;
+        uint32_t	stream_offset;
+        uint16_t	stream_seq_number;
+        uint8_t		stream_target_system_id;
+        unsigned	stream_chunk_transmitted;
+    } _session_info;
+
+    char _ftp_current_abs_path[255];
+    /// This is the payload which is in mavlink_file_transfer_protocol_t.payload.
+    /// This needs to be packed, because it's typecasted from mavlink_file_transfer_protocol_t.payload, which starts
+    /// at a 3 byte offset, causing an unaligned access to seq_number and offset
+    struct __attribute__((__packed__)) FTPPayloadHeader {
+        uint16_t	seq_number;	///< sequence number for message
+        uint8_t		session;	///< Session id for read and write commands
+        uint8_t		opcode;		///< Command opcode
+        uint8_t		size;		///< Size of data
+        uint8_t		req_opcode;	///< Request opcode returned in kRspAck, kRspNak message
+        uint8_t		burst_complete; ///< Only used if req_opcode=kCmdBurstReadFile - 1: set of burst packets complete, 0: More burst packets coming.
+        uint8_t		padding;        ///< 32 bit aligment padding
+        uint32_t	offset;		///< Offsets for List and Read commands
+        uint8_t		data[];		///< command data, varies by Opcode
+    };
+
+    /// Command opcodes
+    enum FTPOpcode : uint8_t {
+        kCmdNone,		///< ignored, always acked
+        kCmdTerminateSession,	///< Terminates open Read session
+        kCmdResetSessions,	///< Terminates all open Read sessions
+        kCmdListDirectory,	///< List files in <path> from <offset>
+        kCmdOpenFileRO,		///< Opens file at <path> for reading, returns <session>
+        kCmdReadFile,		///< Reads <size> bytes from <offset> in <session>
+        kCmdCreateFile,		///< Creates file at <path> for writing, returns <session>
+        kCmdWriteFile,		///< Writes <size> bytes to <offset> in <session>
+        kCmdRemoveFile,		///< Remove file at <path>
+        kCmdCreateDirectory,	///< Creates directory at <path>
+        kCmdRemoveDirectory,	///< Removes Directory at <path>, must be empty
+        kCmdOpenFileWO,		///< Opens file at <path> for writing, returns <session>
+        kCmdTruncateFile,	///< Truncate file at <path> to <offset> length
+        kCmdRename,		///< Rename <path1> to <path2>
+        kCmdCalcFileCRC32,	///< Calculate CRC32 for file at <path>
+        kCmdBurstReadFile,	///< Burst download session file
+
+        kRspAck = 128,		///< Ack response
+        kRspNak			///< Nak response
+    };
+
+    /// @brief Error codes returned in Nak response FTPPayloadHeader.data[0].
+    enum FTPErrorCode : uint8_t {
+        kErrNone,
+        kErrFail,			///< Unknown failure
+        kErrFailErrno,			///< Command failed, errno sent back in FTPPayloadHeader.data[1]
+        kErrInvalidDataSize,		///< FTPPayloadHeader.size is invalid
+        kErrInvalidSession,		///< Session is not currently open
+        kErrNoSessionsAvailable,	///< All available Sessions in use
+        kErrEOF,			///< Offset past end of file for List and Read commands
+        kErrUnknownCommand,		///< Unknown command opcode
+        kErrFailFileExists,		///< File exists already
+        kErrFailFileProtected		///< File is write protected
+    };
+
+    mavlink_file_transfer_protocol_t _ftp_response;
+
+    FTPErrorCode	_ftp_List(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_Open(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload, int oflag);
+    FTPErrorCode	_ftp_Read(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_Burst(FTPPayloadHeader *request_payload, uint8_t target_system_id);
+    FTPErrorCode	_ftp_Write(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_Terminate(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_Reset(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_RemoveDirectory(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_CreateDirectory(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_RemoveFile(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_TruncateFile(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_Rename(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    FTPErrorCode	_ftp_CalcFileCRC32(FTPPayloadHeader *request_payload, FTPPayloadHeader *response_payload);
+    char *_data_as_cstring(FTPPayloadHeader *payload);
+    void _set_current_abs_path(char* rel_path);
+    void _ftp_burst_send(void);
+    void _ftp_init(void);
+
+    int _ftp_errno = 0;
+    bool _stream_send_registered = false;
+#endif //#if HAL_OS_POSIX_IO || HAL_OS_FATFS_IO
 
     uint32_t last_mavlink_stats_logged;
 };
