@@ -177,6 +177,9 @@ void GCS_MAVLINK::handle_ftp_messages(mavlink_message_t *msg)
         break;
 
     case kCmdBurstReadFile:
+        response_payload->offset = 0;
+        response_payload->size = 0;
+        response_payload->burst_complete = false;
         errorCode = _ftp_Burst(payload, target_system_id);
         break;
 
