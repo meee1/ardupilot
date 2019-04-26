@@ -143,6 +143,7 @@ void GCS_MAVLINK::handle_ftp_messages(mavlink_message_t *msg)
         mavlink_msg_file_transfer_protocol_send_struct(chan, &_ftp_response);
         return;
     }
+    memset(response_payload->data,0,239);
     switch (payload->opcode) {
     case kCmdNone:
         break;
@@ -443,7 +444,7 @@ GCS_MAVLINK::FTPErrorCode GCS_MAVLINK::_ftp_Burst(FTPPayloadHeader *request_payl
     _session_info.stream_download = true;
     _session_info.stream_offset = request_payload->offset;
     _session_info.stream_chunk_transmitted = 0;
-    _session_info.stream_seq_number = request_payload->seq_number + 1;
+    _session_info.stream_seq_number = request_payload->seq_number + 2;
     _session_info.stream_target_system_id = target_system_id;
     if (!_stream_send_registered) {
         hal.scheduler->register_io_process(FUNCTOR_BIND(this, &GCS_MAVLINK::_ftp_burst_send, void));
@@ -694,18 +695,17 @@ void GCS_MAVLINK::_ftp_burst_send()
             more_data = true;
             stream_payload->burst_complete = false;
         }
+        /* perform transfers in 35K chunks - this is determined empirical */
+        if (_session_info.stream_chunk_transmitted > 35000) {
+            stream_payload->burst_complete = true;
+            _session_info.stream_download = false;
+            _session_info.stream_chunk_transmitted = 0;
+        }
         _ftp_response.target_system = _session_info.stream_target_system_id;
         mavlink_msg_file_transfer_protocol_send_struct(chan, &_ftp_response);
 
         if (more_data && !HAVE_PAYLOAD_SPACE(chan, FILE_TRANSFER_PROTOCOL)) {
             more_data = false;
-
-            /* perform transfers in 35K chunks - this is determined empirical */
-            if (_session_info.stream_chunk_transmitted > 35000) {
-                stream_payload->burst_complete = true;
-                _session_info.stream_download = false;
-                _session_info.stream_chunk_transmitted = 0;
-            }
         }
     }
     while (more_data);
