@@ -570,7 +570,7 @@ GCS_MAVLINK::FTPErrorCode GCS_MAVLINK::_ftp_Rename(FTPPayloadHeader *request_pay
     char *ptr = _data_as_cstring(request_payload);
     size_t oldpath_sz = strlen(ptr);
 
-    if (oldpath_sz <= request_payload->size) {
+    if (oldpath_sz >= request_payload->size) {
         // no newpath
         _ftp_errno = EINVAL;
         return kErrFailErrno;
@@ -578,6 +578,7 @@ GCS_MAVLINK::FTPErrorCode GCS_MAVLINK::_ftp_Rename(FTPPayloadHeader *request_pay
 
     _set_current_abs_path(ptr);
     char* current_path = new char[strlen(_ftp_current_abs_path)];
+    strcpy(current_path, _ftp_current_abs_path);
 
     _set_current_abs_path(ptr + oldpath_sz + 1);
     _ftp_current_abs_path[sizeof(_ftp_current_abs_path) - 1] = '\0'; // ensure termination
