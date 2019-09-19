@@ -17,27 +17,33 @@ bool Mode::do_user_takeoff_start(float takeoff_alt_cm)
 bool Mode::do_user_takeoff(float takeoff_alt_cm, bool must_navigate)
 {
     if (!copter.motors->armed()) {
+        gcs().send_text(MAV_SEVERITY_WARNING, "Takeoff Failed: Not armed");
         return false;
     }
     if (!copter.ap.land_complete) {
         // can't takeoff again!
+        gcs().send_text(MAV_SEVERITY_WARNING, "Takeoff Failed: Not landed");
         return false;
     }
     if (!has_user_takeoff(must_navigate)) {
         // this mode doesn't support user takeoff
+        gcs().send_text(MAV_SEVERITY_WARNING, "Takeoff Failed: No support in mode");
         return false;
     }
     if (takeoff_alt_cm <= copter.current_loc.alt) {
         // can't takeoff downwards...
+        gcs().send_text(MAV_SEVERITY_WARNING, "Takeoff Failed: Negative altitude");
         return false;
     }
 
     // Helicopters should return false if MAVlink takeoff command is received while the rotor is not spinning
     if (motors->get_spool_state() != AP_Motors::SpoolState::THROTTLE_UNLIMITED && copter.ap.using_interlock) {
+        gcs().send_text(MAV_SEVERITY_WARNING, "Takeoff Failed: Rotor not spinning");
         return false;
     }
 
     if (!do_user_takeoff_start(takeoff_alt_cm)) {
+        gcs().send_text(MAV_SEVERITY_WARNING, "Takeoff Failed: Bad destination");
         return false;
     }
 
