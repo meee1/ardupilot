@@ -254,7 +254,7 @@ class Board:
                 cfg.srcnode.find_dir('modules/uavcan/libuavcan/include').abspath()
             ]
 
-        if cfg.options.with_libnpnt is not None:
+        if True:
             env.AP_LIBRARIES += [
                 'modules/libnpnt/jsmn/*.c',
                 'modules/libnpnt/src/*.c',
@@ -266,11 +266,11 @@ class Board:
                 cfg.srcnode.find_dir('modules/libnpnt/inc').abspath()
             ]
             env.GIT_SUBMODULES += ['libnpnt']
-            env.ROMFS_FILES += [ ('server_pubkey.der', cfg.options.with_libnpnt) ]
+            #env.ROMFS_FILES += [ ('server_pubkey.der', cfg.options.with_libnpnt) ]
             env.CXXFLAGS += ['-DHAL_IS_REGISTERED_FLIGHT_MODULE']
 
         #setup wolfssl for security methods
-        if cfg.options.with_libnpnt is not None or cfg.options.secure_key is not None:
+        if True:
             cfg.define('WOLFSSL_USER_SETTINGS', 1)
             cfg.define('SKIP_WOLFSSL_BINDINGS', 1)
             cfg.define('SECURE', 1)
@@ -279,7 +279,8 @@ class Board:
             env.LIB += ['wolfssl']
             env.BUILD_WOLFSSL = True
             cfg.load('wolfssl')
-            env.SECURE_KEY = cfg.options.secure_key
+            cfg.load('wolfMQTT')
+            #env.SECURE_KEY = cfg.options.secure_key
         if cfg.options.secure_key is not None:
             pubkey = ECC.import_key(open(cfg.options.secure_key, 'rb').read())
             X = hex(pubkey._point.x)
@@ -322,6 +323,7 @@ class Board:
             bld.ap_version_append_int('BUILD_DATE_DAY', ltime.tm_mday)
         if bld.env.BUILD_WOLFSSL:
             bld.load('wolfssl')
+            bld.load('wolfMQTT')
 
     def embed_ROMFS_files(self, ctx):
         '''embed some files using AP_ROMFS'''

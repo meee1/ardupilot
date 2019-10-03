@@ -85,6 +85,7 @@ COMMON_VEHICLE_DEPENDENT_LIBRARIES = [
     'AP_ToshibaCAN',
     'AP_NMEA_Output',
     'AP_Security',
+    'AP_TelUTM',
 ]
 
 def get_legacy_defines(sketch_name):

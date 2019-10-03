@@ -22,3 +22,6 @@
 [submodule "modules/libnpnt"]
 	path = modules/libnpnt
 	url = http://github.com/ispirt/libnpnt
+[submodule "modules/wolfMQTT"]
+	path = modules/wolfMQTT
+	url = https://github.com/wolfSSL/wolfMQTT.git
