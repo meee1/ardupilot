@@ -25,6 +25,7 @@ def configure(cfg):
         return bldnode.make_node(path).abspath()
     env.wolfMQTT_ROOT =   srcpath('modules/wolfMQTT')
     env.wolfMQTT_BUILDDIR = bldpath('modules/wolfMQTT')
+    env.WOLFSSL_BUILDDIR = bldpath('modules/wolfssl')
     if env.TOOLCHAIN == 'native':
         env.WOLFSSL_USER_HEADERS = cfg.path.find_node('libraries/AP_HAL_SITL/wolfssl/').abspath()
     elif env.TOOLCHAIN == 'arm-none-eabi':
@@ -45,7 +46,7 @@ def build(bld):
     if bld.env.TOOLCHAIN == 'native':
         wolfMQTT_task = bld(
             #build libwolfMQTT.a from wolfMQTT sources
-            rule="cd ${wolfMQTT_ROOT} && ./configure --prefix=${wolfMQTT_BUILDDIR} CFLAGS=\"${EXTRA_CFLAGS} -I${WOLFSSL_USER_HEADERS} -I../wolfssl -Wno-error=unused-parameter\" --disable-shared LDFLAGS=\"-L../wolfssl/src/.libs\" && make clean && make && make install",
+            rule="cd ${wolfMQTT_ROOT} && ./configure --prefix=${wolfMQTT_BUILDDIR} CFLAGS=\"${EXTRA_CFLAGS} -I${WOLFSSL_USER_HEADERS} -I../wolfssl -Wno-error=unused-parameter\" --disable-shared LDFLAGS=\"-L${WOLFSSL_BUILDDIR}/lib\" && make clean && make && make install",
             group='dynamic_sources',
             #source=wolfMQTT_source,
             target=bld.bldnode.find_or_declare('modules/wolfMQTT/lib/libwolfMQTT.a')
@@ -53,7 +54,7 @@ def build(bld):
     elif bld.env.TOOLCHAIN == 'arm-none-eabi':
         wolfMQTT_task = bld(
             #build libwolfMQTT.a from wolfMQTT sources
-            rule="cd ${wolfMQTT_ROOT} && ./configure --host=arm-none-eabi CC=arm-none-eabi-gcc AR=arm-none-eabi-ar STRIP=arm-none-eabi-strip RANLIB=arm-none-eabi-ranlib --prefix=${wolfMQTT_BUILDDIR} CFLAGS=\"--specs=nosys.specs -mthumb ${EXTRA_CFLAGS} -I${WOLFSSL_USER_HEADERS} -I../wolfssl -Wno-error=unused-parameter\" --disable-filesystem --disable-fastmath --disable-shared --enable-sha --enable-keygen --enable-rsa --disable-oldnames && make clean && make && make install",
+            rule="cd ${wolfMQTT_ROOT} && ./configure --host=arm-none-eabi CC=arm-none-eabi-gcc AR=arm-none-eabi-ar STRIP=arm-none-eabi-strip RANLIB=arm-none-eabi-ranlib --prefix=${wolfMQTT_BUILDDIR} CFLAGS=\"--specs=nosys.specs -mthumb ${EXTRA_CFLAGS} -I${WOLFSSL_USER_HEADERS} -I../wolfssl -Wno-error=unused-parameter\" --disable-shared LDFLAGS=\"-L${WOLFSSL_BUILDDIR}/lib\" --disable-examples && make clean && make && make install",
             group='dynamic_sources',
             #source=wolfMQTT_source,
             target=bld.bldnode.find_or_declare('modules/wolfMQTT/lib/libwolfMQTT.a')
