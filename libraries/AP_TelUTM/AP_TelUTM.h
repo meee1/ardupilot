@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Common/AP_Common.h>
-#include <wolfssl/options.h>
 
+#include <wolfssl/options.h>
 #include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/version.h>
 
@@ -14,7 +14,8 @@
 #include <wolfssl/wolfcrypt/hmac.h>
 
 #include <wolfmqtt/mqtt_client.h>
-#include <wolfmqtt/version.h>
+//#include <wolfmqtt/mqtt_packet.h>
+//#include <wolfmqtt/version.h>
 
 class AP_TelUTM
 {

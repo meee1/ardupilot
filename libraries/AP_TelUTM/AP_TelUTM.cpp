@@ -14,6 +14,7 @@
 #include <wolfssl/wolfcrypt/hmac.h>
 
 #include <wolfmqtt/mqtt_client.h>
+#include <wolfmqtt/mqtt_packet.h>
 #include <wolfmqtt/version.h>
 
 
@@ -33,14 +34,71 @@
 
 /* Local Variables */
 #ifdef ENABLE_MQTT_TLS
-static WOLFSSL_METHOD* mMethod = 0;
-static WOLFSSL_CTX* mCtx       = 0;
-static WOLFSSL* mSsl           = 0;
+//static WOLFSSL_METHOD* mMethod = 0;
+//static WOLFSSL_CTX* mCtx       = 0;
+//static WOLFSSL* mSsl           = 0;
 static const char* mTlsFile    = NULL;
 #endif
 static word16 mPort            = 0;
 static const char* mHost       = "iot.eclipse.org";
 static int mStopRead    = 0;
+
+typedef enum _MQTTCtxState {
+    WMQ_BEGIN = 0,
+    WMQ_NET_INIT,
+    WMQ_INIT,
+    WMQ_TCP_CONN,
+    WMQ_MQTT_CONN,
+    WMQ_SUB,
+    WMQ_PUB,
+    WMQ_WAIT_MSG,
+    WMQ_UNSUB,
+    WMQ_DISCONNECT,
+    WMQ_NET_DISCONNECT,
+    WMQ_DONE
+} MQTTCtxState;
+
+/* MQTT Client context */
+typedef struct _MQTTCtx 
+{
+        MQTTCtxState stat;
+        MqttClient client;
+          MqttNet net;
+        
+           MqttConnect connect;
+         MqttMessage lwt_msg;
+             MqttSubscribe subscribe;
+    MqttUnsubscribe unsubscribe;
+           MqttTopic topics[1], *topic;
+           MqttPublish publish;
+          int enable_lwt;
+          MqttQoS qos;
+          
+          bool test_mode;
+          int return_code;
+          
+          const char* host;
+           const char* username;
+    const char* password;
+     const char* topic_name;
+           const char* client_id;
+           const char* app_ctx;
+           word16 keep_alive_sec;
+           word16 port;
+          
+              byte *tx_buf, *rx_buf;
+           int use_tls;
+            word32 cmd_timeout_ms;
+             byte    clean_session;
+} MQTTCtx;
+
+#define AWSIOT_DEVICE_ID        "demoDevice"
+#define AWSIOT_SUBSCRIBE_TOPIC  "$aws/things/" AWSIOT_DEVICE_ID "/shadow/update/delta"
+#define AWSIOT_PUBLISH_TOPIC    "$aws/things/" AWSIOT_DEVICE_ID "/shadow/update"
+#define AWSIOT_PUBLISH_MSG_SZ   400
+#define APP_HARDWARE         "wolf_aws_iot_demo"
+#define APP_FIRMWARE_VERSION "1"
+
 
 /* Private functions */
 static int EthernetConnect(void *context, const char* host, word16 port, int timeout_ms) 
@@ -129,7 +187,7 @@ static int mqttclient_tls_cb(MqttClient* cli)
 
 #define MAX_PACKET_ID   ((1 << 16) - 1)
 static int mPacketIdLast;
-static word16 mqttclient_get_packetid(void)
+static word16 mqtt_get_packetid(void)
 {
   mPacketIdLast = (mPacketIdLast >= MAX_PACKET_ID) ?
                   1 : mPacketIdLast + 1;
@@ -449,14 +507,14 @@ int awsiot_test(MQTTCtx *mqttCtx)
             mqttCtx->stat = WMQ_NET_INIT;
 
             /* Initialize Network */
-            rc = MqttClientNet_Init(&mqttCtx->net, mqttCtx);
+            //rc = MqttClientNet_Init(&mqttCtx->net, mqttCtx);
             if (rc == MQTT_CODE_CONTINUE) {
-                return rc;
+            //    return rc;
             }
             PRINTF("MQTT Net Init: %s (%d)",
                 MqttClient_ReturnCodeToString(rc), rc);
             if (rc != MQTT_CODE_SUCCESS) {
-                goto exit;
+            //    goto exit;
             }
 
             /* setup tx/rx buffers */
@@ -518,7 +576,7 @@ int awsiot_test(MQTTCtx *mqttCtx)
                 /* Send client id in LWT payload */
                 mqttCtx->lwt_msg.qos = mqttCtx->qos;
                 mqttCtx->lwt_msg.retain = 0;
-                mqttCtx->lwt_msg.topic_name = AWSIOT_PUBLISH_TOPIC"lwt";
+                mqttCtx->lwt_msg.topic_name = AWSIOT_PUBLISH_TOPIC;
                 mqttCtx->lwt_msg.buffer = (byte*)mqttCtx->client_id;
                 mqttCtx->lwt_msg.total_len = (word16)XSTRLEN(mqttCtx->client_id);
             }
@@ -762,9 +820,9 @@ exit:
         if (mqttCtx->rx_buf) WOLFMQTT_FREE(mqttCtx->rx_buf);
 
         /* Cleanup network */
-        MqttClientNet_DeInit(&mqttCtx->net);
+        //MqttClientNet_DeInit(&mqttCtx->net);
 
-        MqttClient_DeInit(&mqttCtx->client);
+        //MqttClient_DeInit(&mqttCtx->client);
     }
 
     return rc;

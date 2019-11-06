@@ -275,6 +275,7 @@ class Board:
             cfg.define('SKIP_WOLFSSL_BINDINGS', 1)
             cfg.define('SECURE', 1)
             env.INCLUDES += [ cfg.srcnode.find_dir('modules/wolfssl').abspath() ]
+            env.INCLUDES += [ cfg.srcnode.find_dir('modules/wolfMQTT').abspath() ]
             env.GIT_SUBMODULES += ['wolfssl']
             env.LIB += ['wolfssl']
             env.BUILD_WOLFSSL = True
