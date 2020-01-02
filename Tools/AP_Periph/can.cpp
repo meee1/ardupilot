@@ -779,16 +779,23 @@ static bool shouldAcceptTransfer(const CanardInstance* ins,
     return false;
 }
 
+uavcan::ICanDriver* _can_driver;
+
 static void processTx(void)
 {
     static uint8_t fail_count;
-    ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
 
-    ChibiOS_CAN::CanIface* iface = drv->getIface(0);
+    if (hal.can_mgr[0] == nullptr)
+        return;
+
+    if(_can_driver == nullptr)
+        return;
+
+    uavcan::ICanIface* iface = _can_driver->getIface(0);
 
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
         uavcan::CanFrame frame { (txf->id | uavcan::CanFrame::FlagEFF), txf->data, txf->data_len};
-        if (((uavcan::ICanIface*)iface)->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)
+        if (iface->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)
          /*canTransmit(NULL, CAN_ANY_MAILBOX, &txmsg, TIME_IMMEDIATE) == MSG_OK*/) {
             canardPopTxQueue(&canard);
             fail_count = 0;
@@ -1015,8 +1022,30 @@ static void can_wait_node_id(void)
 
 void AP_Periph_FW::loop()
 {
+    while(true)
+    {
+        uavcan::CanFrame recv_frame;
+        uavcan::MonotonicTime time;
+        uavcan::UtcTime utc_time;
+        uavcan::CanIOFlags flags {};
 
+        int16_t res = _can_driver->getIface(0)->receive(recv_frame, time, utc_time, flags);
+
+        if(res == 1) {
+            uavcan::CanRxFrame frame = {};
+            frame.ts_mono = time;
+            frame.ts_utc = utc_time;
+            memcpy(frame.data, recv_frame.data, 8);
+            frame.id = recv_frame.id;
+            frame.dlc = recv_frame.dlc;
+            rxbuffer.push(frame);
+        } else {
+            hal.scheduler->delay(1);
+        }
+    }
 }
+
+#define debug_can(level_debug, fmt, args...) do { if (true) { printf(fmt, ##args); }} while (0)
 
 void AP_Periph_FW::can_start()
 {
@@ -1028,20 +1057,50 @@ void AP_Periph_FW::can_start()
         PreferredNodeID = g.can_node;
     }
 
-    AP::can().init();
+    AP_Param::setup_sketch_defaults();
 
-    ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
+    uint32_t before = AP_HAL::micros();
+    // Load all auto-loaded EEPROM variables
+    AP_Param::load_all();
+    hal.console->printf("load_all took %luus\n", (unsigned long)(AP_HAL::micros() - before));
 
-    ChibiOS_CAN::CanIface* iface = drv->getIface(0);
+    AP::can().init();    
 
-    uavcan::CanFrame frame { (0 | uavcan::CanFrame::FlagEFF), nullptr, 0 };
+    int driver_index = 0;
 
-    if(!((uavcan::ICanIface*)iface)->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)) {
-        printf("failed to send can packet\n");
+    // get CAN manager instance
+    AP_HAL::CANManager* can_mgr = hal.can_mgr[driver_index];
+
+
+    if (can_mgr == nullptr) {
+        debug_can(1, "KDECAN: no mgr for this driver\n\r");
         return;
     }
 
     
+     uint8_t interface = 0;
+    can_mgr->begin(1000000, interface);
+    can_mgr->initialized(true);
+
+    if (!can_mgr->is_initialized()) {
+        debug_can(1, "KDECAN: mgr not initialized\n\r");
+        return;
+    }
+
+    
+
+
+
+    // store pointer to CAN driver
+    _can_driver = can_mgr->get_driver();
+
+    if (_can_driver == nullptr) {
+        debug_can(1, "KDECAN: no CAN driver\n\r");
+        return;
+    }
+
+
+
     // start thread for receiving and sending CAN frames
     if (!hal.scheduler->thread_create(FUNCTOR_BIND_MEMBER(&AP_Periph_FW::loop, void), "mycan", 4096, AP_HAL::Scheduler::PRIORITY_CAN, 0)) {
         printf("cant create thread");

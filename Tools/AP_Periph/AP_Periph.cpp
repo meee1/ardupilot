@@ -93,6 +93,13 @@ void AP_Periph_FW::init()
         printf("Reboot after watchdog reset\n");
     }
 
+    // initialise console serial port
+    serial_manager.init_console();
+
+    hal.console->printf("\n\nInit %s\n\nFree RAM: %u\n",
+                        AP::fwversion().fw_string,
+                        (unsigned)hal.util->available_memory());
+    printf("this is a test \r\n");
 #ifdef HAL_PERIPH_ENABLE_GPS
     if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE) {
         gps.init(serial_manager);
@@ -200,10 +207,14 @@ static void update_rainbow()
 
 void AP_Periph_FW::update()
 {
+     stm32_watchdog_pat();
     static uint32_t last_led_ms;
     uint32_t now = AP_HAL::millis();
     if (now - last_led_ms > 1000) {
+       hal.uartA->printf("\r\n");
         last_led_ms = now;
+        palToggleLine(HAL_GPIO_PIN_LED);
+        hal.scheduler->delay(20);
         palToggleLine(HAL_GPIO_PIN_LED);
 #if 1
 #ifdef HAL_PERIPH_ENABLE_GPS
