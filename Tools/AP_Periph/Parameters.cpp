@@ -34,6 +34,19 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     // can node baudrate
     GSCALAR(can_baudrate,     "CAN_BAUDRATE", 1000000),
 
+       // @Group: SERIAL
+    // @Path: ../libraries/AP_SerialManager/AP_SerialManager.cpp
+    GOBJECT(serial_manager, "SERIAL",   AP_SerialManager),
+
+       // @Group: INS_
+    // @Path: ../libraries/AP_InertialSensor/AP_InertialSensor.cpp
+    GOBJECT(ins,            "INS_", AP_InertialSensor),
+
+    //  GOBJECT(ahrs,                   "AHRS_",    AP_AHRS),
+
+   //     GOBJECT(BoardConfig,            "BRD_",       AP_BoardConfig),
+   // GOBJECT(BoardConfig_CAN,        "CAN_",       AP_BoardConfig_CAN),
+
 #if !defined(HAL_NO_FLASH_SUPPORT) && !defined(HAL_NO_ROMFS_SUPPORT)
     // trigger bootloader flash
     GSCALAR(flash_bootloader,     "FLASH_BOOTLOADER", 0),

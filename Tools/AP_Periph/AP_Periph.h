@@ -5,6 +5,12 @@
 #include <AP_Baro/AP_Baro.h>
 #include <AP_Airspeed/AP_Airspeed.h>
 #include <AP_RangeFinder/AP_RangeFinder.h>
+#include <AP_Common/AP_FWVersion.h>
+#include <AP_InertialSensor/AP_InertialSensor.h>
+#include <AP_AHRS/AP_AHRS.h>
+#include <AP_BoardConfig/AP_BoardConfig.h>
+#include <AP_BoardConfig/AP_BoardConfig_CAN.h>
+#include "version.h"
 #include "../AP_Bootloader/app_comms.h"
 #include "hwing_esc.h"
 
@@ -99,6 +105,14 @@ public:
     void loop();
 
     AP_SerialManager serial_manager;
+
+    AP_InertialSensor ins;
+
+   // AP_AHRS ahrs;
+
+  //  AP_BoardConfig BoardConfig;
+
+   // AP_BoardConfig_CAN BoardConfig_CAN;
 
 #ifdef HAL_PERIPH_ENABLE_GPS
     AP_GPS gps;

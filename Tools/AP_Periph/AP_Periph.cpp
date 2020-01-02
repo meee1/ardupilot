@@ -149,6 +149,8 @@ void AP_Periph_FW::init()
 #endif
     
     start_ms = AP_HAL::millis();
+
+    printf("Startup Done\r\n");
 }
 
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) && HAL_PERIPH_NEOPIXEL_COUNT == 8

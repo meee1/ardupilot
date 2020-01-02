@@ -26,8 +26,8 @@ public:
         k_param_adsb_baudrate,
         k_param_hardpoint_id,
         k_param_hardpoint_rate,
-        k_param_baro_enable,
-        k_param_esc_number,
+ k_param_baro_enable,
+            k_param_serial_manager,     k_param_ins,  k_param_BoardConfig, k_param_BoardConfig_CAN
     };
 
     AP_Int16 format_version;
@@ -58,7 +58,7 @@ public:
     AP_Int16 hardpoint_id;
     AP_Int8 hardpoint_rate;
 #endif
-
+    
 #ifdef HAL_PERIPH_ENABLE_HWESC
     AP_Int8 esc_number;
 #endif
