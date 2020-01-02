@@ -10,6 +10,11 @@
 #include <AP_AHRS/AP_AHRS.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_BoardConfig/AP_BoardConfig_CAN.h>
+#include <AP_AHRS/AP_AHRS_NavEKF.h>
+#include <AP_NavEKF3/AP_NavEKF3.h>
+#include <AP_NavEKF2/AP_NavEKF2.h>
+#include <AP_NavEKF/AP_Nav_Common.h>
+#include <AP_AHRS/AP_AHRS_DCM.h>
 #include "version.h"
 #include "../AP_Bootloader/app_comms.h"
 #include "hwing_esc.h"
@@ -108,9 +113,9 @@ public:
 
     AP_InertialSensor ins;
 
-   // AP_AHRS ahrs;
+    AP_Notify notify;
 
-  //  AP_BoardConfig BoardConfig;
+    AP_BoardConfig BoardConfig;
 
    // AP_BoardConfig_CAN BoardConfig_CAN;
 
@@ -121,6 +126,10 @@ public:
 #ifdef HAL_PERIPH_ENABLE_MAG
     Compass compass;
 #endif
+
+    //NavEKF2 EKF2{&ahrs};
+    //NavEKF3 EKF3{&ahrs};
+    //AP_AHRS_NavEKF ahrs{EKF2, EKF3}; 
 
 #ifdef HAL_PERIPH_ENABLE_BARO
     AP_Baro baro;

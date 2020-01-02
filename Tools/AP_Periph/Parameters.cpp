@@ -42,10 +42,10 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     // @Path: ../libraries/AP_InertialSensor/AP_InertialSensor.cpp
     GOBJECT(ins,            "INS_", AP_InertialSensor),
 
-    //  GOBJECT(ahrs,                   "AHRS_",    AP_AHRS),
+      //GOBJECT(ahrs,                   "AHRS_",    AP_AHRS),
 
-   //     GOBJECT(BoardConfig,            "BRD_",       AP_BoardConfig),
-   // GOBJECT(BoardConfig_CAN,        "CAN_",       AP_BoardConfig_CAN),
+        GOBJECT(BoardConfig,            "BRD_",       AP_BoardConfig),
+  //  GOBJECT(BoardConfig_CAN,        "CAN_",       AP_BoardConfig_CAN),
 
 #if !defined(HAL_NO_FLASH_SUPPORT) && !defined(HAL_NO_ROMFS_SUPPORT)
     // trigger bootloader flash
