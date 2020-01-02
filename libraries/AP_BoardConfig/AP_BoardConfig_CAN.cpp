@@ -102,34 +102,28 @@ AP_BoardConfig_CAN::AP_BoardConfig_CAN()
 
 void AP_BoardConfig_CAN::init()
 {
-    printf("AP_BoardConfig_CAN::init()\r\n");
     // Create all drivers that we need
     bool initret = true;
 #if AP_UAVCAN_SLCAN_ENABLED
     reset_slcan_serial();
 #endif
     for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_INTERFACES; i++) {
-        printf("MAX_NUMBER_OF_CAN_INTERFACES\r\n");
         // Check the driver number assigned to this physical interface
-        uint8_t drv_num = _interfaces[i]._driver_number_cache = _interfaces[i]._driver_number = 1;
+        uint8_t drv_num = _interfaces[i]._driver_number_cache = _interfaces[i]._driver_number;
         if (drv_num != 0 && drv_num <= MAX_NUMBER_OF_CAN_DRIVERS) {
-            printf("drv_num != 0 && drv_num <= MAX_NUMBER_OF_CAN_DRIVERS\r\n");
             if (hal.can_mgr[drv_num - 1] == nullptr) {
-                printf("hal.can_mgr[drv_num - 1] == nullptr\r\n");
                 // CAN Manager is the driver
                 // So if this driver was not created before for other physical interface - do it
                 #if CONFIG_HAL_BOARD == HAL_BOARD_LINUX
                     const_cast <AP_HAL::HAL&> (hal).can_mgr[drv_num - 1] = new Linux::CANManager;
                 #elif CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS
                     const_cast <AP_HAL::HAL&> (hal).can_mgr[drv_num - 1] = new ChibiOS::CANManager;
-                    printf("ChibiOS::CANManager\r\n");
                 #endif
             }
 
             // For this now existing driver (manager), start the physical interface
             if (hal.can_mgr[drv_num - 1] != nullptr) {
-                hal.can_mgr[drv_num - 1]->begin(_interfaces[i]._bitrate, i);
-                printf("hal.can_mgr[drv_num - 1]->begin\r\n");
+                initret = initret && hal.can_mgr[drv_num - 1]->begin(_interfaces[i]._bitrate, i);
 #if AP_UAVCAN_SLCAN_ENABLED
                     if (_slcan._can_port == (i+1) && hal.can_mgr[drv_num - 1] != nullptr ) {
                         ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[drv_num - 1]->get_driver();
@@ -142,13 +136,11 @@ void AP_BoardConfig_CAN::init()
         }
     }
 
-    printf("if (initret) {\r\n");
     if (initret) {
         for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_DRIVERS; i++) {
             Protocol_Type prot_type = _drivers[i]._protocol_type_cache = (Protocol_Type) _drivers[i]._protocol_type.get();
 
             if (hal.can_mgr[i] == nullptr) {
-                printf("hal.can_mgr[i] == nullptr\r\n");
                 continue;
             }
 

@@ -61,16 +61,21 @@ void AP_Periph_FW::init()
 
     stm32_watchdog_pat();
 
-    hal.uartA->begin(AP_SERIALMANAGER_CONSOLE_BAUD, 32, 32);
-    hal.uartB->begin(115200, 128, 256);
-
     load_parameters();
 
     stm32_watchdog_pat();
-
-    can_start();
-
+  // initialise console serial port
+    serial_manager.init_console();
+       hal.console->printf("\n\nInit %s\n\nFree RAM: %u\n",
+                        AP::fwversion().fw_string,
+                        (unsigned)hal.util->available_memory());
     serial_manager.init();
+
+    BoardConfig.init();
+
+    BoardConfig_CAN.init();
+
+    can_start(); 
 
     stm32_watchdog_pat();
 
@@ -93,12 +98,9 @@ void AP_Periph_FW::init()
         printf("Reboot after watchdog reset\n");
     }
 
-    // initialise console serial port
-    serial_manager.init_console();
+ 
 
-    hal.console->printf("\n\nInit %s\n\nFree RAM: %u\n",
-                        AP::fwversion().fw_string,
-                        (unsigned)hal.util->available_memory());
+ 
     printf("this is a test \r\n");
 #ifdef HAL_PERIPH_ENABLE_GPS
     if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE) {
@@ -149,6 +151,8 @@ void AP_Periph_FW::init()
 #endif
     
     start_ms = AP_HAL::millis();
+
+    //AP_Param::show_all(hal.console, true);
 
     printf("Startup Done\r\n");
 }

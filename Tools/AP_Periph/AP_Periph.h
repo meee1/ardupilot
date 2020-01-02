@@ -117,7 +117,7 @@ public:
 
     AP_BoardConfig BoardConfig;
 
-   // AP_BoardConfig_CAN BoardConfig_CAN;
+    AP_BoardConfig_CAN BoardConfig_CAN;
 
 #ifdef HAL_PERIPH_ENABLE_GPS
     AP_GPS gps;

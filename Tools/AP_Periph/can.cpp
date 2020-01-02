@@ -1055,16 +1055,7 @@ void AP_Periph_FW::can_start()
     
     if (g.can_node >= 0 && g.can_node < 128) {
         PreferredNodeID = g.can_node;
-    }
-
-    AP_Param::setup_sketch_defaults();
-
-    uint32_t before = AP_HAL::micros();
-    // Load all auto-loaded EEPROM variables
-    AP_Param::load_all();
-    hal.console->printf("load_all took %luus\n", (unsigned long)(AP_HAL::micros() - before));
-
-    AP::can().init();    
+    }  
 
     int driver_index = 0;
 

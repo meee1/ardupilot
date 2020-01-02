@@ -62,7 +62,7 @@ PA14 JTCK-SWCLK SWD
 ###########################
 FLASH_RESERVE_START_KB 128
 
-
+define HAL_CAN_DRIVER_DEFAULT 1
 define HAL_BARO_ALLOW_INIT_NO_BARO
                                     
 #define HAL_USE_ADC TRUE

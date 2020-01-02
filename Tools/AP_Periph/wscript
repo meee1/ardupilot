@@ -28,7 +28,8 @@ def build(bld):
         'AP_FlashStorage',
         'AP_GPS',
         'AP_SerialManager',
-        'AP_RTC',
+        'AP_RTC', 
+        'AP_Compass',
         'AP_AHRS',
         'AP_NavEKF2',
         'AP_NavEKF3',
@@ -37,14 +38,13 @@ def build(bld):
         'AP_Arming',
         'AP_Beacon',
         'AP_Declination',
-        'AP_NMEA_Output',
-        'AP_Compass',
+        'AP_NMEA_Output',     
         'AP_Baro',
         'Filter',
         'AP_InternalError',
         'AP_Airspeed',
         'AP_RangeFinder',
-        'AP_ROMFS','AP_BattMonitor','AP_OpticalFlow','AP_HAL_ChibiOS','AP_Filesystem','AP_ADSB','AP_Compass','AP_InertialSensor','AP_Logger','AP_AccelCal','AP_Scheduler'
+        'AP_ROMFS','AP_BattMonitor','AP_OpticalFlow','AP_HAL_ChibiOS','AP_Filesystem','AP_ADSB','AP_InertialSensor','AP_Logger','AP_AccelCal','AP_Scheduler'
         ],
         exclude_src=[
    #         'libraries/AP_HAL_ChibiOS/Storage.cpp'
@@ -57,7 +57,7 @@ def build(bld):
 
     bld.ap_program(
         program_name='AP_Periph',
-        use=['AP_Periph_libs', 'libcanard','uavcan'], # 
+        use=['AP_Periph_libs', 'libcanard'], 
         program_groups=['bin','AP_Periph'],
         includes=[bld.env.SRCROOT + '/modules/libcanard',
                   bld.env.BUILDROOT + '/modules/libcanard/dsdlc_generated']

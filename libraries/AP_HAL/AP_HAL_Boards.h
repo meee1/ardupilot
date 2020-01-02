@@ -157,8 +157,7 @@
 #endif
 
 #ifndef HAL_WITH_UAVCAN
-#define HAL_WITH_UAVCAN 1
-#define CONFIG_HAL_BOARD HAL_BOARD_CHIBIOS
+#define HAL_WITH_UAVCAN 0
 #endif
 
 #ifndef HAL_RCINPUT_WITH_AP_RADIO
@@ -213,7 +212,7 @@
 #endif
 
 #ifndef HAL_CAN_DRIVER_DEFAULT
-#define HAL_CAN_DRIVER_DEFAULT 1
+#define HAL_CAN_DRIVER_DEFAULT 0
 #endif
 
 #ifdef HAVE_LIBDL
