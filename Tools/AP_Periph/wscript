@@ -4,7 +4,7 @@
 import fnmatch
 
 def build(bld):
-    targets = ['f103-*', 'f303-*', 'CUAV_GPS', 'ZubaxGNSS*']
+    targets = ['f103-*', 'f303-*', 'CUAV_GPS', 'ZubaxGNSS*', 'HerePro']
     valid_target = False
     for t in targets:
         if fnmatch.fnmatch(bld.env.BOARD, t):
@@ -21,6 +21,8 @@ def build(bld):
         'AP_HAL_Empty',
         'AP_Math',
         'AP_BoardConfig',
+        'AP_ToshibaCAN',
+        'AP_PiccoloCAN',
         'AP_Param',
         'StorageManager',
         'AP_FlashStorage',
@@ -33,10 +35,10 @@ def build(bld):
         'AP_InternalError',
         'AP_Airspeed',
         'AP_RangeFinder',
-        'AP_ROMFS',
+        'AP_ROMFS','AP_BattMonitor','AP_OpticalFlow','AP_HAL_ChibiOS','AP_Filesystem','AP_ADSB','AP_Compass','AP_InertialSensor','AP_Logger','AP_AccelCal','AP_Scheduler'
         ],
         exclude_src=[
-            'libraries/AP_HAL_ChibiOS/Storage.cpp'
+   #         'libraries/AP_HAL_ChibiOS/Storage.cpp'
         ]
     )
 
@@ -46,7 +48,7 @@ def build(bld):
 
     bld.ap_program(
         program_name='AP_Periph',
-        use=['AP_Periph_libs', 'libcanard'],
+        use=['AP_Periph_libs', 'libcanard','uavcan'], # 
         program_groups=['bin','AP_Periph'],
         includes=[bld.env.SRCROOT + '/modules/libcanard',
                   bld.env.BUILDROOT + '/modules/libcanard/dsdlc_generated']

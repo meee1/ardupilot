@@ -19,6 +19,9 @@
 #include <AP_Math/AP_Math.h>
 #include "AP_Periph.h"
 #include "hal.h"
+#include <AP_HAL_ChibiOS/CAN.h>
+#include <AP_BoardConfig/AP_BoardConfig_CAN.h>
+#include <AP_UAVCAN/AP_UAVCAN.h>
 #include <canard.h>
 #include <uavcan/protocol/dynamic_node_id/Allocation.h>
 #include <uavcan/protocol/NodeStatus.h>
@@ -779,14 +782,14 @@ static bool shouldAcceptTransfer(const CanardInstance* ins,
 static void processTx(void)
 {
     static uint8_t fail_count;
+    ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
+
+    ChibiOS_CAN::CanIface* iface = drv->getIface(0);
+
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
-        CANTxFrame txmsg {};
-        txmsg.DLC = txf->data_len;
-        memcpy(txmsg.data8, txf->data, 8);
-        txmsg.EID = txf->id & CANARD_CAN_EXT_ID_MASK;
-        txmsg.IDE = 1;
-        txmsg.RTR = 0;
-        if (canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, TIME_IMMEDIATE) == MSG_OK) {
+        uavcan::CanFrame frame { (txf->id | uavcan::CanFrame::FlagEFF), txf->data, txf->data_len};
+        if (((uavcan::ICanIface*)iface)->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)
+         /*canTransmit(NULL, CAN_ANY_MAILBOX, &txmsg, TIME_IMMEDIATE) == MSG_OK*/) {
             canardPopTxQueue(&canard);
             fail_count = 0;
         } else {
@@ -802,21 +805,11 @@ static void processTx(void)
     }
 }
 
-static ObjectBuffer<CANRxFrame> rxbuffer{32};
-
-static void can_rxfull_cb(CANDriver *canp, uint32_t flags)
-{
-    CANRxFrame rxmsg;
-    chSysLockFromISR();
-    while (canTryReceiveI(canp, CAN_ANY_MAILBOX, &rxmsg) == false) {
-        rxbuffer.push_force(rxmsg);
-    }
-    chSysUnlockFromISR();
-}
+static ObjectBuffer<uavcan::CanRxFrame> rxbuffer{32};
 
 static void processRx(void)
 {
-    CANRxFrame rxmsg;
+    uavcan::CanRxFrame rxmsg;
     while (true) {
         bool have_msg;
         chSysLock();
@@ -830,13 +823,9 @@ static void processRx(void)
         //palToggleLine(HAL_GPIO_PIN_LED);
 
         const uint64_t timestamp = AP_HAL::micros64();
-        memcpy(rx_frame.data, rxmsg.data8, 8);
-        rx_frame.data_len = rxmsg.DLC;
-        if(rxmsg.IDE) {
-            rx_frame.id = CANARD_CAN_FRAME_EFF | rxmsg.EID;
-        } else {
-            rx_frame.id = rxmsg.SID;
-        }
+        memcpy(rx_frame.data, rxmsg.data, 8);
+        rx_frame.data_len = rxmsg.dlc;
+        rx_frame.id = rxmsg.id;
         canardHandleRxFrame(&canard, &rx_frame, timestamp);
     }
 }
@@ -1024,32 +1013,40 @@ static void can_wait_node_id(void)
     printf("Dynamic node ID allocation complete [%d]\n", canardGetLocalNodeID(&canard));
 }
 
+void AP_Periph_FW::loop()
+{
+
+}
+
 void AP_Periph_FW::can_start()
 {
     node_status.health = UAVCAN_PROTOCOL_NODESTATUS_HEALTH_OK;
     node_status.mode = UAVCAN_PROTOCOL_NODESTATUS_MODE_INITIALIZATION;
     node_status.uptime_sec = AP_HAL::millis() / 1000U;
-
-    static CANConfig cancfg = {
-        CAN_MCR_ABOM | CAN_MCR_AWUM | CAN_MCR_TXFP,
-        0
-    };
-
-    // calculate optimal CAN timings given PCLK1 and baudrate
-    CanardSTM32CANTimings timings {};
-    canardSTM32ComputeCANTimings(STM32_PCLK1, unsigned(g.can_baudrate), &timings);
-    cancfg.btr = CAN_BTR_SJW(0) |
-        CAN_BTR_TS2(timings.bit_segment_2-1) |
-        CAN_BTR_TS1(timings.bit_segment_1-1) |
-        CAN_BTR_BRP(timings.bit_rate_prescaler-1);
     
     if (g.can_node >= 0 && g.can_node < 128) {
         PreferredNodeID = g.can_node;
     }
 
-    CAND1.rxfull_cb = can_rxfull_cb;
+    AP::can().init();
 
-    canStart(&CAND1, &cancfg);
+    ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
+
+    ChibiOS_CAN::CanIface* iface = drv->getIface(0);
+
+    uavcan::CanFrame frame { (0 | uavcan::CanFrame::FlagEFF), nullptr, 0 };
+
+    if(!((uavcan::ICanIface*)iface)->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)) {
+        printf("failed to send can packet\n");
+        return;
+    }
+
+    
+    // start thread for receiving and sending CAN frames
+    if (!hal.scheduler->thread_create(FUNCTOR_BIND_MEMBER(&AP_Periph_FW::loop, void), "mycan", 4096, AP_HAL::Scheduler::PRIORITY_CAN, 0)) {
+        printf("cant create thread");
+        return;
+    }
 
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived, shouldAcceptTransfer, NULL);

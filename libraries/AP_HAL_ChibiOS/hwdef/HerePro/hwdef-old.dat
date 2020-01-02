@@ -1,0 +1,208 @@
+# hw definition file for processing by chibios_hwdef.py
+# for H743 bootloader
+
+# MCU class and specific type
+MCU STM32H7xx STM32H743xx
+
+# USB setup
+USB_VENDOR 0x2DAE # ONLY FOR USE BY HEX! NOBODY ELSE
+USB_PRODUCT 0x1016
+USB_STRING_MANUFACTURER "Hex/ProfiCNC"
+USB_STRING_PRODUCT "HerePro"
+USB_STRING_SERIAL  "%SERIAL%"
+
+# crystal frequency
+OSCILLATOR_HZ 24000000
+
+# board ID for firmware load
+APJ_BOARD_ID 140
+
+FLASH_SIZE_KB 2048
+
+# bootloader is installed at zero offset
+FLASH_RESERVE_START_KB 0
+
+# the location where the bootloader will put the firmware
+# the H743 has 128k sectors
+FLASH_BOOTLOADER_LOAD_KB 128
+
+PB15 LED_2 OUTPUT LOW
+PB14 LED_1 OUTPUT LOW
+define HAL_LED_ON 0
+
+# board voltage
+STM32_VDD 330U
+
+# order of UARTs (and USB)
+UART_ORDER OTG1 USART3 UART7 OTG2
+
+# USART3 F9
+PD9 USART3_RX USART3 NODMA
+PD8 USART3_TX USART3 NODMA
+
+# UART7 F9
+PE7 UART7_RX UART7 NODMA
+PE8 UART7_TX UART7 NODMA
+
+define HAL_UART_NODMA
+
+PA11 OTG_FS_DM OTG1
+PA12 OTG_FS_DP OTG1
+
+PA13 JTMS-SWDIO SWD
+PA14 JTCK-SWCLK SWD
+
+define HAL_USE_EMPTY_STORAGE 1
+define HAL_STORAGE_SIZE 16384
+
+
+
+
+###########################
+FLASH_RESERVE_START_KB 128
+# setup build for a peripheral firmware
+env AP_PERIPH 1
+
+# enable watchdog
+define HAL_WATCHDOG_ENABLED_DEFAULT true
+
+define HAL_NO_GPIO_IRQ
+define HAL_USE_EMPTY_IO TRUE
+
+# avoid timer and RCIN threads to save memory
+define HAL_NO_TIMER_THREAD
+define HAL_NO_RCIN_THREAD
+
+define HAL_USE_RTC FALSE
+define DISABLE_SERIAL_ESC_COMM TRUE
+#define NO_DATAFLASH TRUE
+
+#define DMA_RESERVE_SIZE 0
+
+define PERIPH_FW TRUE
+define HAL_DISABLE_LOOP_DELAY
+
+
+# enable CAN support
+PB8 CAN1_RX CAN1
+PB9 CAN1_TX CAN1
+PB5 CAN2_RX CAN2
+PB6 CAN2_TX CAN2
+#PB5 GPIO_CAN1_SILENT OUTPUT PUSHPULL SPEED_LOW LOW
+#define HAL_USE_CAN TRUE
+#define STM32_CAN_USE_CAN1 TRUE
+#define STM32_CAN_USE_CAN2 TRUE
+
+#PA4 MAG_CS CS
+PA4 MPU_CS CS
+PA5 SPI1_SCK SPI1
+PA6 SPI1_MISO SPI1
+PA7 SPI1_MOSI SPI1
+SPIDEV icm20948       SPI1 DEVID1  MPU_CS       MODE3  4*MHZ  8*MHZ
+
+IMU Invensensev2 SPI:icm20948 ROTATION_YAW_270
+
+# compass as part of ICM20948 on newer cubes
+COMPASS AK09916:probe_ICM20948 0 ROTATION_ROLL_180_YAW_90
+
+# one baro
+BARO MS56XX I2C:0:0x77
+
+PE4 MPU_EXT_CS CS
+PE2 SPI4_SCK  SPI4
+PE5 SPI4_MISO SPI4
+PE6 SPI4_MOSI SPI4
+
+# Now setup the pins for the microSD card, if available.
+PC8 SDMMC1_D0 SDMMC1
+PC9 SDMMC1_D1 SDMMC1
+PC10 SDMMC1_D2 SDMMC1
+PC11 SDMMC1_D3 SDMMC1
+PC12 SDMMC1_CK SDMMC1
+PD2 SDMMC1_CMD SDMMC1
+
+define BOARD_PWM_COUNT_DEFAULT 0
+define BOARD_SER1_RTSCTS_DEFAULT 0
+
+define HAL_OS_FATFS_IO 1
+define HAL_WITH_UAVCAN 1
+
+PA1 BATT_VOLTAGE_SENS ADC1 SCALE(2)
+PA2 BATT_CURRENT_SENS ADC1 SCALE(2)
+
+define HAL_BATT_VOLT_PIN 14
+define HAL_BATT_CURR_PIN 15
+define HAL_BATT_VOLT_SCALE 10.1
+define HAL_BATT_CURR_SCALE 17.0
+
+PD10 F91 INPUT 
+PD11 F92 INPUT 
+PD13 F93 INPUT 
+PD14 F94 INPUT 
+PD15 F95 INPUT 
+PG2 F97 INPUT 
+PG3 F96 INPUT 
+
+# This defines some input pins, currently unused.
+PB2 BOOT1 INPUT
+
+# MAIN_STACK is stack of initial thread
+MAIN_STACK 0x80
+
+# PROCESS_STACK controls stack for main thread
+PROCESS_STACK 0x600
+define HAL_DISABLE_LOOP_DELAY
+
+define CAN_APP_NODE_NAME "org.ardupilot.herepro"
+
+define CH_DBG_ENABLE_STACK_CHECK TRUE
+
+define HAL_USE_ADC FALSE
+define STM32_ADC_USE_ADC1 FALSE
+define HAL_DISABLE_ADC_DRIVER TRUE
+
+define HAL_NO_GPIO_IRQ
+
+define HAL_NO_GCS
+define HAL_NO_LOGGING
+define HAL_NO_MONITOR_THREAD
+
+define HAL_MINIMIZE_FEATURES 0
+
+define HAL_BUILD_AP_PERIPH
+
+define AP_PARAM_MAX_EMBEDDED_PARAM 0
+
+define HAL_BARO_ALLOW_INIT_NO_BARO
+
+# disable dual GPS and GPS blending to save flash space
+define GPS_MAX_RECEIVERS 1
+define GPS_MAX_INSTANCES 1
+define HAL_COMPASS_MAX_SENSORS 1
+
+# GPS+MAG
+define HAL_PERIPH_ENABLE_GPS
+define HAL_PERIPH_ENABLE_MAG
+
+# start with a fixed node ID so the board is usable without DNA
+define HAL_CAN_DEFAULT_NODE_ID 116
+
+define HAL_CHIBIOS_ARCH_FMUV3 1
+
+define CONFIG_HAL_BOARD_SUBTYPE HAL_BOARD_SUBTYPE_CHIBIOS_REVOMINI
+
+# Nnow some defines for logging and terrain data files.
+define HAL_BOARD_LOG_DIRECTORY "/APM/LOGS"
+define HAL_BOARD_TERRAIN_DIRECTORY "/APM/TERRAIN"
+
+# make bl baudrate match debug baudrate for easier debugging
+define BOOTLOADER_BAUDRATE 57600
+
+# use a small bootloader timeout
+define HAL_BOOTLOADER_TIMEOUT 1000
+
+# use the app descriptor needed by MissionPlanner for CAN upload
+env APP_DESCRIPTOR MissionPlanner
+
+# reserve 256 bytes for comms between app and bootloader
+RAM_RESERVE_START 256

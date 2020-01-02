@@ -1,0 +1,108 @@
+# hw definition file for processing by chibios_hwdef.py
+# for H743 bootloader
+
+# MCU class and specific type
+MCU STM32H7xx STM32H743xx
+
+# USB setup
+USB_VENDOR 0x2DAE # ONLY FOR USE BY HEX! NOBODY ELSE
+USB_PRODUCT 0x1016
+USB_STRING_MANUFACTURER "Hex/ProfiCNC"
+USB_STRING_PRODUCT "HerePro-BL"
+USB_STRING_SERIAL  "%SERIAL%"
+
+# crystal frequency
+OSCILLATOR_HZ 24000000
+
+# board ID for firmware load
+APJ_BOARD_ID 140
+
+FLASH_SIZE_KB 2048
+
+# bootloader is installed at zero offset
+FLASH_RESERVE_START_KB 0
+
+# the location where the bootloader will put the firmware
+# the H743 has 128k sectors
+FLASH_BOOTLOADER_LOAD_KB 128
+
+PB15 LED_2 OUTPUT LOW
+PB14 LED_1 OUTPUT LOW
+define HAL_LED_ON 0
+
+# board voltage
+STM32_VDD 330U
+
+# order of UARTs (and USB)
+UART_ORDER OTG1 
+#USART1 USART2
+
+# USART1 F9
+PD9 USART3_RX USART3
+PD8 USART3_TX USART3
+
+# USART2 F9
+PE7 UART7_RX UART7
+PE8 UART7_TX UART7
+
+# Pin for PWM Voltage Selection
+#PB4 PWM_VOLT_SEL OUTPUT HIGH
+
+PA11 OTG_FS_DM OTG1
+PA12 OTG_FS_DP OTG1
+
+PA13 JTMS-SWDIO SWD
+PA14 JTCK-SWCLK SWD
+
+define HAL_USE_EMPTY_STORAGE 1
+define HAL_STORAGE_SIZE 16384
+
+
+
+
+###########################
+FLASH_RESERVE_START_KB 0
+# setup build for a peripheral firmware
+env AP_PERIPH 1
+
+
+#define HAL_NO_GPIO_IRQ
+#define HAL_USE_EMPTY_IO TRUE
+
+# avoid timer and RCIN threads to save memory
+#define HAL_NO_TIMER_THREAD
+#define HAL_NO_RCIN_THREAD
+
+#define HAL_USE_RTC FALSE
+#define DISABLE_SERIAL_ESC_COMM TRUE
+#define NO_DATAFLASH TRUE
+
+#define DMA_RESERVE_SIZE 0
+
+#define PERIPH_FW TRUE
+#define HAL_DISABLE_LOOP_DELAY
+
+
+# enable CAN support
+PB8 CAN1_RX CAN1
+PB9 CAN1_TX CAN1
+PB5 CAN2_RX CAN2
+PB6 CAN2_TX CAN2
+#PB5 GPIO_CAN1_SILENT OUTPUT PUSHPULL SPEED_LOW LOW
+#define HAL_USE_CAN TRUE
+#define STM32_CAN_USE_CAN1 TRUE
+#define STM32_CAN_USE_CAN2 TRUE
+
+define CAN_APP_NODE_NAME "org.ardupilot.herepro"
+
+# start with a fixed node ID so the board is usable without DNA
+define HAL_CAN_DEFAULT_NODE_ID 116
+
+# make bl baudrate match debug baudrate for easier debugging
+define BOOTLOADER_BAUDRATE 57600
+
+# use a small bootloader timeout
+define HAL_BOOTLOADER_TIMEOUT 1000
+
+# reserve 256 bytes for comms between app and bootloader
+RAM_RESERVE_START 256
