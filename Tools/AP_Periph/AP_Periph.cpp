@@ -147,9 +147,6 @@ void AP_Periph_FW::init()
 #endif
     
     start_ms = AP_HAL::millis();
-
-    printf("Startup Done\r\n");
-
 }
 
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) && HAL_PERIPH_NEOPIXEL_COUNT == 8
@@ -211,7 +208,6 @@ void AP_Periph_FW::update()
     static uint32_t last_led_ms;
     uint32_t now = AP_HAL::millis();
     if (now - last_led_ms > 1000) {
-       hal.uartA->printf("\r\n");
         last_led_ms = now;
         palToggleLine(HAL_GPIO_PIN_LED);
         hal.scheduler->delay(20);

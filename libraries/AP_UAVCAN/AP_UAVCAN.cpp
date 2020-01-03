@@ -58,7 +58,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define debug_uavcan(level_debug, fmt, args...) do { if (true) { printf(fmt, ##args); }} while (0)
+#define debug_uavcan(level_debug, fmt, args...) do { if ((level_debug) <= AP::can().get_debug_level_driver(_driver_index)) { printf(fmt, ##args); }} while (0)
 
 // Translation of all messages from UAVCAN structures into AP structures is done
 // in AP_UAVCAN and not in corresponding drivers.
@@ -165,8 +165,6 @@ void AP_UAVCAN::init(uint8_t driver_index, bool enable_filters)
         debug_uavcan(2, "UAVCAN: init called more than once\n\r");
         return;
     }
-
-
 
     _driver_index = driver_index;
 

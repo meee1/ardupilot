@@ -795,8 +795,7 @@ static void processTx(void)
 
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
         uavcan::CanFrame frame { (txf->id | uavcan::CanFrame::FlagEFF), txf->data, txf->data_len};
-        if (iface->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)
-         /*canTransmit(NULL, CAN_ANY_MAILBOX, &txmsg, TIME_IMMEDIATE) == MSG_OK*/) {
+        if (iface->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)) {
             canardPopTxQueue(&canard);
             fail_count = 0;
         } else {
