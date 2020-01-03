@@ -60,15 +60,15 @@ void AP_Periph_FW::init()
     stm32_watchdog_init();
 
     stm32_watchdog_pat();
-
-    load_parameters();
-
-    stm32_watchdog_pat();
   // initialise console serial port
     serial_manager.init_console();
        hal.console->printf("\n\nInit %s\n\nFree RAM: %u\n",
                         AP::fwversion().fw_string,
                         (unsigned)hal.util->available_memory());
+    load_parameters();
+
+    stm32_watchdog_pat();
+
     serial_manager.init();
 
     BoardConfig.init();
@@ -157,6 +157,27 @@ void AP_Periph_FW::init()
     //AP_Param::show_all(hal.console, true);
 
     printf("Startup Done\r\n");
+
+            // initialise consol.e uart to 38400 baud
+    //hal.console->begin(38400);
+
+    // initialise gps uart to 38400 baud
+    //hal.uartB->begin(38400);
+
+//while(true)
+{
+      stm32_watchdog_pat();
+
+    // send characters received from the console to the GPS
+    while (hal.console->available()) {
+        hal.uartB->write(hal.console->read());
+    }
+    // send GPS characters to the console
+    while (hal.uartB->available()) {
+        hal.console->write(hal.uartB->read());
+    }
+    can_update();
+}
 }
 
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) && HAL_PERIPH_NEOPIXEL_COUNT == 8
