@@ -1064,12 +1064,12 @@ void AP_Periph_FW::can_start()
 
 
     if (can_mgr == nullptr) {
-        debug_can(1, "KDECAN: no mgr for this driver\n\r");
+        debug_can(1, "no mgr for this driver\n\r");
         return;
     }
 
     if (!can_mgr->is_initialized()) {
-        debug_can(1, "KDECAN: mgr not initialized\n\r");
+        debug_can(1, "mgr not initialized\n\r");
         return;
     }
     
@@ -1077,7 +1077,7 @@ void AP_Periph_FW::can_start()
     _can_driver = can_mgr->get_driver();
 
     if (_can_driver == nullptr) {
-        debug_can(1, "KDECAN: no CAN driver\n\r");
+        debug_can(1, "no CAN driver\n\r");
         return;
     }
 
