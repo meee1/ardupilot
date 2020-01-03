@@ -7,7 +7,7 @@
 #include <AP_Param/AP_Param.h>
 
 #ifndef AP_CAN_DEBUG
-  #define AP_CAN_DEBUG 1
+  #define AP_CAN_DEBUG 0
 #endif
 
 class AP_BoardConfig_CAN {
@@ -39,7 +39,7 @@ public:
     uint8_t get_debug_level(uint8_t i) const {
 #if AP_CAN_DEBUG
         if (i < MAX_NUMBER_OF_CAN_INTERFACES) {
-            return  3;
+            return _interfaces[i]._driver_number_cache ? _interfaces[i]._debug_level : 0;
         }
 #endif
         return 0;

@@ -75,8 +75,6 @@ void AP_Periph_FW::init()
 
     BoardConfig_CAN.init();
 
-    //AP::can().init(); 
-
     can_start(); 
 
     stm32_watchdog_pat();
@@ -100,10 +98,6 @@ void AP_Periph_FW::init()
         printf("Reboot after watchdog reset\n");
     }
 
- 
-
- 
-    printf("this is a test \r\n");
 #ifdef HAL_PERIPH_ENABLE_GPS
     if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE) {
         gps.init(serial_manager);
@@ -154,30 +148,8 @@ void AP_Periph_FW::init()
     
     start_ms = AP_HAL::millis();
 
-    //AP_Param::show_all(hal.console, true);
-
     printf("Startup Done\r\n");
 
-            // initialise consol.e uart to 38400 baud
-    //hal.console->begin(38400);
-
-    // initialise gps uart to 38400 baud
-    //hal.uartB->begin(38400);
-
-//while(true)
-{
-      stm32_watchdog_pat();
-
-    // send characters received from the console to the GPS
-    while (hal.console->available()) {
-        hal.uartB->write(hal.console->read());
-    }
-    // send GPS characters to the console
-    while (hal.uartB->available()) {
-        hal.console->write(hal.uartB->read());
-    }
-    can_update();
-}
 }
 
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) && HAL_PERIPH_NEOPIXEL_COUNT == 8
@@ -236,7 +208,6 @@ static void update_rainbow()
 
 void AP_Periph_FW::update()
 {
-     stm32_watchdog_pat();
     static uint32_t last_led_ms;
     uint32_t now = AP_HAL::millis();
     if (now - last_led_ms > 1000) {
