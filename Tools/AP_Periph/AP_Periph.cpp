@@ -75,6 +75,8 @@ void AP_Periph_FW::init()
 
     BoardConfig_CAN.init();
 
+    //AP::can().init(); 
+
     can_start(); 
 
     stm32_watchdog_pat();

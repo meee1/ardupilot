@@ -1068,20 +1068,11 @@ void AP_Periph_FW::can_start()
         return;
     }
 
-    
-     uint8_t interface = 0;
-    can_mgr->begin(1000000, interface);
-    can_mgr->initialized(true);
-
     if (!can_mgr->is_initialized()) {
         debug_can(1, "KDECAN: mgr not initialized\n\r");
         return;
     }
-
     
-
-
-
     // store pointer to CAN driver
     _can_driver = can_mgr->get_driver();
 

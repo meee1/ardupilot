@@ -58,7 +58,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define debug_uavcan(level_debug, fmt, args...) do { if ((level_debug) <= AP::can().get_debug_level_driver(_driver_index)) { printf(fmt, ##args); }} while (0)
+#define debug_uavcan(level_debug, fmt, args...) do { if (true) { printf(fmt, ##args); }} while (0)
 
 // Translation of all messages from UAVCAN structures into AP structures is done
 // in AP_UAVCAN and not in corresponding drivers.
@@ -166,7 +166,11 @@ void AP_UAVCAN::init(uint8_t driver_index, bool enable_filters)
         return;
     }
 
+
+
     _driver_index = driver_index;
+
+        return;
 
     AP_HAL::CANManager* can_mgr = hal.can_mgr[driver_index];
     if (can_mgr == nullptr) {
@@ -236,45 +240,6 @@ void AP_UAVCAN::init(uint8_t driver_index, bool enable_filters)
         return;
     }
 
-    //Start Servers
-    if (!AP::uavcan_dna_server().init(this)) {
-        debug_uavcan(1, "UAVCAN: Failed to start DNA Server\n\r");
-        return;
-    }
-
-    // Roundup all subscribers from supported drivers
-    AP_UAVCAN_DNA_Server::subscribe_msgs(this);
-    AP_GPS_UAVCAN::subscribe_msgs(this);
-    AP_Compass_UAVCAN::subscribe_msgs(this);
-    AP_Baro_UAVCAN::subscribe_msgs(this);
-    AP_BattMonitor_UAVCAN::subscribe_msgs(this);
-    AP_Airspeed_UAVCAN::subscribe_msgs(this);
-    AP_OpticalFlow_HereFlow::subscribe_msgs(this);
-    AP_RangeFinder_UAVCAN::subscribe_msgs(this);
-
-    act_out_array[driver_index] = new uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>(*_node);
-    act_out_array[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(2));
-    act_out_array[driver_index]->setPriority(uavcan::TransferPriority::OneLowerThanHighest);
-
-    esc_raw[driver_index] = new uavcan::Publisher<uavcan::equipment::esc::RawCommand>(*_node);
-    esc_raw[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(2));
-    esc_raw[driver_index]->setPriority(uavcan::TransferPriority::OneLowerThanHighest);
-
-    rgb_led[driver_index] = new uavcan::Publisher<uavcan::equipment::indication::LightsCommand>(*_node);
-    rgb_led[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
-    rgb_led[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
-
-    buzzer[driver_index] = new uavcan::Publisher<uavcan::equipment::indication::BeepCommand>(*_node);
-    buzzer[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
-    buzzer[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
-
-    safety_state[driver_index] = new uavcan::Publisher<ardupilot::indication::SafetyState>(*_node);
-    safety_state[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
-    safety_state[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
-
-    rtcm_stream[driver_index] = new uavcan::Publisher<uavcan::equipment::gnss::RTCMStream>(*_node);
-    rtcm_stream[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
-    rtcm_stream[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
     
     safety_button_listener[driver_index] = new uavcan::Subscriber<ardupilot::indication::Button, ButtonCb>(*_node);
     if (safety_button_listener[driver_index]) {

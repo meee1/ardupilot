@@ -89,7 +89,7 @@ void show_stack_usage(void)
           p++;
       }
       uint32_t stack_left = ((uint32_t)p) - stklimit;
-      printf("%s %u\n", tp->name, (unsigned)stack_left);
+      printf("%s %u\r\n", tp->name, (unsigned)stack_left);
       tp = chRegNextThread(tp);
   } while (tp != NULL);
 }
