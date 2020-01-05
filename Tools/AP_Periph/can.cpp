@@ -31,6 +31,7 @@
 #include <uavcan/protocol/param/GetSet.h>
 #include <uavcan/protocol/param/ExecuteOpcode.h>
 #include <uavcan/equipment/ahrs/MagneticFieldStrength.h>
+#include <uavcan/equipment/ahrs/RawIMU.h>
 #include <uavcan/equipment/gnss/Fix.h>
 #include <uavcan/equipment/gnss/Fix2.h>
 #include <uavcan/equipment/gnss/Auxiliary.h>
@@ -1197,6 +1198,7 @@ void AP_Periph_FW::can_update()
         last_1Hz_ms = now;
         process1HzTasks(AP_HAL::micros64());
     }
+    can_imu_update();
     can_mag_update();
     can_gps_update();
     can_baro_update();
@@ -1220,6 +1222,57 @@ void AP_Periph_FW::can_update()
 
     processTx();
     processRx();
+}
+
+void AP_Periph_FW::can_imu_update(void)
+{
+    // update INS immediately to get current gyro data populated
+    ins.update();
+
+    // run EKF state estimator (expensive)
+    // --------------------
+    // we tell AHRS to skip INS update as we have already done it in fast_loop()
+    ahrs.update(true);
+
+    // Inertial Nav
+    // --------------------
+    //inertial_nav.update(vibration_check.high_vibes);
+
+    static uint64_t last_imu_time_us = 0;
+
+    uint64_t time_us = AP_HAL::micros64();
+
+    const Vector3f &gyro = ins.get_gyro(0);
+    const Vector3f &accel = ins.get_accel(0);
+    float int_int = (float)(time_us - last_imu_time_us) / 1000.0;
+    uavcan_equipment_ahrs_RawIMU pkt { };
+    pkt.integration_interval= int_int;
+
+    last_imu_time_us = time_us;
+    pkt.timestamp.usec = time_us;
+
+        // the canard dsdl compiler doesn't understand float16
+    for (uint8_t i=0; i<3; i++) {
+        pkt.accelerometer_latest[i] = accel[i] ;
+        fix_float16(pkt.accelerometer_latest[i]);
+    }
+
+        // the canard dsdl compiler doesn't understand float16
+    for (uint8_t i=0; i<3; i++) {
+        pkt.rate_gyro_latest[i] = gyro[i] ;
+        fix_float16(pkt.rate_gyro_latest[i]);
+    }
+
+    uint8_t buffer[UAVCAN_EQUIPMENT_AHRS_RAWIMU_MAX_SIZE];
+    uint16_t total_size = uavcan_equipment_ahrs_RawIMU_encode(&pkt, buffer);
+
+    canardBroadcast(&canard,
+                    UAVCAN_EQUIPMENT_AHRS_RAWIMU_SIGNATURE,
+                    UAVCAN_EQUIPMENT_AHRS_RAWIMU_ID,
+                    &transfer_id,
+                    CANARD_TRANSFER_PRIORITY_LOW,
+                    &buffer[0],
+                    total_size);
 }
 
 /*

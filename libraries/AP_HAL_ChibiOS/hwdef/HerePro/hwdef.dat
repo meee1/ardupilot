@@ -94,7 +94,7 @@ define HAL_DISABLE_LOOP_DELAY
 # start with a fixed node ID so the board is usable without DNA
 define HAL_CAN_DEFAULT_NODE_ID 116
 
-define CAN_APP_NODE_NAME "org.ardupilot.herepro"
+define CAN_APP_NODE_NAME "org.hex.herepro"
 
 define CH_DBG_ENABLE_STACK_CHECK TRUE
 

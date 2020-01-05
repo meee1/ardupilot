@@ -27,7 +27,7 @@ public:
         k_param_hardpoint_id,
         k_param_hardpoint_rate,
  k_param_baro_enable,
-            k_param_serial_manager,     k_param_ins,  k_param_BoardConfig, k_param_BoardConfig_CAN,k_param_ahrs
+            k_param_serial_manager,     k_param_ins,  k_param_BoardConfig, k_param_BoardConfig_CAN,k_param_ahrs,k_param_NavEKF2,k_param_NavEKF3,k_param_scheduler
     };
 
     AP_Int16 format_version;

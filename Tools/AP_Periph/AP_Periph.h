@@ -15,6 +15,8 @@
 #include <AP_NavEKF2/AP_NavEKF2.h>
 #include <AP_NavEKF/AP_Nav_Common.h>
 #include <AP_AHRS/AP_AHRS_DCM.h>
+#include <AP_Scheduler/AP_Scheduler.h>
+#include <AP_InertialNav/AP_InertialNav.h>
 #include "version.h"
 #include "../AP_Bootloader/app_comms.h"
 #include "hwing_esc.h"
@@ -104,6 +106,7 @@ public:
     void can_baro_update();
     void can_airspeed_update();
     void can_rangefinder_update();
+    void can_imu_update();
 
     void load_parameters();
 
@@ -119,6 +122,16 @@ public:
 
     AP_BoardConfig_CAN BoardConfig_CAN;
 
+    NavEKF2 EKF2{&ahrs};
+    NavEKF3 EKF3{&ahrs};
+    AP_AHRS_NavEKF ahrs{EKF2, EKF3}; 
+
+    AP_Scheduler scheduler;
+  
+
+    // Inertial Navigation
+    //AP_InertialNav_NavEKF inertial_nav;
+
 #ifdef HAL_PERIPH_ENABLE_GPS
     AP_GPS gps;
 #endif
@@ -127,9 +140,7 @@ public:
     Compass compass;
 #endif
 
-    //NavEKF2 EKF2{&ahrs};
-    //NavEKF3 EKF3{&ahrs};
-    //AP_AHRS_NavEKF ahrs{EKF2, EKF3}; 
+
 
 #ifdef HAL_PERIPH_ENABLE_BARO
     AP_Baro baro;

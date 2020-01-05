@@ -75,6 +75,16 @@ void AP_Periph_FW::init()
 
     BoardConfig_CAN.init();
 
+    // initialise ahrs (may push imu calibration into the mpu6000 if using that device).
+    ahrs.init();
+    ahrs.set_vehicle_class(AHRS_VEHICLE_COPTER);
+
+    // Warm up and calibrate gyro offsets
+    ins.init(scheduler.get_loop_rate_hz());
+
+    // reset ahrs including gyro bias
+    ahrs.reset();
+    
     can_start(); 
 
     stm32_watchdog_pat();
@@ -210,7 +220,7 @@ void AP_Periph_FW::update()
     if (now - last_led_ms > 1000) {
         last_led_ms = now;
         palToggleLine(HAL_GPIO_PIN_LED);
-        hal.scheduler->delay(20);
+        hal.scheduler->delay(2);
         palToggleLine(HAL_GPIO_PIN_LED);
 #if 1
 #ifdef HAL_PERIPH_ENABLE_GPS
