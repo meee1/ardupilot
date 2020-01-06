@@ -45,7 +45,7 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     GOBJECT(ahrs,                   "AHRS_",    AP_AHRS),
 
     GOBJECT(BoardConfig,            "BRD_",       AP_BoardConfig),
-    GOBJECT(BoardConfig_CAN,        "CAN_",       AP_BoardConfig_CAN),
+ //   GOBJECT(BoardConfig_CAN,        "CAN_",       AP_BoardConfig_CAN),
 
            // @Group: EK2_
     // @Path: ../libraries/AP_NavEKF2/AP_NavEKF2.cpp

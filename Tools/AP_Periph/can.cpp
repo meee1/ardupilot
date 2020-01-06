@@ -780,35 +780,40 @@ static bool shouldAcceptTransfer(const CanardInstance* ins,
     return false;
 }
 
+const uavcan::CanFrame* _select_frames[uavcan::MaxCanIfaces] { };
 uavcan::ICanDriver* _can_driver;
 
 static void processTx(void)
 {
-    static uint8_t fail_count;
-
     if (hal.can_mgr[0] == nullptr)
         return;
 
     if(_can_driver == nullptr)
         return;
 
-    uavcan::ICanIface* iface = _can_driver->getIface(0);
-
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
         uavcan::CanFrame frame { (txf->id | uavcan::CanFrame::FlagEFF), txf->data, txf->data_len};
-        if (iface->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 1000), 0)) {
-            canardPopTxQueue(&canard);
-            fail_count = 0;
-        } else {
-            // just exit and try again later. If we fail 8 times in a row
-            // then start discarding to prevent the pool filling up
-            if (fail_count < 8) {
-                fail_count++;
-            } else {
-                canardPopTxQueue(&canard);
-            }
-            return;
+        for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_INTERFACES; i++) {
+            if(i >= 1)
+                continue;
+            // wait for space in buffer to send command
+         /*   uavcan::CanSelectMasks inout_mask;
+            do {
+                inout_mask.read = 0;
+                inout_mask.write = 1 << i;
+                _select_frames[i] = &frame;
+                _can_driver->select(inout_mask, _select_frames, uavcan::MonotonicTime::fromUSec(0));
+
+                // delay if no space is available to send
+                if (!inout_mask.write) {
+                    hal.scheduler->delay_microseconds(10);
+                }
+            } while (!inout_mask.write);
+            */
+            _can_driver->getIface(i)->send(frame, uavcan::MonotonicTime::fromMSec(AP_HAL::millis() + 200), 0);
         }
+
+        canardPopTxQueue(&canard);
     }
 }
 
@@ -1029,19 +1034,33 @@ void AP_Periph_FW::loop()
         uavcan::UtcTime utc_time;
         uavcan::CanIOFlags flags {};
 
-        int16_t res = _can_driver->getIface(0)->receive(recv_frame, time, utc_time, flags);
+        for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_INTERFACES; i++) {
+            // wait for space in buffer to read
+            uavcan::CanSelectMasks inout_mask;
+            inout_mask.read = 1 << i;
+            inout_mask.write = 0;
+            _select_frames[i] = &recv_frame;
+            _can_driver->select(inout_mask, _select_frames, uavcan::MonotonicTime::fromUSec(0));
 
-        if(res == 1) {
-            uavcan::CanRxFrame frame = {};
-            frame.ts_mono = time;
-            frame.ts_utc = utc_time;
-            memcpy(frame.data, recv_frame.data, 8);
-            frame.id = recv_frame.id;
-            frame.dlc = recv_frame.dlc;
-            rxbuffer.push(frame);
-        } else {
-            hal.scheduler->delay(1);
+            // return false if no data is available to read
+            if (!inout_mask.read) {
+                continue;
+            }
+
+            int16_t res = _can_driver->getIface(i)->receive(recv_frame, time, utc_time, flags);
+
+            if(res == 1) {
+                uavcan::CanRxFrame frame = {};
+                frame.ts_mono = time;
+                frame.ts_utc = utc_time;
+                memcpy(frame.data, recv_frame.data, 8);
+                frame.id = recv_frame.id;
+                frame.dlc = recv_frame.dlc;
+                rxbuffer.push(frame);
+            }
         }
+
+        hal.scheduler->delay(1);
     }
 }
 
@@ -1193,12 +1212,18 @@ void AP_Periph_FW::hwesc_telem_update()
 void AP_Periph_FW::can_update()
 {
     static uint32_t last_1Hz_ms;
+    static uint32_t last_50Hz_ms;
     uint32_t now = AP_HAL::millis();
     if (now - last_1Hz_ms >= 1000) {
         last_1Hz_ms = now;
         process1HzTasks(AP_HAL::micros64());
     }
-    can_imu_update();
+
+    if (now - last_50Hz_ms >= 20) 
+    {
+        last_50Hz_ms = now;
+        can_imu_update();
+    }
     can_mag_update();
     can_gps_update();
     can_baro_update();

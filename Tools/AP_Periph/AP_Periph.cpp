@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <AP_HAL_ChibiOS/hwdef/common/stm32_util.h>
 #include <AP_HAL_ChibiOS/hwdef/common/watchdog.h>
+#include <AP_HAL_ChibiOS/CAN.h>
 
 extern const AP_HAL::HAL &hal;
 
@@ -73,7 +74,14 @@ void AP_Periph_FW::init()
 
     BoardConfig.init();
 
-    BoardConfig_CAN.init();
+    const_cast <AP_HAL::HAL&> (hal).can_mgr[0] = new ChibiOS::CANManager;
+    for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_INTERFACES; i++) {
+        hal.can_mgr[0]->begin(1000000, i);
+    }
+    //ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
+    hal.can_mgr[0]->initialized(true);
+
+    //BoardConfig_CAN.init();
 
     // initialise ahrs (may push imu calibration into the mpu6000 if using that device).
     ahrs.init();
@@ -215,14 +223,18 @@ static void update_rainbow()
 
 void AP_Periph_FW::update()
 {
+    static uint32_t loopcount = 0;
     static uint32_t last_led_ms;
+    loopcount++;
     uint32_t now = AP_HAL::millis();
     if (now - last_led_ms > 1000) {
         last_led_ms = now;
         palToggleLine(HAL_GPIO_PIN_LED);
-        hal.scheduler->delay(2);
+        hal.scheduler->delay(1);
         palToggleLine(HAL_GPIO_PIN_LED);
-#if 1
+        hal.uartA->printf("cycles %d\r\n", (int)loopcount);
+        loopcount = 0;
+#if 0
 #ifdef HAL_PERIPH_ENABLE_GPS
         hal.uartA->printf("GPS status: %u\n", (unsigned)gps.status());
 #endif
@@ -236,7 +248,7 @@ void AP_Periph_FW::update()
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
         hal.uartA->printf("RNG %u %ucm\n", rangefinder.num_sensors(), rangefinder.distance_cm_orient(ROTATION_NONE));
 #endif
-        hal.scheduler->delay(1);
+        //hal.scheduler->delay(1);
         show_stack_usage();
 #endif
 #ifdef HAL_PERIPH_NEOPIXEL_COUNT
@@ -244,7 +256,7 @@ void AP_Periph_FW::update()
 #endif
     }
     can_update();
-    hal.scheduler->delay(1);
+   // hal.scheduler->delay(1);
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) && HAL_PERIPH_NEOPIXEL_COUNT == 8
     update_rainbow();
 #endif
