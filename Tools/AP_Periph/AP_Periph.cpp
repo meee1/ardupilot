@@ -27,6 +27,10 @@
 #include <AP_HAL_ChibiOS/hwdef/common/stm32_util.h>
 #include <AP_HAL_ChibiOS/hwdef/common/watchdog.h>
 #include <AP_HAL_ChibiOS/CAN.h>
+#include <AP_HAL_ChibiOS/sdcard.h>
+#include "hal_usb_msd.h"
+#include <AP_HAL_ChibiOS/hwdef/common/bouncebuffer.h>
+#include <AP_HAL_ChibiOS/sdcard.h>
 
 extern const AP_HAL::HAL &hal;
 
@@ -49,6 +53,8 @@ void loop(void)
 
 static uint32_t start_ms;
 
+static uint8_t blkbuf[512];
+
 /*
   declare constant app_descriptor in flash
  */
@@ -61,11 +67,64 @@ void AP_Periph_FW::init()
     stm32_watchdog_init();
 
     stm32_watchdog_pat();
-  // initialise console serial port
+
+    if(false)
+    {
+        usbDisconnectBus(&USBD1);
+        usbDisconnectBus(&USBD2);
+
+        usbStop(&USBD1);
+        usbStop(&USBD2);
+        stm32_watchdog_pat();
+
+        sdcard_stop();
+
+        chThdSleepMilliseconds(100);       
+
+        if (SDCD1.bouncebuffer == nullptr) {
+            bouncebuffer_init(&SDCD1.bouncebuffer, 512, true);
+        }
+        SDCConfig sdcconfig = {
+        NULL,
+        SDC_MODE_4BIT,
+        0
+        };
+        sdcStart(&SDCD1, &sdcconfig);
+        if(sdcConnect(&SDCD1) == HAL_FAILED) {
+            sdcStop(&SDCD1);            
+        }
+
+        stm32_watchdog_pat();
+
+        sduObjectInit(&SDU1);
+        sduStart(&SDU1,&serusbcfg);
+        chThdSleepMilliseconds(100);
+        usbStart(&USBD1, &usbcfg1);
+        chThdSleepMilliseconds(100);
+        msdObjectInit(&USBMSD1);  
+
+        stm32_watchdog_pat();
+        msdStart(&USBMSD1, &USBD1, (BaseBlockDevice*)&SDCD1, blkbuf,  NULL, NULL);
+        stm32_watchdog_pat();
+
+        usbConnectBus(&USBD1);
+
+        while(true)
+        {
+              stm32_watchdog_pat();
+            chThdSleepMilliseconds(1000);
+            printf(".");
+        }
+    }
+
+    sdcard_init();
+
+  // initialise console serial port  
     serial_manager.init_console();
        hal.console->printf("\n\nInit %s\n\nFree RAM: %u\n",
                         AP::fwversion().fw_string,
                         (unsigned)hal.util->available_memory());
+
     load_parameters();
 
     stm32_watchdog_pat();

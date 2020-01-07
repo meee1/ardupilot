@@ -20,6 +20,7 @@
 #include "version.h"
 #include "../AP_Bootloader/app_comms.h"
 #include "hwing_esc.h"
+#include "usbcfg.h"
 
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) || defined(HAL_PERIPH_ENABLE_NCP5623_LED)
 #define AP_PERIPH_HAVE_LED
