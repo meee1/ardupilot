@@ -243,7 +243,7 @@ void Aircraft::sync_frame_time(void)
 {
     frame_counter++;
     uint64_t now = get_wall_time_us();
-    if (frame_counter >= 40 &&
+    if (frame_counter >= rate_hz &&
         now > last_wall_time_us) {
         const float rate = frame_counter * 1.0e6f/(now - last_wall_time_us);
         achieved_rate_hz = (0.99f*achieved_rate_hz) + (0.01f * rate);
@@ -252,7 +252,7 @@ void Aircraft::sync_frame_time(void)
         } else {
             scaled_frame_time_us /= 0.999f;
         }
-#if 0
+#if 1
         ::printf("achieved_rate_hz=%.3f rate=%.2f rate_hz=%.3f sft=%.1f\n",
                  static_cast<double>(achieved_rate_hz),
                  static_cast<double>(rate),

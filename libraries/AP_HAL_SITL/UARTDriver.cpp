@@ -280,7 +280,7 @@ void UARTDriver::_tcp_start_connection(uint16_t port, bool wait_for_connection)
         /* we want to be able to re-use ports quickly */
         if (setsockopt(_listen_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
             fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
-            exit(1);
+            //exit(1);
         }
 
         fprintf(stderr, "bind port %u for %u\n",
@@ -367,10 +367,14 @@ void UARTDriver::_tcp_start_client(const char *address, uint16_t port)
 
     ret = connect(_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr));
     if (ret == -1) {
-        fprintf(stderr, "connect failed on port %u - %s\n",
+        if(errno == EINPROGRESS) {
+
+        } else {
+            fprintf(stderr, "connect failed on port %u - %s\n",
                 (unsigned)ntohs(sockaddr.sin_port),
                 strerror(errno));
-        exit(1);
+            exit(1);        
+        }
     }
 
     setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
@@ -470,7 +474,7 @@ void UARTDriver::_udp_start_multicast(const char *address, uint16_t port)
     int one = 1;
     if (setsockopt(_mc_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
         fprintf(stderr, "setsockopt failed: %s\n", strerror(errno));
-        exit(1);
+        //exit(1);
     }
 
     // close on exec, to allow reboot

@@ -128,8 +128,12 @@ def _set_pkgconfig_crosscompilation_wrapper(cfg):
     cfg.validate_cfg = new_validate_cfg
 
 def configure(cfg):
-    _filter_supported_c_compilers('gcc', 'clang')
-    _filter_supported_cxx_compilers('g++', 'clang++')
+    #_filter_supported_c_compilers('gcc', 'clang')
+    #_filter_supported_cxx_compilers('g++', 'clang++')
+    
+    cfg.load('c_emscripten')
+    
+    cfg.env.CXXFLAGS = ['-pthread']
 
     cfg.msg('Using toolchain', cfg.env.TOOLCHAIN)
 

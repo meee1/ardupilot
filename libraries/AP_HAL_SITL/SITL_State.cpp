@@ -123,22 +123,22 @@ void SITL_State::_setup_fdm(void)
     if (!_sitl_rc_in.reuseaddress()) {
         fprintf(stderr, "SITL: socket reuseaddress failed on RC in port: %d - %s\n", _rcin_port, strerror(errno));
         fprintf(stderr, "Aborting launch...\n");
-        exit(1);
+        //exit(1);
     }
     if (!_sitl_rc_in.bind("0.0.0.0", _rcin_port)) {
         fprintf(stderr, "SITL: socket bind failed on RC in port : %d - %s\n", _rcin_port, strerror(errno));
         fprintf(stderr, "Aborting launch...\n");
-        exit(1);
+        //exit(1);
     }
     if (!_sitl_rc_in.set_blocking(false)) {
         fprintf(stderr, "SITL: socket set_blocking(false) failed on RC in port: %d - %s\n", _rcin_port, strerror(errno));
         fprintf(stderr, "Aborting launch...\n");
-        exit(1);
+        //exit(1);
     }
     if (!_sitl_rc_in.set_cloexec()) {
         fprintf(stderr, "SITL: socket set_cloexec() failed on RC in port: %d - %s\n", _rcin_port, strerror(errno));
         fprintf(stderr, "Aborting launch...\n");
-        exit(1);
+        //exit(1);
     }
 }
 #endif
@@ -154,9 +154,9 @@ void SITL_State::_fdm_input_step(void)
     _fdm_input_local();
 
     /* make sure we die if our parent dies */
-    if (kill(_parent_pid, 0) != 0) {
-        exit(1);
-    }
+    //if (kill(_parent_pid, 0) != 0) {
+        //exit(1);
+    //}
 
     if (_scheduler->interrupts_are_blocked() || _sitl == nullptr) {
         return;

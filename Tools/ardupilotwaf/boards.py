@@ -103,7 +103,7 @@ class Board:
             '-ffunction-sections',
             '-fdata-sections',
             '-fsigned-char',
-
+            '-s', 'ASYNCIFY',
             '-Wall',
             '-Wextra',
             '-Werror=format',
@@ -161,7 +161,7 @@ class Board:
 
         env.CXXFLAGS += [
             '-std=gnu++11',
-
+'-s', 'ASYNCIFY',
             '-fdata-sections',
             '-ffunction-sections',
             '-fno-exceptions',
@@ -360,7 +360,7 @@ class sitl(Board):
             AP_SCRIPTING_CHECKS = 1, # SITL should always do runtime scripting checks
         )
 
-        env.CXXFLAGS += [
+        env.CXXFLAGS += ['-s', 'ASYNCIFY',
             '-Werror=float-equal'
         ]
 
@@ -373,10 +373,10 @@ class sitl(Board):
             'm',
         ]
 
-        cfg.check_librt(env)
+        #cfg.check_librt(env)
         cfg.check_feenableexcept()
 
-        env.LINKFLAGS += ['-pthread',]
+        env.LINKFLAGS += ['-pthread','-s', 'ASYNCIFY',]
         env.AP_LIBRARIES += [
             'AP_HAL_SITL',
             'SITL',
@@ -439,7 +439,7 @@ class chibios(Board):
 
         # make board name available for USB IDs
         env.CHIBIOS_BOARD_NAME = 'HAL_BOARD_NAME="%s"' % self.name
-        env.CFLAGS += cfg.env.CPU_FLAGS + [
+        env.CFLAGS += cfg.env.CPU_FLAGS + ['-s', 'ASYNCIFY',
             '-Wno-cast-align',
             '-Wlogical-op',
             '-Wframe-larger-than=1300',

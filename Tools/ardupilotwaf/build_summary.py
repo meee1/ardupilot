@@ -141,6 +141,7 @@ def _build_summary(bld):
         nodes.append(n)
         filtered_taskgens.append(tg)
     taskgens = filtered_taskgens
+    return
 
     if nodes:
         l = bld.size_summary(nodes)

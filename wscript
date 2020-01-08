@@ -53,12 +53,13 @@ def init(ctx):
 
     if not board:
         return
+        
 
     # define the variant build commands according to the board
     _set_build_context_variant(board)
 
 def options(opt):
-    opt.load('compiler_cxx compiler_c waf_unit_test python')
+    opt.load('compiler_cxx compiler_c c_emscripten waf_unit_test python')
     opt.load('ardupilotwaf')
     opt.load('build_summary')
 
@@ -267,7 +268,7 @@ def configure(cfg):
     cfg.load('waf_unit_test')
     cfg.load('mavgen')
     cfg.load('uavcangen')
-
+    
     cfg.env.SUBMODULE_UPDATE = cfg.options.submodule_update
 
     cfg.start_msg('Source is git repository')

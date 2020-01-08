@@ -19,6 +19,7 @@
 #include "GPIO.h"
 #include "SITL_State.h"
 #include "Util.h"
+#include <emscripten.h>
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_HAL_Empty/AP_HAL_Empty.h>
@@ -203,7 +204,7 @@ void HAL_SITL::run(int argc, char * const argv[], Callbacks* callbacks) const
     setup_signal_handlers();
 
     uint32_t last_watchdog_save = AP_HAL::millis();
-
+    
     while (!HALSITL::Scheduler::_should_reboot) {
         if (HALSITL::Scheduler::_should_exit) {
             ::fprintf(stderr, "Exitting\n");
@@ -223,6 +224,11 @@ void HAL_SITL::run(int argc, char * const argv[], Callbacks* callbacks) const
         if (using_watchdog) {
             // note that this only works for a speedup of 1
             alarm(2);
+        } 
+        static uint32_t last_sleep = 0;
+        if (now - last_sleep >= 50) {
+            emscripten_sleep(0);
+            last_sleep = now;
         }
     }
 
