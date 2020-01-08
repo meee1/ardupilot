@@ -168,8 +168,6 @@ void AP_UAVCAN::init(uint8_t driver_index, bool enable_filters)
 
     _driver_index = driver_index;
 
-        return;
-
     AP_HAL::CANManager* can_mgr = hal.can_mgr[driver_index];
     if (can_mgr == nullptr) {
         debug_uavcan(2, "UAVCAN: init called for inexisting CAN driver\n\r");
