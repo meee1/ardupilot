@@ -16,7 +16,7 @@ jobs:
     - name: src
       run: git submodule update --init --recursive modules/gbenchmark     && git submodule update --init --recursive modules/gtest     && git submodule update --init --recursive modules/mavlink     && git submodule update --init --recursive modules/uavcan     && git submodule update --init --recursive modules/waf
     - name: copter
-      run: ./waf configure --board=HerePro AP_Periph 
+      run: ./waf configure --board=HerePro --disable-scripting AP_Periph 
     - name: art
       uses: actions/upload-artifact@v1.0.0
       with:
