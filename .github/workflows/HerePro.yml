@@ -23,6 +23,6 @@ jobs:
         # Artifact name
         name: HerePro
         # Directory containing files to upload
-        path: src/build/HerePro/bin
+        path: build/HerePro/bin
 
 

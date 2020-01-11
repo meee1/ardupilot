@@ -47,6 +47,9 @@ def build(bld):
         'AP_InternalError',
         'AP_Airspeed',
         'AP_RangeFinder',
+        'AP_Vehicle',
+        'AP_Camera',
+        'RC_Channel',
         'AP_ROMFS','AP_BattMonitor','AP_OpticalFlow','AP_HAL_ChibiOS','AP_Filesystem','AP_ADSB','AP_InertialSensor','AP_Logger','AP_AccelCal','AP_Scheduler'
         ],
         exclude_src=[
