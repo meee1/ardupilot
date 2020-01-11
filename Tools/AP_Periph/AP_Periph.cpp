@@ -117,6 +117,20 @@ void AP_Periph_FW::init()
         }
     }
 
+    {
+        hal.gpio->pinMode(1, HAL_GPIO_INPUT);
+        uint8_t gpio1 = hal.gpio->read(1);
+        hal.gpio->pinMode(2, HAL_GPIO_INPUT);
+        uint8_t gpio2 = hal.gpio->read(2);
+    }
+
+    {
+        float adc1 = hal.analogin->channel(0)->voltage_average();
+        float adc2 = hal.analogin->channel(1)->voltage_average();
+        float adc3 = hal.analogin->channel(2)->voltage_average();
+        float adc4 = hal.analogin->channel(3)->voltage_average();
+    }
+
     sdcard_init();
 
   // initialise console serial port  
@@ -135,7 +149,7 @@ void AP_Periph_FW::init()
 
     const_cast <AP_HAL::HAL&> (hal).can_mgr[0] = new ChibiOS::CANManager;
     for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_INTERFACES; i++) {
-        hal.can_mgr[0]->begin(can_baudrate, i);
+        hal.can_mgr[0]->begin(1000000, i);
     }
     //ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
     hal.can_mgr[0]->initialized(true);
