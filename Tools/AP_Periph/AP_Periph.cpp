@@ -122,6 +122,7 @@ void AP_Periph_FW::init()
         uint8_t gpio1 = hal.gpio->read(1);
         hal.gpio->pinMode(2, HAL_GPIO_INPUT);
         uint8_t gpio2 = hal.gpio->read(2);
+         printf("gpio %u %u ",gpio1,gpio2);
     }
 
     {
@@ -129,6 +130,8 @@ void AP_Periph_FW::init()
         float adc2 = hal.analogin->channel(1)->voltage_average();
         float adc3 = hal.analogin->channel(2)->voltage_average();
         float adc4 = hal.analogin->channel(3)->voltage_average();
+
+        printf("analog %f %f %f %f",adc1,adc2,adc3,adc4);
     }
 
     sdcard_init();
