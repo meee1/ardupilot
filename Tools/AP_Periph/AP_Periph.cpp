@@ -135,7 +135,7 @@ void AP_Periph_FW::init()
 
     const_cast <AP_HAL::HAL&> (hal).can_mgr[0] = new ChibiOS::CANManager;
     for (uint8_t i = 0; i < MAX_NUMBER_OF_CAN_INTERFACES; i++) {
-        hal.can_mgr[0]->begin(1000000, i);
+        hal.can_mgr[0]->begin(can_baudrate, i);
     }
     //ChibiOS_CAN::CanDriver* drv = (ChibiOS_CAN::CanDriver*)hal.can_mgr[0]->get_driver();
     hal.can_mgr[0]->initialized(true);
