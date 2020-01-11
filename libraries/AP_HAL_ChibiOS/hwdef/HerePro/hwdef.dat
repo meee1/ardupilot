@@ -73,7 +73,6 @@ define HAL_BARO_ALLOW_INIT_NO_BARO
                                     
 define HAL_USE_ADC TRUE
 define STM32_ADC_USE_ADC1 TRUE
-define HAL_DISABLE_ADC_DRIVER FALSE
 define HAL_NO_GPIO_IRQ
                             
 # avoid RCIN thread to save memory                          
