@@ -286,7 +286,11 @@ static void update_rainbow()
 }
 #endif
 
-
+struct profiLED_color_s {
+    uint8_t b;
+    uint8_t r;
+    uint8_t g;
+};
 
 void AP_Periph_FW::update()
 {
@@ -296,7 +300,7 @@ void AP_Periph_FW::update()
     uint32_t now = AP_HAL::millis();
     if (now - last_led_ms > 1000) {
         last_led_ms = now;
-        palToggleLine(HAL_GPIO_PIN_LED);
+        //palToggleLine(HAL_GPIO_PIN_LED);
         hal.scheduler->delay(1);
         palToggleLine(HAL_GPIO_PIN_LED);
         hal.uartA->printf("cycles %d\r\n", (int)loopcount);
@@ -319,6 +323,51 @@ void AP_Periph_FW::update()
         float adc4 = _adc3->voltage_average();
 
         printf("analog %f %f %f %f\r\n",adc1,adc2,adc3,adc4);
+    }
+
+    {
+        auto _dev = hal.spi->get_device("profiled");
+        if (!_dev) {
+            
+            hal.console->printf("%s: no device\n", "profiled");
+        
+        } else {
+            if (!_dev->get_semaphore()->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
+                    hal.console->printf("%s: get_semaphore failed\n", "profiled");
+            } else {
+                uint8_t send_buf[32];
+                //0x0 0x0 0x0 0x0 0x0 0x0 0xF 0xF0 0x0 0x4 0x3 0xF8 0x2 0x0 0x1 0xFD 0x0 0x0 0x0 
+
+                send_buf[0] = 0x0;
+                send_buf[1] = 0x0;
+                send_buf[2] = 0x0;
+                send_buf[3] = 0x0;
+                send_buf[4] = 0xB;
+                send_buf[5] = 0x20;
+                send_buf[6] = 0x0;
+                send_buf[7] = 0x4;
+                send_buf[8] = 0x1;
+                send_buf[9] = 0x90;
+                send_buf[10] = 0x2;
+                send_buf[11] = 0x0;
+                send_buf[12] = 0x0;
+                send_buf[13] = 0xC9;
+                send_buf[14] = 0x0;
+                send_buf[15] = 0x0;
+                send_buf[16] = 0x0;
+          
+
+               
+
+                _dev->transfer((uint8_t *)&send_buf, 17, nullptr, 0);
+
+                _dev->get_semaphore()->give();
+
+                 hal.scheduler->delay(10);
+
+                palToggleLine(HAL_GPIO_PIN_LED);
+            }
+        }
     }
 
     show_stack_usage();
