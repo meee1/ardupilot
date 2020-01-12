@@ -118,20 +118,11 @@ void AP_Periph_FW::init()
     }
 
     {
-        hal.gpio->pinMode(1, HAL_GPIO_INPUT);
-        uint8_t gpio1 = hal.gpio->read(1);
-        hal.gpio->pinMode(2, HAL_GPIO_INPUT);
-        uint8_t gpio2 = hal.gpio->read(2);
-         printf("gpio %u %u ",gpio1,gpio2);
-    }
-
-    {
-        float adc1 = hal.analogin->channel(0)->voltage_average();
-        float adc2 = hal.analogin->channel(1)->voltage_average();
-        float adc3 = hal.analogin->channel(2)->voltage_average();
-        float adc4 = hal.analogin->channel(3)->voltage_average();
-
-        printf("analog %f %f %f %f",adc1,adc2,adc3,adc4);
+        // get analog for loop
+        _adc0 = hal.analogin->channel(4);
+        _adc1 = hal.analogin->channel(13);
+        _adc2 = hal.analogin->channel(14);
+        _adc3 = hal.analogin->channel(17);
     }
 
     sdcard_init();
@@ -310,6 +301,28 @@ void AP_Periph_FW::update()
         palToggleLine(HAL_GPIO_PIN_LED);
         hal.uartA->printf("cycles %d\r\n", (int)loopcount);
         loopcount = 0;
+
+    {
+        printf("start \r\n");
+        hal.gpio->pinMode(1, HAL_GPIO_INPUT);
+        uint8_t gpio1 = hal.gpio->read(1);
+        hal.gpio->pinMode(2, HAL_GPIO_INPUT);
+        uint8_t gpio2 = hal.gpio->read(2);
+         printf("gpio %u %u\r\n",gpio1,gpio2);
+    }
+
+
+    {
+        float adc1 = _adc0->voltage_average();
+        float adc2 = _adc1->voltage_average();
+        float adc3 = _adc2->voltage_average();
+        float adc4 = _adc3->voltage_average();
+
+        printf("analog %f %f %f %f\r\n",adc1,adc2,adc3,adc4);
+    }
+
+    show_stack_usage();
+
 #if 0
 #ifdef HAL_PERIPH_ENABLE_GPS
         hal.uartA->printf("GPS status: %u\n", (unsigned)gps.status());

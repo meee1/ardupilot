@@ -128,6 +128,11 @@ public:
     AP_AHRS_NavEKF ahrs{EKF2, EKF3}; 
 
     AP_Scheduler scheduler;
+
+    AP_HAL::AnalogSource *_adc0;
+    AP_HAL::AnalogSource *_adc1;
+    AP_HAL::AnalogSource *_adc2;
+    AP_HAL::AnalogSource *_adc3;
   
 
     // Inertial Navigation
