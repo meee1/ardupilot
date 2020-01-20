@@ -68,7 +68,7 @@ void AP_Periph_FW::init()
 
     stm32_watchdog_pat();
 
-    if(false)
+    if(true)
     {
         usbDisconnectBus(&USBD1);
         usbDisconnectBus(&USBD2);
@@ -77,22 +77,10 @@ void AP_Periph_FW::init()
         usbStop(&USBD2);
         stm32_watchdog_pat();
 
-        sdcard_stop();
-
+        sdcard_init();        
+        f_mount(nullptr, "/", 1);
         chThdSleepMilliseconds(100);       
 
-        if (SDCD1.bouncebuffer == nullptr) {
-            bouncebuffer_init(&SDCD1.bouncebuffer, 512, true);
-        }
-        SDCConfig sdcconfig = {
-        NULL,
-        SDC_MODE_4BIT,
-        0
-        };
-        sdcStart(&SDCD1, &sdcconfig);
-        if(sdcConnect(&SDCD1) == HAL_FAILED) {
-            sdcStop(&SDCD1);            
-        }
 
         stm32_watchdog_pat();
 
@@ -322,7 +310,7 @@ void AP_Periph_FW::update()
         float adc3 = _adc2->voltage_average();
         float adc4 = _adc3->voltage_average();
 
-        printf("analog %f %f %f %f\r\n",adc1,adc2,adc3,adc4);
+        printf("analog vcc %f vcc2 %f bat1 %f bat2 %f\r\n",adc1,adc2,adc3,adc4);
     }
 
     {
@@ -356,8 +344,6 @@ void AP_Periph_FW::update()
                 send_buf[15] = 0x0;
                 send_buf[16] = 0x0;
           
-
-               
 
                 _dev->transfer((uint8_t *)&send_buf, 17, nullptr, 0);
 
