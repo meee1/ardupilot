@@ -68,7 +68,7 @@ void AP_Periph_FW::init()
 
     stm32_watchdog_pat();
 
-    if(true)
+    if(false)
     {
         usbDisconnectBus(&USBD1);
         usbDisconnectBus(&USBD2);
