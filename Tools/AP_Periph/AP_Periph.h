@@ -1,6 +1,5 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Param/AP_Param.h>
-#include <GCS_MAVLink/GCS_Dummy.h>
 #include <AP_GPS/AP_GPS.h>
 #include <AP_Compass/AP_Compass.h>
 #include <AP_Baro/AP_Baro.h>
@@ -75,8 +74,6 @@ public:
     AP_HAL::AnalogSource *_adc1;
     AP_HAL::AnalogSource *_adc2;
     AP_HAL::AnalogSource *_adc3;
-
-    GCS_Dummy _gcs;
   
 
     // Inertial Navigation
