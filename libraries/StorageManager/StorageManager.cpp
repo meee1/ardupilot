@@ -73,6 +73,13 @@ const StorageManager::StorageArea StorageManager::layout[STORAGE_NUM_AREAS] = {
     { StorageMission,  10028,  5204}, // leave 128 byte gap for expansion
     { StorageCANDNA,   15232,  1024},
 #endif
+#if STORAGE_NUM_AREAS >= 20
+    { StorageParam,    16384,  1280},
+    { StorageRally,    17664,  300},
+    { StorageFence,    17964,  6144},
+    { StorageMission,  24108,  5204},
+    { StorageCANDNA,   29312,  2048},
+#endif
 };
 
 #else
@@ -105,6 +112,13 @@ const StorageManager::StorageArea StorageManager::layout[STORAGE_NUM_AREAS] = {
     { StorageFence,    9772,   256},
     { StorageMission,  10028,  5204}, // leave 128 byte gap for expansion
     { StorageCANDNA,   15232,  1024},
+#endif
+#if STORAGE_NUM_AREAS >= 20
+    { StorageParam,    16384,  1280},
+    { StorageRally,    17664,  300},
+    { StorageFence,    17964,  6144},
+    { StorageMission,  24108,  5204},
+    { StorageCANDNA,   29312,  2048},
 #endif
 };
 #endif // STORAGE_NUM_AREAS == 1
