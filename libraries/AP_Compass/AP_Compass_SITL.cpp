@@ -146,13 +146,16 @@ void AP_Compass_SITL::_timer()
 
     for (uint8_t i = 0; i < MAX_CONNECTED_MAGS; i++) {
         if (_compass_ucnode[i] != nullptr) {
-            uavcan::Publisher<uavcan::equipment::ahrs::MagneticFieldStrength2> mfs2_pub(*_compass_ucnode[i]);
+            uavcan::Publisher<uavcan::equipment::ahrs::MagneticFieldStrength2> mfs2_pub(*(_compass_ucnode[i]->get_node()));
             uavcan::equipment::ahrs::MagneticFieldStrength2 mfs2;
             mfs2.sensor_id = _compass_ucnode_sensor_id[i];
             mfs2.magnetic_field_ga[0] = (double)new_mag_data.x/1000.0;
             mfs2.magnetic_field_ga[1] = (double)new_mag_data.y/1000.0;
             mfs2.magnetic_field_ga[2] = (double)new_mag_data.z/1000.0;
-            (void)mfs2_pub.broadcast(mfs2);
+            {
+                WITH_SEMAPHORE(_compass_ucnode[i]->get_sem());
+                (void)mfs2_pub.broadcast(mfs2);
+            }
         }
     }
 
