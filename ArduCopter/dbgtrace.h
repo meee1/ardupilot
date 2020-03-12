@@ -23,19 +23,19 @@ extern BaseSequentialStream   *GlobalDebugChannel;
 #if DEBUG_TRACE_PRINT
 #define dbgprintf(fmt, ...)  chprintf(GlobalDebugChannel, fmt, ##__VA_ARGS__)
 #else
-#define dbgprintf(fmt, ...)  printf(fmt, ##__VA_ARGS__);
+#define dbgprintf(fmt, ...)  
 #endif
 
 #if DEBUG_TRACE_WARNING
 #define warnprintf(fmt, ...)  chprintf(GlobalDebugChannel, fmt, ##__VA_ARGS__)
 #else
-#define warnprintf(fmt, ...)  printf(fmt, ##__VA_ARGS__);
+#define warnprintf(fmt, ...)  
 #endif
 
 #if DEBUG_TRACE_ERROR
 #define errprintf(fmt, ...)  chprintf(GlobalDebugChannel, fmt, ##__VA_ARGS__)
 #else
-#define errprintf(fmt, ...)  printf(fmt, ##__VA_ARGS__);
+#define errprintf(fmt, ...) 
 #endif
 
 #endif /* DBGTRACE_H_ */
