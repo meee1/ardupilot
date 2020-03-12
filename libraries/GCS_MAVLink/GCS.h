@@ -58,7 +58,7 @@ public:
 /// @class	GCS_MAVLINK
 /// @brief	MAVLink transport control class
 ///
-class GCS_MAVLINK
+class __attribute__ ((dllexport)) GCS_MAVLINK
 {
 public:
     friend class GCS;

@@ -8,7 +8,7 @@
 #include "AP_HAL_SITL_Namespace.h"
 #include "SITL_State.h"
 
-class HAL_SITL : public AP_HAL::HAL {
+class __attribute__ ((dllexport)) HAL_SITL : public AP_HAL::HAL {
 public:
     HAL_SITL();
     void run(int argc, char * const argv[], Callbacks* callbacks) const override;

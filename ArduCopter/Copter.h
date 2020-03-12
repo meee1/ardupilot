@@ -16,7 +16,7 @@
 /*
   This is the main Copter class
  */
-
+#pragma GCC visibility push(default)
 ////////////////////////////////////////////////////////////////////////////////
 // Header includes
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +185,7 @@
 
 #include "mode.h"
 
-class Copter : public AP_Vehicle {
+class __attribute__ ((dllexport)) Copter : public AP_Vehicle {
 public:
     friend class GCS_MAVLINK_Copter;
     friend class GCS_Copter;

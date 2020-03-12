@@ -42,7 +42,7 @@
 
 /// @class    AP_Mission
 /// @brief    Object managing Mission
-class AP_Mission {
+class __attribute__ ((dllexport)) AP_Mission {
 
 public:
     // jump command structure

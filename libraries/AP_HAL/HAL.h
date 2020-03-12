@@ -19,7 +19,7 @@ class AP_Param;
 #endif
 
 
-class AP_HAL::HAL {
+class __attribute__ ((dllexport)) AP_HAL::HAL {
 public:
     HAL(AP_HAL::UARTDriver* _uartA, // console
         AP_HAL::UARTDriver* _uartB, // 1st GPS

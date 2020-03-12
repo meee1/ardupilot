@@ -30,7 +30,7 @@
 class NavEKF3_core;
 class AP_AHRS;
 
-class NavEKF3 {
+class __attribute__ ((dllexport)) NavEKF3 {
     friend class NavEKF3_core;
 
 public:

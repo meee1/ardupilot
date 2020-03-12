@@ -40,7 +40,7 @@
 #include <AP_ESC_Telem/AP_ESC_Telem.h>
 #include <AP_GyroFFT/AP_GyroFFT.h>
 
-class AP_Vehicle : public AP_HAL::HAL::Callbacks {
+class __attribute__ ((dllexport)) AP_Vehicle : public AP_HAL::HAL::Callbacks {
 
 public:
 

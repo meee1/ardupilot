@@ -1,5 +1,8 @@
 #include "Copter.h"
 #include <AP_BLHeli/AP_BLHeli.h>
+#include "hal_usb_msd.h"
+#include <AP_HAL_ChibiOS/sdcard.h>
+#include "usbcfg.h"
 
 /*****************************************************************************
 *   The init_ardupilot function processes everything we need for an in - air restart
@@ -16,6 +19,46 @@ static void failsafe_check_static()
 void Copter::init_ardupilot()
 {
 
+    if(true)
+    {
+        usbDisconnectBus(&USBD1);
+       // usbDisconnectBus(&USBD2);
+
+        usbStop(&USBD1);
+       // usbStop(&USBD2);
+        //stm32_watchdog_pat();
+
+        sdcard_init();        
+        f_mount(nullptr, "/", 1);
+        chThdSleepMilliseconds(100);       
+
+
+        //stm32_watchdog_pat();
+
+        sduObjectInit(&SDU1);
+        sduStart(&SDU1,&serusbcfg);
+        chThdSleepMilliseconds(100);
+        usbStart(&USBD1, &usbcfg1);
+        chThdSleepMilliseconds(100);
+        msdObjectInit(&USBMSD1);  
+
+        uint8_t blkbuf[512];
+
+
+        //stm32_watchdog_pat();
+        msdStart(&USBMSD1, &USBD1, (BaseBlockDevice*)&SDCD1, blkbuf,  NULL, NULL);
+        //stm32_watchdog_pat();
+
+        usbConnectBus(&USBD1);
+
+        while(true)
+        {
+              //stm32_watchdog_pat();
+            chThdSleepMilliseconds(1000);
+            printf(".");
+        }
+    }
+    
 #if STATS_ENABLED == ENABLED
     // initialise stats module
     g2.stats.init();

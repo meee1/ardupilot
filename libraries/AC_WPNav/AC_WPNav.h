@@ -34,7 +34,7 @@
 
 #define WPNAV_RANGEFINDER_FILT_Z         0.25f      // range finder distance filtered at 0.25hz
 
-class AC_WPNav
+class __attribute__ ((dllexport)) AC_WPNav
 {
 public:
 
