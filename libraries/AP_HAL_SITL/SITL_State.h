@@ -93,11 +93,13 @@ public:
         pthread_cond_t _irq_handler_cond;
 
         HALSITL::SITL_State* _sitlState;
+        uavcan::Node<0> *_node;
+        static HAL_Semaphore spin_sem;
+        static bool reader_thread_initialised;
     public:
         CANDriver(HALSITL::SITL_State* sitlState)
             :  _sitlState(sitlState), initialized_(false), driver_(SLCAN_DRIVER_INDEX, SLCAN_RX_QUEUE_SIZE)
         { }
-        void uavcan_loop(void);
 
 
         bool begin(uint32_t bitrate, uint8_t can_number);
@@ -118,7 +120,8 @@ public:
         static int self_write_fd[2];
         static int client_read_fd[2];
         uint8_t _can_number;
-        uavcan::Node<0> *_node;
+        static HAL_Semaphore& get_sem() { return spin_sem; } 
+        uavcan::Node<0>* get_node() const { return _node; }
     };
     void can_reader_trampoline(void);
 
@@ -127,7 +130,7 @@ public:
     std::list<uavcan::PoolAllocator<UAVCAN_NODE_POOL_SIZE, UAVCAN_NODE_POOL_BLOCK_SIZE, SITL_State::RaiiSynchronizer>*> _node_allocator;
 
     void init(int argc, char * const argv[]);
-    uavcan::Node<0>* initNode(uint8_t driver_index, uint8_t node_id);
+    SITL_State::CANDriver* initNode(uint8_t driver_index, uint8_t node_id);
 
     enum vehicle_type {
         ArduCopter,
@@ -169,14 +172,15 @@ public:
     uint16_t current2_pin_value;  // pin 14
 
     // paths for UART devices
-    const char *_uart_path[7] {
+    const char *_uart_path[8] {
         "tcp:0:wait",
         "GPS1",
         "tcp:2",
         "tcp:3",
         "GPS2",
+        "tcp:5",
         "CAN1",
-        "CAN2",
+        "CAN2"
     };
 
     /* parse a home location string */
@@ -196,6 +200,7 @@ private:
     void set_height_agl(void);
     void _update_rangefinder(float range_value);
     void _set_signal_handlers(void) const;
+    void uavcan_loop(void);
 
     struct gps_data {
         double latitude;

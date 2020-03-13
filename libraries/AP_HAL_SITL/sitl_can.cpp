@@ -10,6 +10,8 @@ int SITL_State::CANDriver::self_write_fd[2] = {-1,-1};
 int SITL_State::CANDriver::self_read_fd[2] = {-1,-1};
 int SITL_State::CANDriver::client_write_fd[2] = {-1,-1};
 int SITL_State::CANDriver::client_read_fd[2] = {-1,-1};
+HAL_Semaphore SITL_State::CANDriver::spin_sem;
+bool SITL_State::CANDriver::reader_thread_initialised;
 
 //SLCAN handle methods
 bool SITL_State::CANDriver::begin(uint32_t bitrate, uint8_t can_number)
@@ -19,8 +21,11 @@ bool SITL_State::CANDriver::begin(uint32_t bitrate, uint8_t can_number)
     }
     _can_number = can_number;
 
-    if (!hal.scheduler->thread_create(FUNCTOR_BIND(_sitlState, &SITL_State::can_reader_trampoline, void), "SITLSLCAN", 4096, AP_HAL::Scheduler::PRIORITY_CAN, -1)) {
-        return false;
+    if (!reader_thread_initialised) {
+        if (!hal.scheduler->thread_create(FUNCTOR_BIND(_sitlState, &SITL_State::can_reader_trampoline, void), "SITLSLCAN", 4096, AP_HAL::Scheduler::PRIORITY_CAN, -1)) {
+            return false;
+        }
+        reader_thread_initialised = true;
     }
     initialized(true);
     return true;
@@ -97,7 +102,7 @@ int16_t SITL_State::CANDriver::select(uavcan::CanSelectMasks& inout_masks,
 }
 
 
-int read_fd(int _read_fd, const uint8_t *buf, uint16_t count)
+int read_by_fd(int _read_fd, const uint8_t *buf, uint16_t count)
 {
 #ifdef FIONREAD
     // use FIONREAD to get exact value if possible
@@ -118,8 +123,8 @@ void SITL_State::can_reader_trampoline(void)
     while (true) {
         while (true) {
             uint8_t data[2];
-            int ret1 = read_fd(SITL_State::CANDriver::self_read_fd[0], &data[0], 1);
-            int ret2 = read_fd(SITL_State::CANDriver::self_read_fd[1], &data[1], 1);
+            int ret1 = read_by_fd(SITL_State::CANDriver::self_read_fd[0], &data[0], 1);
+            int ret2 = read_by_fd(SITL_State::CANDriver::self_read_fd[1], &data[1], 1);
             if (ret1 == -1 && ret2 == -1) {
                 break;
             }
@@ -158,7 +163,6 @@ int SITL_State::can_sitl2ap_pipe(uint8_t idx)
     fcntl(fd[0], F_SETFD, FD_CLOEXEC);
     fcntl(fd[1], F_SETFD, FD_CLOEXEC);
     HALSITL::UARTDriver::_set_nonblocking(SITL_State::CANDriver::self_write_fd[idx]);
-    HALSITL::UARTDriver::_set_nonblocking(fd[0]);
     return SITL_State::CANDriver::client_read_fd[idx];
 }
 
@@ -174,12 +178,11 @@ int SITL_State::can_ap2sitl_pipe(uint8_t idx)
     fcntl(fd[0], F_SETFD, FD_CLOEXEC);
     fcntl(fd[1], F_SETFD, FD_CLOEXEC);
     HALSITL::UARTDriver::_set_nonblocking(fd[1]);
-    HALSITL::UARTDriver::_set_nonblocking(fd[0]);
     return SITL_State::CANDriver::client_write_fd[idx];
 }
 
 
-uavcan::Node<0>* SITL_State::initNode(uint8_t driver_index, uint8_t node_id)
+SITL_State::CANDriver* SITL_State::initNode(uint8_t driver_index, uint8_t node_id)
 {
     can_sitl2ap_pipe(driver_index);
     can_ap2sitl_pipe(driver_index);
@@ -262,27 +265,28 @@ uavcan::Node<0>* SITL_State::initNode(uint8_t driver_index, uint8_t node_id)
     char _thread_name[20];
     snprintf(_thread_name, sizeof(_thread_name), "uavcan_%u", _num_nodes);
     can_mgr->_node = node;
-    if (!hal.scheduler->thread_create(FUNCTOR_BIND(can_mgr, &SITL_State::CANDriver::uavcan_loop, void), _thread_name, 4096, AP_HAL::Scheduler::PRIORITY_CAN, 0)) {
+    if (!hal.scheduler->thread_create(FUNCTOR_BIND(this, &SITL_State::uavcan_loop, void), _thread_name, 4096, AP_HAL::Scheduler::PRIORITY_CAN, 0)) {
         node->setModeOfflineAndPublish();
         printf("CANSITL: couldn't create thread\n\r");
         return nullptr;
     }
     _node.push_back(node);
-    return node;
+    return can_mgr;
 }
 
-void SITL_State::CANDriver::uavcan_loop(void) {
+void SITL_State::uavcan_loop(void) {
     while (true) {
-        if (!initialized_) {
-            hal.scheduler->delay_microseconds(1000);
-            continue;
+        {
+            WITH_SEMAPHORE(CANDriver::get_sem());
+            std::list<uavcan::Node<0>*>::iterator node;
+            for(node=_node.begin();node!=_node.end();node++) {
+                if (*node == nullptr) {
+                    continue;
+                }
+                (*node)->spinOnce();
+            }
         }
-
-        const int error = _node->spin(uavcan::MonotonicDuration::fromMSec(1));
-
-        if (error < 0) {
-            hal.scheduler->delay_microseconds(100);
-            continue;
-        }
+        
+        hal.scheduler->delay_microseconds(1000);
     }
 }
