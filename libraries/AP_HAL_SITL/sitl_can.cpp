@@ -274,6 +274,7 @@ SITL_State::CANDriver* SITL_State::initNode(uint8_t driver_index, uint8_t node_i
     return can_mgr;
 }
 
+//UAVCAN main loop for simulated peripherals
 void SITL_State::uavcan_loop(void) {
     while (true) {
         {
