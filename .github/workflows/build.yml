@@ -15,10 +15,8 @@ jobs:
       run: Tools/environment_install/install-prereqs-ubuntu.sh -y
     - name: src
       run: git submodule update --init --recursive
-    - name: bootloader
-      run: source ~/.profile && ./waf configure --board=CubeBlack --bootloader bootloader
     - name: FW
-      run: source ~/.profile && ./waf configure --board=CubeBlack 
+      run: source ~/.profile && ./waf configure --board=CubeBlack copter plane
     - name: art
       uses: actions/upload-artifact@v1.0.0
       with:
@@ -26,10 +24,4 @@ jobs:
         name: CubeBlack
         # Directory containing files to upload
         path: build/CubeBlack/bin
-    - name: art
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        # Artifact name
-        name: CubeBlackbootloader
-        # Directory containing files to upload
-        path: build/CubeBlack/bootloader
+
