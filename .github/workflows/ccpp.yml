@@ -33,4 +33,3 @@ jobs:
         name: arduwasmworker
         # Directory containing files to upload
         path: src/build/sitl/bin
-
