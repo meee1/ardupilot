@@ -12,7 +12,7 @@ jobs:
     - name: apt and python
       run: sudo apt-get update && sudo apt-get install python2.7 build-essential ccache g++ gawk git make wget libtool libxml2-dev libxslt1-dev python-dev python-pip python-setuptools python-matplotlib python-serial python-scipy python-opencv python-numpy python-pyparsing xterm lcov gcovr libcsfml-dev libcsfml-audio2.4 libcsfml-dev libcsfml-graphics2.4 libcsfml-network2.4 libcsfml-system2.4 libcsfml-window2.4 libsfml-audio2.4 libsfml-dev libsfml-graphics2.4 libsfml-network2.4 libsfml-system2.4 libsfml-window2.4 python-yaml python3-yaml && pip2 -q install --user -U future lxml pymavlink MAVProxy pexpect pygame
     - name: em
-      run: git clone https://github.com/emscripten-core/emsdk.git && cd emsdk && ./emsdk install latest && ./emsdk activate latest && source ./emsdk_env.sh
+      run: git clone https://github.com/emscripten-core/emsdk.git && cd emsdk && ./emsdk install 1.38.48 && ./emsdk activate 1.38.48 && source ./emsdk_env.sh
     - name: src
       run: git clone https://github.com/meee1/ardupilot.git --depth 2 --no-single-branch src     && cd src     && git checkout emscripten  && git submodule update --init --recursive modules/gbenchmark     && git submodule update --init --recursive modules/gtest     && git submodule update --init --recursive modules/mavlink     && git submodule update --init --recursive modules/uavcan     && git submodule update --init --recursive modules/waf
     - name: web
