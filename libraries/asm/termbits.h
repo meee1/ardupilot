@@ -17,6 +17,8 @@ struct termios2 {
 
 int pthread_setname_np(pthread_t thread, const char *name) { return 0; }
 
+#define FE_OVERFLOW 0x08
+
 /* c_cflag bit meaning */
 #define CBAUD	0010017
 #define  B0	0000000		/* hang up */
