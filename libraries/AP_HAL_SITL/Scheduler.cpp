@@ -140,11 +140,8 @@ void Scheduler::system_initialized() {
         AP_HAL::panic(
             "PANIC: scheduler system initialized called more than once");
     }
-    int exceptions = FE_OVERFLOW | FE_DIVBYZERO;
-#ifndef __i386__
-    // i386 with gcc doesn't work with FE_INVALID
-    exceptions |= FE_INVALID;
-#endif
+    int exceptions = 0;
+
     if (_sitlState->_sitl == nullptr || _sitlState->_sitl->float_exception) {
         feenableexcept(exceptions);
     } else {
