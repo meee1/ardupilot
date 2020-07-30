@@ -630,6 +630,7 @@ is bob we will attempt to checkout bob-AVR'''
                 "f303-M10070",
                 "CUAV_GPS",
                 "ZubaxGNSS",
+                "CubeOrange-periph",
                 ]
 
     def build_arducopter(self, tag):
