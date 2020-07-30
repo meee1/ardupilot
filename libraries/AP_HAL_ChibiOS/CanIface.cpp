@@ -50,13 +50,6 @@
 # if !defined(STM32H7XX)
 #include "CANIface.h"
 
-#define CAN1_TX_IRQHandler      STM32_CAN1_TX_HANDLER
-#define CAN1_RX0_IRQHandler     STM32_CAN1_RX0_HANDLER
-#define CAN1_RX1_IRQHandler     STM32_CAN1_RX1_HANDLER
-#define CAN2_TX_IRQHandler      STM32_CAN2_TX_HANDLER
-#define CAN2_RX0_IRQHandler     STM32_CAN2_RX0_HANDLER
-#define CAN2_RX1_IRQHandler     STM32_CAN2_RX1_HANDLER
-
 /* STM32F3's only CAN inteface does not have a number. */
 #if defined(STM32F3XX)
 #define RCC_APB1ENR_CAN1EN     RCC_APB1ENR_CANEN
@@ -64,18 +57,30 @@
 #define CAN1_TX_IRQn           CAN_TX_IRQn
 #define CAN1_RX0_IRQn          CAN_RX0_IRQn
 #define CAN1_RX1_IRQn          CAN_RX1_IRQn
-#define CAN1_TX_IRQHandler     CAN_TX_IRQHandler
-#define CAN1_RX0_IRQHandler    CAN_RX0_IRQHandler
-#define CAN1_RX1_IRQHandler    CAN_RX1_IRQHandler
+#define CAN1_TX_IRQ_Handler     CAN_TX_IRQHandler
+#define CAN1_RX0_IRQ_Handler    CAN_RX0_IRQHandler
+#define CAN1_RX1_IRQ_Handler    CAN_RX1_IRQHandler
+#else
+#define CAN1_TX_IRQ_Handler      STM32_CAN1_TX_HANDLER
+#define CAN1_RX0_IRQ_Handler     STM32_CAN1_RX0_HANDLER
+#define CAN1_RX1_IRQ_Handler     STM32_CAN1_RX1_HANDLER
+#define CAN2_TX_IRQ_Handler      STM32_CAN2_TX_HANDLER
+#define CAN2_RX0_IRQ_Handler     STM32_CAN2_RX0_HANDLER
+#define CAN2_RX1_IRQ_Handler     STM32_CAN2_RX1_HANDLER
+#endif // #if defined(STM32F3XX)
+
+#if HAL_MAX_CAN_PROTOCOL_DRIVERS
+#define Debug(fmt, args...) do { AP::can().log_text(AP_CANManager::LOG_DEBUG, "CANIface", fmt, ##args); } while (0)
+#else
+#define Debug(fmt, args...)
 #endif
 
-#define Debug(fmt, args...) do { AP::can().log_text(AP_CANManager::LOG_DEBUG, "CANIface", fmt, ##args); } while (0)
-
-extern const AP_HAL::HAL& hal;
+extern AP_HAL::HAL& hal;
 
 using namespace ChibiOS;
 
 constexpr bxcan::CanType* const CANIface::Can[];
+static ChibiOS::CANIface* can_ifaces[HAL_NUM_CAN_IFACES] = {nullptr};
 
 static inline void handleTxInterrupt(uint8_t iface_index)
 {
@@ -86,8 +91,8 @@ static inline void handleTxInterrupt(uint8_t iface_index)
     if (precise_time > 0) {
         precise_time--;
     }
-    if (hal.can[iface_index] != nullptr) {
-        ((ChibiOS::CANIface*)hal.can[iface_index])->handleTxInterrupt(precise_time);
+    if (can_ifaces[iface_index] != nullptr) {
+        can_ifaces[iface_index]->handleTxInterrupt(precise_time);
     }
 }
 
@@ -100,8 +105,8 @@ static inline void handleRxInterrupt(uint8_t iface_index, uint8_t fifo_index)
     if (precise_time > 0) {
         precise_time--;
     }
-    if (hal.can[iface_index] != UAVCAN_NULLPTR) {
-        ((CANIface*)hal.can[iface_index])->handleRxInterrupt(fifo_index, precise_time);
+    if (can_ifaces[iface_index] != nullptr) {
+        can_ifaces[iface_index]->handleRxInterrupt(fifo_index, precise_time);
     }
 }
 
@@ -460,10 +465,12 @@ void CANIface::handleTxInterrupt(const uint64_t utc_usec)
         handleTxMailboxInterrupt(2, txok, utc_usec);
     }
 
+#if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
     if (event_handle_ != nullptr) {
         stats.num_events++;
         evt_src_.signalI(1 << self_index_);
     }
+#endif
     pollErrorFlagsFromISR();
 }
 
@@ -526,11 +533,12 @@ void CANIface::handleRxInterrupt(uint8_t fifo_index, uint64_t timestamp_us)
 
     had_activity_ = true;
 
+#if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
     if (event_handle_ != nullptr) {
         stats.num_events++;
         evt_src_.signalI(1 << self_index_);
     }
-
+#endif
     pollErrorFlagsFromISR();
 }
 
@@ -632,6 +640,7 @@ uint32_t CANIface::getErrorCount() const
            stats.tx_timedout;
 }
 
+#if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
 ChibiOS::EventSource CANIface::evt_src_;
 bool CANIface::set_event_handle(AP_HAL::EventHandle* handle)
 {
@@ -640,6 +649,7 @@ bool CANIface::set_event_handle(AP_HAL::EventHandle* handle)
     event_handle_->set_source(&evt_src_);
     return event_handle_->register_event(1 << self_index_);
 }
+#endif
 
 void CANIface::checkAvailable(bool& read, bool& write, const AP_HAL::CANFrame* pending_tx) const
 {
@@ -734,20 +744,26 @@ bool CANIface::init(const uint32_t bitrate, const CANIface::OperatingMode mode)
         Debug("CAN drv init failed");
         return false;
     }
+    if (can_ifaces[self_index_] == nullptr) {
+        can_ifaces[self_index_] = this;
+#if !defined(HAL_BOOTLOADER_BUILD)
+        hal.can[self_index_] = this;
+#endif
+    }
 
-    if (hal.can[0] == nullptr) {
-        const_cast <AP_HAL::HAL&> (hal).can[0] = new CANIface(0);
+    if (can_ifaces[0] == nullptr) {
+        can_ifaces[0] = new CANIface(0);
         Debug("Failed to allocate CAN iface 0");
-        if (hal.can[0] == nullptr) {
+        if (can_ifaces[0] == nullptr) {
             return false;
         }
     }
-    if (self_index_ == 1 && !hal.can[0]->is_initialized()) {
+    if (self_index_ == 1 && !can_ifaces[0]->is_initialized()) {
         Debug("Iface 0 is not initialized yet but we need it for Iface 1, trying to init it");
         Debug("Enabling CAN iface 0");
-        ((CANIface*)hal.can[0])->initOnce(false);
+        can_ifaces[0]->initOnce(false);
         Debug("Initing iface 0...");
-        if (!hal.can[0]->init(bitrate, mode)) {
+        if (!can_ifaces[0]->init(bitrate, mode)) {
             Debug("Iface 0 init failed");
             return false;;
         }
@@ -888,24 +904,24 @@ uint32_t CANIface::get_stats(char* data, uint32_t max_size)
 extern "C"
 {
 
-    CH_IRQ_HANDLER(CAN1_TX_IRQHandler);
-    CH_IRQ_HANDLER(CAN1_TX_IRQHandler)
+    CH_IRQ_HANDLER(CAN1_TX_IRQ_Handler);
+    CH_IRQ_HANDLER(CAN1_TX_IRQ_Handler)
     {
         CH_IRQ_PROLOGUE();
         handleTxInterrupt(0);
         CH_IRQ_EPILOGUE();
     }
 
-    CH_IRQ_HANDLER(CAN1_RX0_IRQHandler);
-    CH_IRQ_HANDLER(CAN1_RX0_IRQHandler)
+    CH_IRQ_HANDLER(CAN1_RX0_IRQ_Handler);
+    CH_IRQ_HANDLER(CAN1_RX0_IRQ_Handler)
     {
         CH_IRQ_PROLOGUE();
         handleRxInterrupt(0, 0);
         CH_IRQ_EPILOGUE();
     }
 
-    CH_IRQ_HANDLER(CAN1_RX1_IRQHandler);
-    CH_IRQ_HANDLER(CAN1_RX1_IRQHandler)
+    CH_IRQ_HANDLER(CAN1_RX1_IRQ_Handler);
+    CH_IRQ_HANDLER(CAN1_RX1_IRQ_Handler)
     {
         CH_IRQ_PROLOGUE();
         handleRxInterrupt(0, 1);
@@ -914,36 +930,36 @@ extern "C"
 
 #if HAL_NUM_CAN_IFACES > 1
 
-#if !defined(CAN2_TX_IRQHandler)
+#if !defined(CAN2_TX_IRQ_Handler)
 # error "Misconfigured build1"
 #endif
 
-#if !defined(CAN2_RX0_IRQHandler)
+#if !defined(CAN2_RX0_IRQ_Handler)
 # error "Misconfigured build2"
 #endif
 
-#if !defined(CAN2_RX1_IRQHandler)
+#if !defined(CAN2_RX1_IRQ_Handler)
 # error "Misconfigured build3"
 #endif
 
-    CH_IRQ_HANDLER(CAN2_TX_IRQHandler);
-    CH_IRQ_HANDLER(CAN2_TX_IRQHandler)
+    CH_IRQ_HANDLER(CAN2_TX_IRQ_Handler);
+    CH_IRQ_HANDLER(CAN2_TX_IRQ_Handler)
     {
         CH_IRQ_PROLOGUE();
         handleTxInterrupt(1);
         CH_IRQ_EPILOGUE();
     }
 
-    CH_IRQ_HANDLER(CAN2_RX0_IRQHandler);
-    CH_IRQ_HANDLER(CAN2_RX0_IRQHandler)
+    CH_IRQ_HANDLER(CAN2_RX0_IRQ_Handler);
+    CH_IRQ_HANDLER(CAN2_RX0_IRQ_Handler)
     {
         CH_IRQ_PROLOGUE();
         handleRxInterrupt(1, 0);
         CH_IRQ_EPILOGUE();
     }
 
-    CH_IRQ_HANDLER(CAN2_RX1_IRQHandler);
-    CH_IRQ_HANDLER(CAN2_RX1_IRQHandler)
+    CH_IRQ_HANDLER(CAN2_RX1_IRQ_Handler);
+    CH_IRQ_HANDLER(CAN2_RX1_IRQ_Handler)
     {
         CH_IRQ_PROLOGUE();
         handleRxInterrupt(1, 1);

@@ -103,8 +103,9 @@ class ChibiOS::CANIface : public AP_HAL::CANIface
     bool initialised_;
     bool had_activity_;
     AP_HAL::EventHandle* event_handle_;
+#ifndef HAL_BUILD_AP_PERIPH
     static ChibiOS::EventSource evt_src_;
-
+#endif
     const uint8_t self_index_;
 
     bool computeTimings(uint32_t target_bitrate, Timings& out_timings);
@@ -201,9 +202,10 @@ public:
                 const AP_HAL::CANFrame* const pending_tx,
                 uint64_t blocking_deadline) override;
     
+#if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
     // setup event handle for waiting on events
     bool set_event_handle(AP_HAL::EventHandle* handle) override;
-
+#endif
     // fetch stats text and return the size of the same,
     // results available via @SYS/can0_stats.txt or @SYS/can1_stats.txt 
     uint32_t get_stats(char* data, uint32_t max_size) override;
