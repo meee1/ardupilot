@@ -14,8 +14,11 @@
  *
  * Author: Eugene Shamaev, Siddharth Bharat Purohit
  */
-#ifndef AP_UAVCAN_H_
-#define AP_UAVCAN_H_
+#pragma once
+
+#include <AP_HAL/AP_HAL.h>
+
+#if HAL_ENABLE_LIBUAVCAN_DRIVERS
 
 #include <uavcan/uavcan.hpp>
 #include "AP_UAVCAN_DNA_Server.h"
@@ -211,4 +214,4 @@ private:
     static void handle_ESC_status(AP_UAVCAN* ap_uavcan, uint8_t node_id, const ESCStatusCb &cb);
 };
 
-#endif /* AP_UAVCAN_H_ */
+#endif // #if HAL_ENABLE_LIBUAVCAN_DRIVERS
