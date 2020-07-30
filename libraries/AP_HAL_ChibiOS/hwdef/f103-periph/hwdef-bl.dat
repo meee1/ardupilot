@@ -76,8 +76,8 @@ define HAL_STORAGE_SIZE 16384
 # enable CAN support
 PA11 CAN_RX CAN
 PA12 CAN_TX CAN
-define HAL_USE_CAN TRUE
-define STM32_CAN_USE_CAN1 TRUE
+
+
 
 # make bl baudrate match debug baudrate for easier debugging
 define BOOTLOADER_BAUDRATE 57600

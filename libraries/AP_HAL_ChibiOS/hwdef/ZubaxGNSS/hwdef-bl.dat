@@ -60,8 +60,8 @@ define HAL_UART_NODMA
 # enable CAN support
 PA11 CAN_RX CAN
 PB9 CAN_TX CAN
-define HAL_USE_CAN TRUE
-define STM32_CAN_USE_CAN1 TRUE
+
+
 
 # no I2C buses
 # I2C_ORDER
