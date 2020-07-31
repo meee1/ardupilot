@@ -52,7 +52,10 @@ static uint32_t baudrate = 1000000U;
 //     CAN_MCR_ABOM | CAN_MCR_AWUM | CAN_MCR_TXFP,
 //     0 // filled in below
 // };
-static ChibiOS::CANIface *can_iface = nullptr;
+
+static AP_HAL::CANIface::CanRxItem rx_buffer[HAL_CAN_RX_QUEUE_SIZE];
+static ByteBuffer rx_bytebuffer((uint8_t*)rx_buffer, sizeof(rx_buffer));
+static ChibiOS::CANIface can_iface(0, &rx_bytebuffer);
 
 #ifndef CAN_APP_VERSION_MAJOR
 #define CAN_APP_VERSION_MAJOR                                           1
@@ -430,16 +433,12 @@ static bool shouldAcceptTransfer(const CanardInstance* ins,
 static void processTx(void)
 {
     static uint8_t fail_count;
-
-    if (can_iface == nullptr) {
-        return;
-    }
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
         AP_HAL::CANFrame txmsg {};
         txmsg.dlc = txf->data_len;
         memcpy(txmsg.data, txf->data, 8);
         txmsg.id = (txf->id & AP_HAL::CANFrame::FlagEFF);
-        if (can_iface->send(txmsg, 0, 0) > 0) {
+        if (can_iface.send(txmsg, 0, 0) > 0) {
             canardPopTxQueue(&canard);
             fail_count = 0;
         } else {
@@ -457,15 +456,12 @@ static void processTx(void)
 
 static void processRx(void)
 {
-    if (can_iface == nullptr) {
-        return;
-    }
     AP_HAL::CANFrame rxmsg;
     while (true) {
-        bool have_msg = true;
+        bool read_select = true;
         bool write_select = false;
-        have_msg = can_iface->select(have_msg, write_select, nullptr, 0);
-        if (!have_msg) {
+        can_iface.select(read_select, write_select, nullptr, 0);
+        if (!read_select) {
             break;
         }
         CanardCANFrame rx_frame {};
@@ -475,7 +471,7 @@ static void processRx(void)
 #endif
         uint64_t timestamp;
         AP_HAL::CANIface::CanIOFlags flags;
-        can_iface->receive(rxmsg, timestamp, flags);
+        can_iface.receive(rxmsg, timestamp, flags);
         memcpy(rx_frame.data, rxmsg.data, 8);
         rx_frame.data_len = rxmsg.dlc;
         rx_frame.id = rxmsg.id;
@@ -636,12 +632,7 @@ void can_check_update(void)
 void can_start()
 {
     node_status.mode = UAVCAN_PROTOCOL_NODESTATUS_MODE_MAINTENANCE;
-
-    can_iface = new ChibiOS::CANIface(0);
-    if (can_iface == nullptr) {
-        return;
-    }
-    can_iface->init(baudrate, AP_HAL::CANIface::NormalMode);
+    can_iface.init(baudrate, AP_HAL::CANIface::NormalMode);
 
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived, shouldAcceptTransfer, NULL);
