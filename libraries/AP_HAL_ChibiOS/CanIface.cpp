@@ -131,6 +131,16 @@ CANIface::CANIface(uint8_t index) :
     }
 }
 
+CANIface::CANIface(uint8_t index, ByteBuffer *buffer) :
+    self_index_(index),
+    rx_queue_(buffer)
+{
+    if (index >= HAL_NUM_CAN_IFACES) {
+        AP_HAL::panic("Bad CANIface index.");
+    } else {
+        can_ = Can[index];
+    }
+}
 
 bool CANIface::computeTimings(uint32_t target_bitrate, Timings& out_timings)
 {

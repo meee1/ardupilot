@@ -163,6 +163,7 @@ public:
      *   Common CAN methods                   *
      * ****************************************/
     CANIface(uint8_t index);
+    CANIface(uint8_t index, ByteBuffer *buffer);
 
     // Initialise CAN Peripheral
     bool init(const uint32_t bitrate, const OperatingMode mode) override;
