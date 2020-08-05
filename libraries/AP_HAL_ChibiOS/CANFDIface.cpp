@@ -891,6 +891,7 @@ bool CANIface::select(bool &read, bool &write,
     return true; // Return value doesn't matter as long as it is non-negative
 }
 
+#if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
 uint32_t CANIface::get_stats(char* data, uint32_t max_size)
 {
     if (data == nullptr) {
@@ -920,7 +921,7 @@ uint32_t CANIface::get_stats(char* data, uint32_t max_size)
                             stats.num_events);
     return ret;
 }
-
+#endif
 
 /*
  * Interrupt handlers

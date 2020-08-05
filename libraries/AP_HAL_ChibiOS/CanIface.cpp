@@ -877,6 +877,7 @@ bool CANIface::init(const uint32_t bitrate, const CANIface::OperatingMode mode)
     return true;
 }
 
+#if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
 uint32_t CANIface::get_stats(char* data, uint32_t max_size)
 {
     if (data == nullptr) {
@@ -907,6 +908,7 @@ uint32_t CANIface::get_stats(char* data, uint32_t max_size)
     memset(&stats, 0, sizeof(stats));
     return ret;
 }
+#endif
 
 /*
  * Interrupt handlers

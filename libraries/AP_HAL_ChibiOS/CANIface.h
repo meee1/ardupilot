@@ -206,11 +206,11 @@ public:
 #if !defined(HAL_BUILD_AP_PERIPH) && !defined(HAL_BOOTLOADER_BUILD)
     // setup event handle for waiting on events
     bool set_event_handle(AP_HAL::EventHandle* handle) override;
-#endif
+
     // fetch stats text and return the size of the same,
     // results available via @SYS/can0_stats.txt or @SYS/can1_stats.txt 
     uint32_t get_stats(char* data, uint32_t max_size) override;
-
+#endif
     /************************************
      * Methods used inside interrupt    *
      ************************************/
