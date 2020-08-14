@@ -548,9 +548,9 @@ bool AP_Logger_MAVLink::send_log_block(struct dm_block &block)
     if (!_initialised) {
        return false;
     }
-    if (!HAVE_PAYLOAD_SPACE(chan, REMOTE_LOG_DATA_BLOCK)) {
+    //if (!HAVE_PAYLOAD_SPACE(chan, REMOTE_LOG_DATA_BLOCK)) {
         return false;
-    }
+    //}
     if (comm_get_txspace(chan) < 500) {
         return false;
     }

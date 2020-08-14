@@ -1368,11 +1368,11 @@ bool Compass::is_replacement_mag(uint32_t devid) {
     }
 
     // Check that its not an unused additional mag
-    for (uint8_t i = 0; i<COMPASS_MAX_UNREG_DEV; i++) {
+    /*for (uint8_t i = 0; i<COMPASS_MAX_UNREG_DEV; i++) {
         if (_previously_unreg_mag[i] == devid) {
             return false;
         }
-    }
+    }*/
 
     // Check that its not previously setup mag
     for (StateIndex i(0); i<COMPASS_MAX_INSTANCES; i++) {
@@ -1392,12 +1392,12 @@ void Compass::remove_unreg_dev_id(uint32_t devid)
         return;
     }
 
-    for (uint8_t i = 0; i<COMPASS_MAX_UNREG_DEV; i++) {
+    /*for (uint8_t i = 0; i<COMPASS_MAX_UNREG_DEV; i++) {
         if ((uint32_t)extra_dev_id[i] == devid) {
             extra_dev_id[i].set_and_save(0);
             return;
         }
-    }
+    }*/
 #endif
 }
 
@@ -1413,7 +1413,7 @@ void Compass::_reset_compass_id()
         }
         if (!_get_state(i).registered) {
             _priority_did_stored_list[i].set_and_save(0);
-            gcs().send_text(MAV_SEVERITY_ALERT, "Mag: Compass #%d with DEVID %lu removed", uint8_t(i), (unsigned long)_priority_did_list[i]);
+            //gcs().send_text(MAV_SEVERITY_ALERT, "Mag: Compass #%d with DEVID %lu removed", uint8_t(i), (unsigned long)_priority_did_list[i]);
         }
     }
 

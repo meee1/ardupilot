@@ -145,7 +145,7 @@ void AP_Logger_File::periodic_1Hz()
         if (io_thread_warning_decimation_counter == 0 && _initialised) {
             // we don't print this error unless we did initialise. When _initialised is set to true
             // we register the IO timer callback
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "AP_Logger: stuck thread (%s)", last_io_operation);
+            //gcs().send_textMAV_SEVERITY_CRITICAL, "AP_Logger: stuck thread (%s)", last_io_operation);
         }
         if (io_thread_warning_decimation_counter++ > 57) {
             io_thread_warning_decimation_counter = 0;
@@ -787,7 +787,7 @@ void AP_Logger_File::start_new_log(void)
 
     // set _open_error here to avoid infinite recursion.  Simply
     // writing a prioritised block may try to open a log - which means
-    // if anything in the start_new_log path does a gcs().send_text()
+    // if anything in the start_new_log path does a //gcs().send_text)
     // (for example), you will end up recursing if we don't take
     // precautions.  We will reset _open_error if we actually manage
     // to open the log...

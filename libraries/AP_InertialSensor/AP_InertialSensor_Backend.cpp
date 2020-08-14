@@ -326,7 +326,7 @@ void AP_InertialSensor_Backend::_publish_accel(uint8_t instance, const Vector3f 
         //remove offsets
         cal_sample += _imu._accel_offset[instance].get() * _imu._delta_velocity_dt[instance] ;
 
-        _imu._accel_calibrator[instance].new_sample(cal_sample, _imu._delta_velocity_dt[instance]);
+        //_imu._accel_calibrator[instance].new_sample(cal_sample, _imu._delta_velocity_dt[instance]);
     }
 }
 

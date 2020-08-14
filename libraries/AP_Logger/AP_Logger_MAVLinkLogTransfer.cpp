@@ -68,8 +68,10 @@ void AP_Logger::handle_log_request_list(GCS_MAVLINK &link, const mavlink_message
 {
     WITH_SEMAPHORE(_log_send_sem);
 
+    return;
+
     if (_log_sending_link != nullptr) {
-        link.send_text(MAV_SEVERITY_INFO, "Log download in progress");
+       // link.send_text(MAV_SEVERITY_INFO, "Log download in progress");
         return;
     }
 
@@ -108,14 +110,16 @@ void AP_Logger::handle_log_request_data(GCS_MAVLINK &link, const mavlink_message
 {
     WITH_SEMAPHORE(_log_send_sem);
 
+    return;
+
     if (_log_sending_link != nullptr) {
         // some GCS (e.g. MAVProxy) attempt to stream request_data
         // messages when they're filling gaps in the downloaded logs.
         // This channel check avoids complaining to them, at the cost
         // of silently dropping any repeated attempts to start logging
-        if (_log_sending_link->get_chan() != link.get_chan()) {
-            link.send_text(MAV_SEVERITY_INFO, "Log download in progress");
-        }
+      //  if (_log_sending_link->get_chan() != link.get_chan()) {
+         //   link.send_text(MAV_SEVERITY_INFO, "Log download in progress");
+      //  }
         return;
     }
 
@@ -212,32 +216,9 @@ void AP_Logger::handle_log_sending()
 {
     WITH_SEMAPHORE(_log_send_sem);
 
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    // assume USB speeds in SITL for the purposes of log download
-    const uint8_t num_sends = 40;
-#else
-    uint8_t num_sends = 1;
-    if (_log_sending_link->is_high_bandwidth() && hal.gpio->usb_connected()) {
-        // when on USB we can send a lot more data
-        num_sends = 250;
-    } else if (_log_sending_link->have_flow_control()) {
-    #if CONFIG_HAL_BOARD == HAL_BOARD_LINUX
-        num_sends = 80;
-    #else
-        num_sends = 10;
-    #endif
-    }
-#endif
 
-    for (uint8_t i=0; i<num_sends; i++) {
-        if (transfer_activity != TransferActivity::SENDING) {
-            // may have completed sending data
-            break;
-        }
-        if (!handle_log_send_data()) {
-            break;
-        }
-    }
+
+
 }
 
 /**
@@ -247,34 +228,8 @@ void AP_Logger::handle_log_send_listing()
 {
     WITH_SEMAPHORE(_log_send_sem);
 
-    if (!HAVE_PAYLOAD_SPACE(_log_sending_link->get_chan(), LOG_ENTRY)) {
-        // no space
-        return;
-    }
-    if (AP_HAL::millis() - _log_sending_link->get_last_heartbeat_time() > 3000) {
-        // give a heartbeat a chance
-        return;
-    }
+    return;
 
-    uint32_t size, time_utc;
-    if (_log_next_list_entry == 0) {
-        size = 0;
-        time_utc = 0;
-    } else {
-        get_log_info(_log_next_list_entry, size, time_utc);
-    }
-    mavlink_msg_log_entry_send(_log_sending_link->get_chan(),
-                               _log_next_list_entry,
-                               _log_num_logs,
-                               _log_last_list_entry,
-                               time_utc,
-                               size);
-    if (_log_next_list_entry == _log_last_list_entry) {
-        transfer_activity = TransferActivity::IDLE;
-        _log_sending_link = nullptr;
-    } else {
-        _log_next_list_entry++;
-    }
 }
 
 /**
@@ -284,46 +239,6 @@ bool AP_Logger::handle_log_send_data()
 {
     WITH_SEMAPHORE(_log_send_sem);
 
-    if (!HAVE_PAYLOAD_SPACE(_log_sending_link->get_chan(), LOG_DATA)) {
-        // no space
-        return false;
-    }
-    if (AP_HAL::millis() - _log_sending_link->get_last_heartbeat_time() > 3000) {
-        // give a heartbeat a chance
-        return false;
-    }
+    return false;
 
-    int16_t ret = 0;
-    uint32_t len = _log_data_remaining;
-	mavlink_log_data_t packet;
-
-    if (len > MAVLINK_MSG_LOG_DATA_FIELD_DATA_LEN) {
-        len = MAVLINK_MSG_LOG_DATA_FIELD_DATA_LEN;
-    }
-    ret = get_log_data(_log_num_data, _log_data_page, _log_data_offset, len, packet.data);
-    if (ret < 0) {
-        // report as EOF on error
-        ret = 0;
-    }
-    if (ret < MAVLINK_MSG_LOG_DATA_FIELD_DATA_LEN) {
-        memset(&packet.data[ret], 0, MAVLINK_MSG_LOG_DATA_FIELD_DATA_LEN-ret);
-    }
-
-    packet.ofs = _log_data_offset;
-    packet.id = _log_num_data;
-    packet.count = ret;
-    _mav_finalize_message_chan_send(_log_sending_link->get_chan(),
-                                    MAVLINK_MSG_ID_LOG_DATA,
-                                    (const char *)&packet,
-                                    MAVLINK_MSG_ID_LOG_DATA_MIN_LEN,
-                                    MAVLINK_MSG_ID_LOG_DATA_LEN,
-                                    MAVLINK_MSG_ID_LOG_DATA_CRC);
-
-    _log_data_offset += len;
-    _log_data_remaining -= len;
-    if (ret < MAVLINK_MSG_LOG_DATA_FIELD_DATA_LEN || _log_data_remaining == 0) {
-        transfer_activity = TransferActivity::IDLE;
-        _log_sending_link = nullptr;
-    }
-    return true;
 }

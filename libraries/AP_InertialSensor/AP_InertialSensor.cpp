@@ -537,7 +537,7 @@ AP_InertialSensor::AP_InertialSensor() :
         _accel_vibe_filter[i].set_cutoff_frequency(AP_INERTIAL_SENSOR_ACCEL_VIBE_FILT_HZ);
     }
 
-    AP_AccelCal::register_client(this);
+    //AP_AccelCal::register_client(this);
 }
 
 /*
@@ -1843,7 +1843,7 @@ void AP_InertialSensor::_acal_save_calibrations()
     Vector3f bias, gain;
     for (uint8_t i=0; i<_accel_count; i++) {
         if (_accel_calibrator[i].get_status() == ACCEL_CAL_SUCCESS) {
-            _accel_calibrator[i].get_calibration(bias, gain);
+            //_accel_calibrator[i].get_calibration(bias, gain);
             _accel_offset[i].set_and_save(bias);
             _accel_scale[i].set_and_save(gain);
             _accel_id[i].save();
@@ -1932,7 +1932,7 @@ bool AP_InertialSensor::get_fixed_mount_accel_cal_sample(uint8_t sample_num, Vec
     if (_accel_count <= (_acc_body_aligned-1) || _accel_calibrator[2].get_status() != ACCEL_CAL_SUCCESS || sample_num>=_accel_calibrator[2].get_num_samples_collected()) {
         return false;
     }
-    _accel_calibrator[_acc_body_aligned-1].get_sample_corrected(sample_num, ret);
+    //_accel_calibrator[_acc_body_aligned-1].get_sample_corrected(sample_num, ret);
     if (_board_orientation == ROTATION_CUSTOM && _custom_rotation) {
         ret = *_custom_rotation * ret;
     } else {
@@ -1953,7 +1953,7 @@ bool AP_InertialSensor::get_primary_accel_cal_sample_avg(uint8_t sample_num, Vec
             continue;
         }
         Vector3f sample;
-        _accel_calibrator[i].get_sample_corrected(sample_num, sample);
+        //_accel_calibrator[i].get_sample_corrected(sample_num, sample);
         avg += sample;
         count++;
     }

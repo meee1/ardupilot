@@ -154,66 +154,7 @@ void CANTester::main_thread()
 {
     while (true) {
         switch (_test_id) {
-        case CANTester::TEST_LOOPBACK:
-            if (_can_ifaces[1] != nullptr) {
-                gcs().send_text(MAV_SEVERITY_ALERT, "********Running Loopback Test*******");
-                if (test_loopback(_loop_rate)) {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********Loopback Test Pass*******");
-                } else {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********Loopback Test Fail*******");
-                }
-            } else {
-                gcs().send_text(MAV_SEVERITY_ALERT, "Can't do Loopback Test with single iface");
-            }
-            break;
-        case CANTester::TEST_BUSOFF_RECOVERY:
-            if (_can_ifaces[1] != nullptr) {
-                gcs().send_text(MAV_SEVERITY_ALERT, "********Running Busoff Recovery Test********");
-                if (test_busoff_recovery()) {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********Busoff Recovery Test Pass********");
-                } else {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********Busoff Recovery Test Fail********");
-                }
-            } else {
-                gcs().send_text(MAV_SEVERITY_ALERT, "Can't do Busoff Recovery Test with single iface");
-            }
-            break;
-        case CANTester::TEST_UAVCAN_DNA:
-            if (_can_ifaces[1] == nullptr) {
-                gcs().send_text(MAV_SEVERITY_ALERT, "********Running UAVCAN DNA Test********");
-                if (test_uavcan_dna()) {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********UAVCAN DNA Test Pass********");
-                } else {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********UAVCAN DNA Test Fail********");
-                }
-            } else {
-                gcs().send_text(MAV_SEVERITY_ALERT, "Only one iface needs to be set for UAVCAN_DNA_TEST");
-            }
-            break;
-        case CANTester::TEST_TOSHIBA_CAN:
-            if (_can_ifaces[1] == nullptr) {
-                gcs().send_text(MAV_SEVERITY_ALERT, "********Running Toshiba CAN Test********");
-                if (test_toshiba_can()) {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********Toshiba CAN Test Pass********");
-                } else {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********Toshiba CAN Test Fail********");
-                }
-            } else {
-                gcs().send_text(MAV_SEVERITY_ALERT, "Only one iface needs to be set for TEST_TOSHIBA_CAN");
-            }
-            break;
-        case CANTester::TEST_KDE_CAN:
-            if (_can_ifaces[1] == nullptr) {
-                gcs().send_text(MAV_SEVERITY_ALERT, "********Running KDE CAN Test********");
-                if (test_kdecan()) {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********KDE CAN Test Pass********");
-                } else {
-                    gcs().send_text(MAV_SEVERITY_ALERT, "********KDE CAN Test Fail********");
-                }
-            } else {
-                gcs().send_text(MAV_SEVERITY_ALERT, "Only one iface needs to be set for TEST_KDE_CAN");
-            }
-            break;
+        
         default:
             break;
         }
@@ -369,7 +310,7 @@ bool CANTester::test_busoff_recovery()
     bo_frame.dlc = AP_HAL::CANFrame::MaxDataLen;
     bool bus_off_detected = false;
     // Bus Fault can be introduced by shorting CANH and CANL
-    gcs().send_text(MAV_SEVERITY_ERROR, "Introduce Bus Off Fault on the bus.");
+    //gcs().send_text(MAV_SEVERITY_ERROR, "Introduce Bus Off Fault on the bus.");
     while (num_busoff_runs--) {
         if (bus_off_detected) {
             break;
@@ -383,12 +324,12 @@ bool CANTester::test_busoff_recovery()
         hal.scheduler->delay_microseconds(50);
     }
     if (!bus_off_detected) {
-        gcs().send_text(MAV_SEVERITY_ERROR, "BusOff not detected on the bus");
+        //gcs().send_text(MAV_SEVERITY_ERROR, "BusOff not detected on the bus");
         return false;
     }
-    gcs().send_text(MAV_SEVERITY_ERROR, "BusOff detected remove Fault.");
+    //gcs().send_text(MAV_SEVERITY_ERROR, "BusOff detected remove Fault.");
     hal.scheduler->delay(1000);
-    gcs().send_text(MAV_SEVERITY_ERROR, "Running Loopback test.");
+    //gcs().send_text(MAV_SEVERITY_ERROR, "Running Loopback test.");
     //Send Dummy Frames to clear the error
     _can_ifaces[0]->send(bo_frame, AP_HAL::native_micros64(), 0);
     bo_frame.id += 1;
@@ -411,7 +352,7 @@ bool CANTester::test_uavcan_dna()
     uavcan::CanIfaceMgr _uavcan_iface_mgr {};
 
     if (!_uavcan_iface_mgr.add_interface(_can_ifaces[0])) {
-        gcs().send_text(MAV_SEVERITY_CRITICAL, "Failed to add iface");
+        //gcs().send_text(MAV_SEVERITY_CRITICAL, "Failed to add iface");
         return false;
     }
 
@@ -435,7 +376,7 @@ bool CANTester::test_uavcan_dna()
      */
     const int node_start_res = node.start();
     if (node_start_res < 0) {
-        gcs().send_text(MAV_SEVERITY_CRITICAL, "Failed to start the node");
+        //gcs().send_text(MAV_SEVERITY_CRITICAL, "Failed to start the node");
         return false;
     }
 
@@ -449,26 +390,26 @@ bool CANTester::test_uavcan_dna()
     int client_start_res = client.start(node.getHardwareVersion().unique_id,    // USING THE SAME UNIQUE ID AS ABOVE
                                         expected_node_id);
     if (client_start_res < 0) {
-        gcs().send_text(MAV_SEVERITY_ALERT,"Failed to start the dynamic node");
+        //gcs().send_text(MAV_SEVERITY_ALERT,"Failed to start the dynamic node");
     }
 
     /*
      * Waiting for the client to obtain for us a node ID.
      * This may take a few seconds.
      */
-    gcs().send_text(MAV_SEVERITY_ALERT, "Allocation is in progress");
+    //gcs().send_text(MAV_SEVERITY_ALERT, "Allocation is in progress");
     uint32_t num_runs = 100;
     while (!client.isAllocationComplete() && num_runs--) {
         const int res = node.spin(uavcan::MonotonicDuration::fromMSec(200));    // Spin duration doesn't matter
         if (res < 0) {
-            gcs().send_text(MAV_SEVERITY_ALERT, "Transient failure");
+           // gcs().send_text(MAV_SEVERITY_ALERT, "Transient failure");
         }
     }
-    gcs().send_text(MAV_SEVERITY_ALERT, "Dynamic NodeID %d allocated node ID %d",
-                    int(client.getAllocatedNodeID().get()),
-                    int(client.getAllocatorNodeID().get()));
+    //gcs().send_text(MAV_SEVERITY_ALERT, "Dynamic NodeID %d allocated node ID %d",
+                 //   int(client.getAllocatedNodeID().get()),
+                //    int(client.getAllocatorNodeID().get()));
     if (client.getAllocatedNodeID().get() != expected_node_id) {
-        gcs().send_text(MAV_SEVERITY_ALERT, "Unexpected Node Id, expected %d", expected_node_id);
+        //gcs().send_text(MAV_SEVERITY_ALERT, "Unexpected Node Id, expected %d", expected_node_id);
         return false;
     }
     return true;
@@ -486,7 +427,7 @@ bool CANTester::test_toshiba_can()
     uint32_t num_lock_cmds = 0;
     uint32_t num_request_data_cmds = 0;
     uint32_t num_motor_cmds = 0;
-    uint32_t start_time = AP_HAL::native_millis();
+    
     AP_HAL::CANIface::CanIOFlags flags;
 
     while (num_runs--) {
@@ -500,7 +441,7 @@ bool CANTester::test_toshiba_can()
         case AP_ToshibaCAN::COMMAND_LOCK: {
             AP_ToshibaCAN::motor_lock_cmd_t lock_frame;
             if (sizeof(lock_frame) != frame.dlc) {
-                gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad lock command length");
+                //gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad lock command length");
                 num_errors++;
             }
             memcpy(&lock_frame, frame.data, sizeof(lock_frame));
@@ -516,7 +457,7 @@ bool CANTester::test_toshiba_can()
                 lock_frame.motor10 != 1 && lock_frame.motor10 != 2 &&
                 lock_frame.motor11 != 1 && lock_frame.motor11 != 2 &&
                 lock_frame.motor12 != 1 && lock_frame.motor12 != 2) {
-                gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad lock frame received!");
+               // gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad lock frame received!");
                 num_errors++;
             }
             num_lock_cmds++;
@@ -525,7 +466,7 @@ bool CANTester::test_toshiba_can()
         case AP_ToshibaCAN::COMMAND_REQUEST_DATA: {
             AP_ToshibaCAN::motor_request_data_cmd_t request_data_cmd;
             if (sizeof(request_data_cmd) != frame.dlc) {
-                gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad request data command length");
+                //gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad request data command length");
                 num_errors++;
             }
             memcpy(&request_data_cmd, frame.data, sizeof(request_data_cmd));
@@ -546,7 +487,7 @@ bool CANTester::test_toshiba_can()
                  request_data_cmd.motor1 == 3 ||
                  request_data_cmd.motor1 == 4 ||
                  request_data_cmd.motor1 == 5))) {
-                gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad request frame received!");
+                //gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad request frame received!");
                 num_errors++;
             }
             num_request_data_cmds++;
@@ -558,7 +499,7 @@ bool CANTester::test_toshiba_can()
         case AP_ToshibaCAN::COMMAND_MOTOR3: {
             AP_ToshibaCAN::motor_rotation_cmd_t rotation_cmd;
             if (frame.dlc != sizeof(rotation_cmd)) {
-                gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad motor command length");
+                //gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad motor command length");
                 num_errors++;
             }
             memcpy(&rotation_cmd, frame.data, sizeof(rotation_cmd));
@@ -566,30 +507,20 @@ bool CANTester::test_toshiba_can()
                 (rotation_cmd.motor2 > AP_ToshibaCAN::TOSHIBACAN_OUTPUT_MAX) ||
                 (rotation_cmd.motor3 > AP_ToshibaCAN::TOSHIBACAN_OUTPUT_MAX) ||
                 (rotation_cmd.motor4 > AP_ToshibaCAN::TOSHIBACAN_OUTPUT_MAX)) {
-                gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad motor command data");
+                //gcs().send_text(MAV_SEVERITY_CRITICAL, "Bad motor command data");
                 num_errors++;
             }
             num_motor_cmds++;
             break;
         }
         default: {
-            gcs().send_text(MAV_SEVERITY_CRITICAL, "Unsupported Command");
+            //gcs().send_text(MAV_SEVERITY_CRITICAL, "Unsupported Command");
             num_errors++;
             break;
         }
         }
     }
-    uint32_t num_secs = (AP_HAL::native_millis() - start_time)/1000;
-    gcs().send_text(MAV_SEVERITY_ALERT, "Num Errors: %lu Cmds Lock: %lu Request: %lu Motor: %lu",
-                    (long unsigned int)num_errors,
-                    (long unsigned int)num_lock_cmds,
-                    (long unsigned int)num_request_data_cmds,
-                    (long unsigned int)num_motor_cmds);
-
-    gcs().send_text(MAV_SEVERITY_ALERT, "Rates Lock: %lu Request: %lu Motor: %lu",
-                    (long unsigned int)num_lock_cmds/num_secs,
-                    (long unsigned int)num_request_data_cmds/num_secs,
-                    (long unsigned int)num_motor_cmds/num_secs);
+ 
     if (num_errors) {
         return false;
     } else {
@@ -666,7 +597,7 @@ bool CANTester::send_toshiba_can_reply(uint32_t cmd)
 bool CANTester::test_kdecan() {
     AP_CANTester_KDECAN* kdecan_test = new AP_CANTester_KDECAN;
     if (kdecan_test == nullptr) {
-        gcs().send_text(MAV_SEVERITY_ERROR, "Failed to allocate KDECAN Tester");
+        //gcs().send_text(MAV_SEVERITY_ERROR, "Failed to allocate KDECAN Tester");
         return false;
     }
     kdecan_test->init(_can_ifaces[0]);
