@@ -14,11 +14,18 @@
  */
 #include "../AP_Periph.h"
 #include "GCS_Mavlink.h"
+#include <AP_Notify/AP_Notify.h>
 
 class HerePro_FW : public AP_Periph_FW {
     GCS_HerePro _gcs;
+    AP_Notify notify;
 public:
     void init() override;
+    void update() override;
+
+    // setup the var_info table
+    AP_Param param_loader{var_info};
+    static const AP_Param::Info var_info[];
 };
 
 extern HerePro_FW periph;

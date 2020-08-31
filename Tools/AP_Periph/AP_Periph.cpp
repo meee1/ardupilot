@@ -28,7 +28,7 @@
 
 extern const AP_HAL::HAL &hal;
 
-#if HAL_BOARD_AP_PERIPH_HEREPRO
+#if defined(HAL_BOARD_AP_PERIPH_HEREPRO)
 #include "HerePro/HerePro.h"
 HerePro_FW periph;
 #else

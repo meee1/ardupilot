@@ -16,7 +16,7 @@ public:
         k_param_compass,
         k_param_can_node,
         k_param_can_baudrate,
-        k_param_led_brightness,
+        k_param_notify,
         k_param_flash_bootloader,
         k_param_sysid_this_mav,
     };

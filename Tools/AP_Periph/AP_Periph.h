@@ -107,10 +107,12 @@ public:
     virtual void hwesc_telem_update();
 #endif
     
+#if !defined(HAL_BOARD_AP_PERIPH_HEREPRO)
     // setup the var_info table
     AP_Param param_loader{var_info};
 
     static const AP_Param::Info var_info[];
+#endif
 
     uint32_t last_mag_update_ms;
     uint32_t last_gps_update_ms;

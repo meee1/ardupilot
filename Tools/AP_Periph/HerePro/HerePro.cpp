@@ -76,4 +76,20 @@ void HerePro_FW::init()
     if (compass.enabled()) {
         compass.init();
     }
+    palWriteLine(HAL_GPIO_PIN_LED, 1);
+    notify.init();
+}
+
+
+void HerePro_FW::update()
+{
+    static uint32_t last_50hz;
+    uint32_t tnow = AP_HAL::millis();
+
+    if (tnow - last_50hz > 20) {
+        last_50hz = tnow;
+        notify.update();
+    }
+    can_update();
+    hal.scheduler->delay(1);
 }
