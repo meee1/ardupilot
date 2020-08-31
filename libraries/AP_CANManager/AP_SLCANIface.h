@@ -19,7 +19,12 @@
 
 #include <AP_HAL/AP_HAL.h>
 
-#if HAL_MAX_CAN_PROTOCOL_DRIVERS
+#ifndef HAL_ENABLE_SLCAN
+#define HAL_ENABLE_SLCAN (HAL_MAX_CAN_PROTOCOL_DRIVERS > 0)
+#endif
+
+#if HAL_ENABLE_SLCAN
+
 #include "AP_HAL/utility/RingBuffer.h"
 #include <AP_Param/AP_Param.h>
 
