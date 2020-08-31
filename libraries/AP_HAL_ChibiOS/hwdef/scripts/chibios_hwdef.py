@@ -757,7 +757,17 @@ def write_mcu_config(f):
 
     # setup for bootloader build
     if args.bootloader:
-        f.write('''
+        if mcu_series.startswith("STM32H7"):
+            # we got enough space to fit everything in H7
+            f.write('''
+#define HAL_BOOTLOADER_BUILD TRUE
+#define HAL_USE_ADC FALSE
+#define HAL_USE_EXT FALSE
+#define HAL_USE_I2C FALSE
+#define HAL_USE_PWM FALSE
+''')
+        else:
+            f.write('''
 #define HAL_BOOTLOADER_BUILD TRUE
 #define HAL_USE_ADC FALSE
 #define HAL_USE_EXT FALSE
