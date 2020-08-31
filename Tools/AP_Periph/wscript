@@ -4,7 +4,7 @@
 import fnmatch
 
 def build(bld):
-    targets = ['f103-*', 'f303-*', 'CUAV_GPS', 'ZubaxGNSS*', 'CubeOrange-periph']
+    targets = ['f103-*', 'f303-*', 'CUAV_GPS', 'ZubaxGNSS*', 'CubeOrange-periph', 'HerePro']
     valid_target = False
     for t in targets:
         if fnmatch.fnmatch(bld.env.BOARD, t):
@@ -12,10 +12,19 @@ def build(bld):
     if not valid_target:
         return
 
-    bld.ap_stlib(
-        name= 'AP_Periph_libs',
-        ap_vehicle='AP_Periph',
-        ap_libraries= [
+    libraries = []
+    extra_source = []
+    extra_use = []
+    if bld.env.BOARD == 'HerePro':
+        extra_use = ['libHerePro']
+
+        libraries = bld.ap_get_all_libraries() + [
+        'Tools/AP_Periph/HerePro/*.cpp'
+        ]
+        # TODO: probably make this define a common methodology for all board types
+        bld.env.DEFINES += ['HAL_BOARD_AP_PERIPH_HEREPRO']
+    else:
+        libraries = [
         'AP_Common',
         'AP_HAL',
         'AP_HAL_Empty',
@@ -36,7 +45,11 @@ def build(bld):
         'AP_RangeFinder',
         'AP_ROMFS',
         'AP_MSP',
-        ],
+        ]
+    bld.ap_stlib(
+        name= 'AP_Periph_libs',
+        ap_vehicle='AP_Periph',
+        ap_libraries= libraries,
         exclude_src=[
             'libraries/AP_HAL_ChibiOS/Storage.cpp'
         ]
@@ -48,7 +61,7 @@ def build(bld):
 
     bld.ap_program(
         program_name='AP_Periph',
-        use=['AP_Periph_libs', 'libcanard'],
+        use=['AP_Periph_libs', 'libcanard'] + extra_use,
         program_groups=['bin','AP_Periph'],
         includes=[bld.env.SRCROOT + '/modules/libcanard',
                   bld.env.BUILDROOT + '/modules/libcanard/dsdlc_generated']

@@ -58,7 +58,12 @@
 #include <utility>
 
 extern const AP_HAL::HAL &hal;
+#if defined(HAL_BOARD_AP_PERIPH_HEREPRO)
+#include "HerePro/HerePro.h"
+extern HerePro_FW periph;
+#else
 extern AP_Periph_FW periph;
+#endif
 
 #ifndef HAL_CAN_POOL_SIZE
 #define HAL_CAN_POOL_SIZE 4000

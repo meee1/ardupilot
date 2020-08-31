@@ -1,3 +1,5 @@
+#pragma once
+
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Param/AP_Param.h>
 #include <AP_GPS/AP_GPS.h>
@@ -24,20 +26,20 @@ extern const struct app_descriptor app_descriptor;
 
 class AP_Periph_FW {
 public:
-    void init();
-    void update();
+    virtual void init();
+    virtual void update();
 
     Parameters g;
 
-    void can_start();
-    void can_update();
-    void can_mag_update();
-    void can_gps_update();
-    void can_baro_update();
-    void can_airspeed_update();
-    void can_rangefinder_update();
+    virtual void can_start();
+    virtual void can_update();
+    virtual void can_mag_update();
+    virtual void can_gps_update();
+    virtual void can_baro_update();
+    virtual void can_airspeed_update();
+    virtual void can_rangefinder_update();
 
-    void load_parameters();
+    virtual void load_parameters();
 
     AP_SerialManager serial_manager;
 
@@ -70,9 +72,9 @@ public:
 #endif
     
 #ifdef HAL_PERIPH_ENABLE_ADSB
-    void adsb_init();
-    void adsb_update();
-    void can_send_ADSB(struct __mavlink_adsb_vehicle_t &msg);
+    virtual void adsb_init();
+    virtual void adsb_update();
+    virtual void can_send_ADSB(struct __mavlink_adsb_vehicle_t &msg);
     struct {
         mavlink_message_t msg;
         mavlink_status_t status;
@@ -88,9 +90,9 @@ public:
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_PWM_HARDPOINT
-    void pwm_irq_handler(uint8_t pin, bool pin_state, uint32_t timestamp);
-    void pwm_hardpoint_init();
-    void pwm_hardpoint_update();
+    virtual void pwm_irq_handler(uint8_t pin, bool pin_state, uint32_t timestamp);
+    virtual void pwm_hardpoint_init();
+    virtual void pwm_hardpoint_update();
     struct {
         uint8_t last_state;
         uint32_t last_ts_us;
@@ -102,7 +104,7 @@ public:
 
 #ifdef HAL_PERIPH_ENABLE_HWESC
     HWESC_Telem hwesc_telem;
-    void hwesc_telem_update();
+    virtual void hwesc_telem_update();
 #endif
     
     // setup the var_info table
@@ -116,7 +118,9 @@ public:
     uint32_t last_airspeed_update_ms;
 };
 
+#if !defined(HAL_BOARD_AP_PERIPH_HEREPRO)
 extern AP_Periph_FW periph;
+#endif
 
 extern "C" {
 void can_printf(const char *fmt, ...);

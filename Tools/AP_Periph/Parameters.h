@@ -2,6 +2,9 @@
 
 #include <AP_Common/AP_Common.h>
 
+#ifdef HAL_BOARD_AP_PERIPH_HEREPRO
+#include "HerePro/Parameters.h"
+#else
 // Global parameter class.
 //
 class Parameters {
@@ -67,3 +70,5 @@ public:
 };
 
 extern const AP_Param::Info var_info[];
+
+#endif

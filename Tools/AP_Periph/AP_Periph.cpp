@@ -21,7 +21,6 @@
 
  */
 #include <AP_HAL/AP_HAL.h>
-#include "AP_Periph.h"
 #include "hal.h"
 #include <stdio.h>
 #include <AP_HAL_ChibiOS/hwdef/common/stm32_util.h>
@@ -29,7 +28,13 @@
 
 extern const AP_HAL::HAL &hal;
 
+#if HAL_BOARD_AP_PERIPH_HEREPRO
+#include "HerePro/HerePro.h"
+HerePro_FW periph;
+#else
+#include "AP_Periph.h"
 AP_Periph_FW periph;
+#endif
 
 void setup();
 void loop();
