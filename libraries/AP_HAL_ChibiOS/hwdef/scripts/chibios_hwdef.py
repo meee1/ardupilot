@@ -757,8 +757,8 @@ def write_mcu_config(f):
 
     # setup for bootloader build
     if args.bootloader:
-        if mcu_series.startswith("STM32H7"):
-            # we got enough space to fit everything in H7
+        if get_config('FULL_FEATURED_BOOTLOADER', required=False, default=False):
+            # we got enough space to fit everything so we enable everything
             f.write('''
 #define HAL_BOOTLOADER_BUILD TRUE
 #define HAL_USE_ADC FALSE
@@ -1112,7 +1112,7 @@ def get_UART_ORDER():
     serial_order = get_config('SERIAL_ORDER', required=False, aslist=True)
     if serial_order is None:
         return None
-    if args.bootloader:
+    if args.bootloader and not get_config('FULL_FEATURED_BOOTLOADER', required=False, default=False):
         # in bootloader SERIAL_ORDER is treated the same as UART_ORDER
         return serial_order
     map = [ 0, 3, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
@@ -1712,7 +1712,10 @@ def write_hwdef_header(outfilename):
         write_I2C_config(f)
         write_UART_config(f)
     else:
-        write_UART_config_bootloader(f)
+        if get_config('FULL_FEATURED_BOOTLOADER', required=False, default=False):
+            write_UART_config(f)
+        else:
+            write_UART_config_bootloader(f)
 
     setup_apj_IDs()
     write_USB_config(f)
