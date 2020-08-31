@@ -37,6 +37,10 @@ extern "C" {
     int main(void);
 }
 
+#if HAL_NUM_CAN_IFACES
+const AP_HAL::HAL& hal = AP_HAL::get_HAL();
+#endif
+
 struct boardinfo board_info;
 
 #ifndef HAL_BOOTLOADER_TIMEOUT

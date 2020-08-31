@@ -16,12 +16,33 @@ def build(bld):
                   bld.env.BUILDROOT + '/modules/libcanard/dsdlc_generated']
         )
 
+    if bld.env.BOARD == 'HerePro':
+        libraries = [
+        'AP_HAL',
+        'AP_HAL_Empty',
+        'AP_Math',
+        'AP_BoardConfig',
+        'AP_Param',
+        'StorageManager',
+        'AP_FlashStorage',
+        'AP_RAMTRON',
+        'AP_SerialManager',
+        'AP_RTC',
+        'AP_InternalError',
+        'AP_ROMFS',
+        'GCS_MAVLink',
+        'AP_FileSystem'
+        ]
+        # TODO: probably make this define a common methodology for all board types
+        bld.env.DEFINES += ['HAL_BOARD_AP_PERIPH_HEREPRO']
+    else:
+        libraries = [
+        'AP_Math'
+        ]
     bld.ap_stlib(
         name= 'AP_Bootloader_libs',
         ap_vehicle='AP_Bootloader',
-        ap_libraries= [
-        'AP_Math'
-        ])
+        ap_libraries= libraries)
     
     bld(
         # build libcanard headers
