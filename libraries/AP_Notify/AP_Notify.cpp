@@ -46,6 +46,10 @@ AP_Notify *AP_Notify::_singleton;
 #define TOSHIBA_LED_I2C_BUS_INTERNAL    0
 #define TOSHIBA_LED_I2C_BUS_EXTERNAL    1
 
+#ifndef HAL_NUM_NOTIFY_LEDS
+#define HAL_NUM_NOTIFY_LEDS 1
+#endif
+
 // all I2C_LEDS
 #define I2C_LEDS (Notify_LED_ToshibaLED_I2C_Internal | Notify_LED_ToshibaLED_I2C_External | \
                   Notify_LED_NCP5623_I2C_Internal | Notify_LED_NCP5623_I2C_External)
@@ -146,7 +150,7 @@ const AP_Param::GroupInfo AP_Notify::var_info[] = {
     // @Param: LED_TYPES
     // @DisplayName: LED Driver Types
     // @Description: Controls what types of LEDs will be enabled
-    // @Bitmask: 0:Build in LED, 1:Internal ToshibaLED, 2:External ToshibaLED, 3:External PCA9685, 4:Oreo LED, 5:UAVCAN, 6:NCP5623 External, 7:NCP5623 Internal, 8:NeoPixel, 9:ProfiLED
+    // @Bitmask: 0:Build in LED, 1:Internal ToshibaLED, 2:External ToshibaLED, 3:External PCA9685, 4:Oreo LED, 5:UAVCAN, 6:NCP5623 External, 7:NCP5623 Internal, 8:NeoPixel, 9:ProfiLED, 10:ProfiLED_SPI
     // @User: Advanced
     AP_GROUPINFO("LED_TYPES", 6, AP_Notify, _led_type, BUILD_DEFAULT_LED_TYPE),
 
@@ -171,7 +175,7 @@ const AP_Param::GroupInfo AP_Notify::var_info[] = {
     // @Description: The number of Serial LED's to use for notifications (NeoPixel's and ProfiLED)
     // @Range: 1 32
     // @User: Advanced
-    AP_GROUPINFO("LED_LEN", 9, AP_Notify, _led_len, 1),
+    AP_GROUPINFO("LED_LEN", 9, AP_Notify, _led_len, HAL_NUM_NOTIFY_LEDS),
 
     AP_GROUPEND
 };
@@ -274,6 +278,9 @@ void AP_Notify::add_backends(void)
                 break;
             case Notify_LED_ProfiLED:
                 ADD_BACKEND(new ProfiLED());
+                break;
+            case Notify_LED_ProfiLED_SPI:
+                ADD_BACKEND(new ProfiLED_SPI());
                 break;
             case Notify_LED_OreoLED:
 #if !HAL_MINIMIZE_FEATURES
