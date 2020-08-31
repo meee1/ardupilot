@@ -407,7 +407,7 @@ def _build_cmd_tweaks(bld):
         bld.options.clear_failed_tests = True
 
 def _build_dynamic_sources(bld):
-    if not bld.env.BOOTLOADER:
+    if not bld.env.BOOTLOADER or bld.env.FORCE_MAVLINK_INCLUDE:
         bld(
             features='mavgen',
             source='modules/mavlink/message_definitions/v1.0/ardupilotmega.xml',
@@ -502,6 +502,7 @@ def _build_recursion(bld):
     if bld.env.PERIPH_FW is not None:
         if bld.env.PERIPH_FW:
             dirs_to_recurse.append('Tools/AP_Periph')
+            dirs_to_recurse.append('Tools/AP_Periph/HerePro')
 
     dirs_to_recurse.append('libraries/AP_Scripting')
 
@@ -580,7 +581,7 @@ ardupilotwaf.build_command('check-all',
     doc='shortcut for `waf check --alltests`',
 )
 
-for name in ('antennatracker', 'copter', 'heli', 'plane', 'rover', 'sub', 'bootloader','iofirmware','AP_Periph'):
+for name in ('antennatracker', 'copter', 'heli', 'plane', 'rover', 'sub', 'bootloader','iofirmware','AP_Periph', 'HerePro'):
     ardupilotwaf.build_command(name,
         program_group_list=name,
         doc='builds %s programs' % name,
