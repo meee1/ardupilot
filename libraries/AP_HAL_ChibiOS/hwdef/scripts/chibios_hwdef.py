@@ -1720,7 +1720,8 @@ def write_hwdef_header(outfilename):
     setup_apj_IDs()
     write_USB_config(f)
 
-    add_bootloader()
+    if not args.bootloader:
+        add_bootloader()
 
     if len(romfs) > 0:
         f.write('#define HAL_HAVE_AP_ROMFS_EMBEDDED_H 1\n')
