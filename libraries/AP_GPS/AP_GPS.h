@@ -492,6 +492,10 @@ public:
         return instance>=GPS_MAX_RECEIVERS? GPS_Type::GPS_TYPE_NONE : GPS_Type(_type[instance].get());
     }
 
+
+    // optional support for retrieving RTCMv3 data from a moving baseline base
+    bool get_RTCMV3(uint8_t instance, const uint8_t *&bytes, uint16_t &len);
+    void clear_RTCMV3(uint8_t instance);
     // get iTOW, if supported, zero otherwie
     uint32_t get_itow(uint8_t instance) const;
 

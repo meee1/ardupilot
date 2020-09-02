@@ -833,6 +833,13 @@ void AP_GPS::update_instance(uint8_t instance)
 #endif
 }
 
+    // optional support for retrieving RTCMv3 data from a moving baseline base
+    bool AP_GPS::get_RTCMV3(uint8_t instance, const uint8_t *&bytes, uint16_t &len) {
+        if (drivers[instance] != nullptr && drivers[instance]->get_RTCMV3(bytes, len)) { return true; }
+        return false; 
+    }
+    void AP_GPS::clear_RTCMV3(uint8_t instance) { if (drivers[instance] != nullptr) drivers[instance]->clear_RTCMV3(); };
+
 /*
   update all GPS instances
  */
