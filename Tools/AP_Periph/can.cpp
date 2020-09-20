@@ -69,13 +69,13 @@ extern AP_Periph_FW periph;
 #define HAL_CAN_POOL_SIZE 4000
 #endif
 
-static CanardInstance canard;
+CanardInstance AP_Periph_FW::canard;
 static uint32_t canard_memory_pool[HAL_CAN_POOL_SIZE/sizeof(uint32_t)];
 #ifndef HAL_CAN_DEFAULT_NODE_ID
 #define HAL_CAN_DEFAULT_NODE_ID CANARD_BROADCAST_NODE_ID
 #endif
-static uint8_t PreferredNodeID = HAL_CAN_DEFAULT_NODE_ID;
-static uint8_t transfer_id;
+uint8_t AP_Periph_FW::PreferredNodeID = HAL_CAN_DEFAULT_NODE_ID;
+uint8_t AP_Periph_FW::transfer_id;
 
 #ifndef CAN_APP_NODE_NAME
 #define CAN_APP_NODE_NAME                                               "org.ardupilot.ap_periph"
@@ -123,7 +123,7 @@ static void readUniqueID(uint8_t* out_uid)
 /*
   handle a GET_NODE_INFO request
  */
-static void handle_get_node_info(CanardInstance* ins,
+void AP_Periph_FW::handle_get_node_info(CanardInstance* ins,
                                  CanardRxTransfer* transfer)
 {
     uint8_t buffer[UAVCAN_PROTOCOL_GETNODEINFO_RESPONSE_MAX_SIZE] {};
@@ -171,7 +171,7 @@ static void handle_get_node_info(CanardInstance* ins,
 /*
   handle parameter GetSet request
  */
-static void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer)
 {
     // param fetch all can take a long time, so pat watchdog
     stm32_watchdog_pat();
@@ -275,7 +275,7 @@ static void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer)
 /*
   handle parameter executeopcode request
  */
-static void handle_param_executeopcode(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_param_executeopcode(CanardInstance* ins, CanardRxTransfer* transfer)
 {
     uavcan_protocol_param_ExecuteOpcodeRequest req;
     if (uavcan_protocol_param_ExecuteOpcodeRequest_decode(transfer, transfer->payload_len, &req, nullptr) < 0) {
@@ -321,10 +321,7 @@ static void handle_param_executeopcode(CanardInstance* ins, CanardRxTransfer* tr
                            total_size);
 }
 
-static void processTx(void);
-static void processRx(void);
-
-static void handle_begin_firmware_update(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_begin_firmware_update(CanardInstance* ins, CanardRxTransfer* transfer)
 {
 #if HAL_RAM_RESERVE_START >= 256
     // setup information on firmware request at start of ram
@@ -375,7 +372,7 @@ static void handle_begin_firmware_update(CanardInstance* ins, CanardRxTransfer* 
     NVIC_SystemReset();
 }
 
-static void handle_allocation_response(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_allocation_response(CanardInstance* ins, CanardRxTransfer* transfer)
 {
     // Rule C - updating the randomized time interval
     send_next_node_id_allocation_request_at_ms =
@@ -431,7 +428,7 @@ static void handle_allocation_response(CanardInstance* ins, CanardRxTransfer* tr
 /*
   fix value of a float for canard float16 format
  */
-static void fix_float16(float &f)
+void AP_Periph_FW::fix_float16(float &f)
 {
     *(uint16_t *)&f = canardConvertNativeFloatToFloat16(f);
 }
@@ -443,7 +440,7 @@ static uint32_t buzzer_len_ms;
 /*
   handle BeepCommand
  */
-static void handle_beep_command(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_beep_command(CanardInstance* ins, CanardRxTransfer* transfer)
 {
     uavcan_equipment_indication_BeepCommand req;
     if (uavcan_equipment_indication_BeepCommand_decode(transfer, transfer->payload_len, &req, nullptr) < 0) {
@@ -484,7 +481,7 @@ static uint8_t safety_state;
 /*
   handle SafetyState
  */
-static void handle_safety_state(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_safety_state(CanardInstance* ins, CanardRxTransfer* transfer)
 {
     ardupilot_indication_SafetyState req;
     if (ardupilot_indication_SafetyState_decode(transfer, transfer->payload_len, &req, nullptr) < 0) {
@@ -498,7 +495,7 @@ static void handle_safety_state(CanardInstance* ins, CanardRxTransfer* transfer)
 /*
   handle gnss::RTCMStream
  */
-static void handle_RTCMStream(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_RTCMStream(CanardInstance* ins, CanardRxTransfer* transfer)
 {
     uavcan_equipment_gnss_RTCMStream req;
     uint8_t arraybuf[UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DATA_MAX_LENGTH];
@@ -542,7 +539,7 @@ static void set_rgb_led(uint8_t red, uint8_t green, uint8_t blue)
 /*
   handle lightscommand
  */
-static void handle_lightscommand(CanardInstance* ins, CanardRxTransfer* transfer)
+void AP_Periph_FW::handle_lightscommand(CanardInstance* isns, CanardRxTransfer* transfer)
 {
     uavcan_equipment_indication_LightsCommand req;
     uint8_t arraybuf[UAVCAN_EQUIPMENT_INDICATION_LIGHTSCOMMAND_MAX_SIZE];
@@ -605,7 +602,7 @@ static void can_safety_LED_update(void)
 /*
   update safety button
  */
-static void can_safety_button_update(void)
+void AP_Periph_FW::can_safety_button_update(void)
 {
     static uint32_t last_update_ms;
     static uint8_t counter;
@@ -643,7 +640,7 @@ static void can_safety_button_update(void)
 /**
  * This callback is invoked by the library when a new message or request or response is received.
  */
-static void onTransferReceived(CanardInstance* ins,
+void AP_Periph_FW::onTransferReceived(CanardInstance* ins,
                                CanardRxTransfer* transfer)
 {
 #ifdef HAL_GPIO_PIN_LED_CAN1
@@ -657,18 +654,18 @@ static void onTransferReceived(CanardInstance* ins,
     if (canardGetLocalNodeID(ins) == CANARD_BROADCAST_NODE_ID) {
         if (transfer->transfer_type == CanardTransferTypeBroadcast &&
             transfer->data_type_id == UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_ID) {
-            handle_allocation_response(ins, transfer);
+            periph.handle_allocation_response(ins, transfer);
         }
         return;
     }
 
     switch (transfer->data_type_id) {
     case UAVCAN_PROTOCOL_GETNODEINFO_ID:
-        handle_get_node_info(ins, transfer);
+        periph.handle_get_node_info(ins, transfer);
         break;
 
     case UAVCAN_PROTOCOL_FILE_BEGINFIRMWAREUPDATE_ID:
-        handle_begin_firmware_update(ins, transfer);
+        periph.handle_begin_firmware_update(ins, transfer);
         break;
 
     case UAVCAN_PROTOCOL_RESTARTNODE_ID:
@@ -678,34 +675,34 @@ static void onTransferReceived(CanardInstance* ins,
         break;
 
     case UAVCAN_PROTOCOL_PARAM_GETSET_ID:
-        handle_param_getset(ins, transfer);
+        periph.handle_param_getset(ins, transfer);
         break;
 
     case UAVCAN_PROTOCOL_PARAM_EXECUTEOPCODE_ID:
-        handle_param_executeopcode(ins, transfer);
+        periph.handle_param_executeopcode(ins, transfer);
         break;
 
 #ifdef HAL_PERIPH_ENABLE_BUZZER
     case UAVCAN_EQUIPMENT_INDICATION_BEEPCOMMAND_ID:
-        handle_beep_command(ins, transfer);
+        periph.handle_beep_command(ins, transfer);
         break;
 #endif
 
 #ifdef HAL_GPIO_PIN_SAFE_LED
     case ARDUPILOT_INDICATION_SAFETYSTATE_ID:
-        handle_safety_state(ins, transfer);
+        periph.handle_safety_state(ins, transfer);
         break;
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_GPS
     case UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_ID:
-        handle_RTCMStream(ins, transfer);
+        periph.handle_RTCMStream(ins, transfer);
         break;
 #endif
         
 #ifdef AP_PERIPH_HAVE_LED
     case UAVCAN_EQUIPMENT_INDICATION_LIGHTSCOMMAND_ID:
-        handle_lightscommand(ins, transfer);
+        periph.handle_lightscommand(ins, transfer);
         break;
 #endif
     }
@@ -784,7 +781,7 @@ static bool shouldAcceptTransfer(const CanardInstance* ins,
     return false;
 }
 
-static void processTx(void)
+void AP_Periph_FW::processTx(void)
 {
     static uint8_t fail_count;
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
@@ -809,7 +806,7 @@ static void processTx(void)
     }
 }
 
-static void processRx(void)
+void AP_Periph_FW::processRx(void)
 {
     AP_HAL::CANFrame rxmsg;
     while (true) {
@@ -832,7 +829,7 @@ static void processRx(void)
     }
 }
 
-static uint16_t pool_peak_percent(void)
+uint16_t AP_Periph_FW::pool_peak_percent(void)
 {
     const CanardPoolAllocatorStatistics stats = canardGetPoolAllocatorStatistics(&canard);
     const uint16_t peak_percent = (uint16_t)(100U * stats.peak_usage_blocks / stats.capacity_blocks);
@@ -842,7 +839,7 @@ static uint16_t pool_peak_percent(void)
 /**
  * This function is called at 1 Hz rate from the main loop.
  */
-static void process1HzTasks(uint64_t timestamp_usec)
+void AP_Periph_FW::process1HzTasks(uint64_t timestamp_usec)
 {
     /*
      * Purging transfers that are no longer transmitted. This will occasionally free up some memory.
@@ -926,7 +923,7 @@ static void process1HzTasks(uint64_t timestamp_usec)
 /*
   wait for dynamic allocation of node ID
  */
-static void can_wait_node_id(void)
+void AP_Periph_FW::can_wait_node_id(void)
 {
     uint8_t node_id_allocation_transfer_id = 0;
     const uint32_t led_pattern = 0xAAAA;
@@ -1697,7 +1694,7 @@ void AP_Periph_FW::can_send_ADSB(struct __mavlink_adsb_vehicle_t &msg)
 #endif // HAL_PERIPH_ENABLE_ADSB
 
 // printf to CAN LogMessage for debugging
-void can_printf(const char *fmt, ...)
+void AP_Periph_FW::can_printf(const char *fmt, ...)
 {
     uavcan_protocol_debug_LogMessage pkt {};
     uint8_t buffer[UAVCAN_PROTOCOL_DEBUG_LOGMESSAGE_MAX_SIZE];

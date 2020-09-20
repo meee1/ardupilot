@@ -11,6 +11,7 @@
 #include <AP_MSP/msp.h>
 #include "../AP_Bootloader/app_comms.h"
 #include "hwing_esc.h"
+#include "canard.h"
 
 #if defined(HAL_PERIPH_NEOPIXEL_COUNT) || defined(HAL_PERIPH_ENABLE_NCP5623_LED)
 #define AP_PERIPH_HAVE_LED
@@ -28,8 +29,41 @@ class AP_Periph_FW {
 public:
     virtual void init();
     virtual void update();
-
     Parameters g;
+
+    // CAN methods
+    static CanardInstance canard;
+    static uint8_t PreferredNodeID;
+    static uint8_t transfer_id;
+
+    static void fix_float16(float &f);
+    static uint16_t pool_peak_percent();
+    static void can_printf(const char *fmt, ...);
+    static void onTransferReceived(CanardInstance* ins,
+                               CanardRxTransfer* transfer);
+
+    void processTx();
+    void processRx();
+    void process1HzTasks(uint64_t timestamp_usec);
+    void can_wait_node_id(void);
+
+    void handle_allocation_response(CanardInstance* ins, CanardRxTransfer* transfer);
+    void handle_get_node_info(CanardInstance* ins, CanardRxTransfer* transfer);
+    void handle_begin_firmware_update(CanardInstance* ins, CanardRxTransfer* transfer);
+    void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer);
+    void handle_param_executeopcode(CanardInstance* ins, CanardRxTransfer* transfer);
+#ifdef HAL_PERIPH_ENABLE_BUZZER
+    void handle_beep_command(CanardInstance* ins, CanardRxTransfer* transfer);
+#endif
+#ifdef HAL_GPIO_PIN_SAFE_LED
+    void handle_safety_state(CanardInstance* ins, CanardRxTransfer* transfer);
+#endif
+#ifdef HAL_PERIPH_ENABLE_GPS
+    void handle_RTCMStream(CanardInstance* ins, CanardRxTransfer* transfer);
+#endif
+#ifdef AP_PERIPH_HAVE_LED
+    virtual void handle_lightscommand(CanardInstance* ins, CanardRxTransfer* transfer);
+#endif
 
     virtual void can_start();
     virtual void can_update();
@@ -38,7 +72,9 @@ public:
     virtual void can_baro_update();
     virtual void can_airspeed_update();
     virtual void can_rangefinder_update();
-
+#ifdef HAL_GPIO_PIN_SAFE_BUTTON
+    virtual void can_safety_button_update();
+#endif
     virtual void load_parameters();
 
     AP_SerialManager serial_manager;

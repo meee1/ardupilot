@@ -15,14 +15,34 @@
 #include "../AP_Periph.h"
 #include "GCS_Mavlink.h"
 #include <AP_Notify/AP_Notify.h>
+#include <AP_InertialSensor/AP_InertialSensor.h>
+#include <AP_AHRS/AP_AHRS.h>
+#include <AP_InertialNav/AP_InertialNav.h>
+#include <AP_Scheduler/AP_Scheduler.h>
 
 class HerePro_FW : public AP_Periph_FW {
     GCS_HerePro _gcs;
     AP_Notify notify;
+    AP_InertialSensor ins;
+
+    AP_AHRS_NavEKF ahrs;
+
+    // Inertial Navigation
+    AP_InertialNav_NavEKF inertial_nav{ahrs};
+
+    AP_Scheduler scheduler;
+
+    AP_HAL::AnalogSource *_adc0;
+    AP_HAL::AnalogSource *_adc1;
+    AP_HAL::AnalogSource *_adc2;
+    AP_HAL::AnalogSource *_adc3;
+
 public:
     void init() override;
     void update() override;
-
+    void can_imu_update();
+    void can_voltage_update(uint32_t index, float value);
+    
     // setup the var_info table
     AP_Param param_loader{var_info};
     static const AP_Param::Info var_info[];
