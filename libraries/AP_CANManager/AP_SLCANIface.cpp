@@ -33,6 +33,12 @@
 
 extern const AP_HAL::HAL& hal;
 
+#if HAL_MAX_CAN_PROTOCOL_DRIVERS
+#define Debug(fmt, args...) do { AP::can().log_text(AP_CANManager::LOG_DEBUG, "CANFDIface", fmt, ##args); } while (0)
+#else
+#define Debug(fmt, args...)
+#endif
+
 const AP_Param::GroupInfo SLCAN::CANIface::var_info[] = {
     // @Param: CPORT
     // @DisplayName: SLCAN Route
@@ -40,7 +46,7 @@ const AP_Param::GroupInfo SLCAN::CANIface::var_info[] = {
     // @Values: 0:Disabled,1:First interface,2:Second interface
     // @User: Standard
     // @RebootRequired: True
-    AP_GROUPINFO("CPORT", 1, SLCAN::CANIface, _slcan_can_port, 0),
+    AP_GROUPINFO("CPORT", 1, SLCAN::CANIface, _slcan_can_port, HAL_DEFAULT_CPORT),
 
     // @Param: SERNUM
     // @DisplayName: SLCAN Serial Port
@@ -112,6 +118,7 @@ int SLCAN::CANIface::set_port(AP_HAL::UARTDriver* port)
         return -1;
     }
     _port = port;
+    _port->lock_port(_serial_lock_key, _serial_lock_key);
     return 0;
 }
 
@@ -255,7 +262,19 @@ bool SLCAN::CANIface::init_passthrough(uint8_t i)
     _can_iface = hal.can[i];
     _iface_num = _slcan_can_port - 1;
     _prev_ser_port = -1;
-    AP::can().log_text(AP_CANManager::LOG_INFO, LOG_TAG, "Setting SLCAN Passthrough for CAN%d\n", _slcan_can_port - 1);
+    Debug(AP_CANManager::LOG_INFO, LOG_TAG, "Setting SLCAN Passthrough for CAN%d\n", _slcan_can_port - 1);
+    return true;
+}
+
+bool SLCAN::CANIface::init_passthrough(AP_HAL::CANIface *can_iface)
+{
+    // we setup undelying can iface here which we use for passthrough
+    if (initialized_ || can_iface == nullptr) {
+        return false;
+    }
+
+    _can_iface = can_iface;
+    Debug(AP_CANManager::LOG_INFO, LOG_TAG, "Setting SLCAN Passthrough for CAN\n");
     return true;
 }
 
@@ -478,6 +497,7 @@ void SLCAN::CANIface::update_slcan_port()
             return;
         }
     }
+#if !defined(HAL_BOOTLOADER_BUILD)
     if (_prev_ser_port != _slcan_ser_port) {
         if (!_slcan_start_req) {
             _slcan_start_req_time = AP_HAL::native_millis();
@@ -507,6 +527,7 @@ void SLCAN::CANIface::update_slcan_port()
         _prev_ser_port = -1;
         _slcan_start_req = false;
     }
+#endif
 }
 
 bool SLCAN::CANIface::set_event_handle(AP_HAL::EventHandle* evt_handle)
@@ -650,7 +671,10 @@ int16_t SLCAN::CANIface::receive(AP_HAL::CANFrame& out_frame, uint64_t& rx_time,
         if (ret > 0) {
             // we also pass this frame through to slcan iface,
             // and immediately return
+#if !defined(HAL_BOOTLOADER_BUILD)
+// we don't do passthrough in Bootloader
             reportFrame(out_frame, AP_HAL::native_micros64());
+#endif
             return ret;
         } else if (ret < 0) {
             return ret;
@@ -685,9 +709,12 @@ int16_t SLCAN::CANIface::receive(AP_HAL::CANFrame& out_frame, uint64_t& rx_time,
         _last_had_activity = AP_HAL::millis();
         // Also send this frame over can_iface when in passthrough mode,
         // We just push this frame without caring for priority etc
+#if !defined(HAL_BOOTLOADER_BUILD)
+// we don't do passthrough in Bootloader
         if (_can_iface) {
             _can_iface->send(out_frame, AP_HAL::native_micros64() + 1000, out_flags);
         }
+#endif
         return 1;
     }
     return 0;

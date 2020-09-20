@@ -19,10 +19,6 @@
 
 #include <AP_HAL/AP_HAL.h>
 
-#ifndef HAL_ENABLE_SLCAN
-#define HAL_ENABLE_SLCAN (HAL_MAX_CAN_PROTOCOL_DRIVERS > 0)
-#endif
-
 #if HAL_ENABLE_SLCAN
 
 #include "AP_HAL/utility/RingBuffer.h"
@@ -103,6 +99,7 @@ public:
 
     // Initialisation of SLCAN Passthrough method of operation
     bool init_passthrough(uint8_t i);
+    bool init_passthrough(AP_HAL::CANIface *can_iface);
 
     // Set UART port to be used with slcan interface
     int set_port(AP_HAL::UARTDriver* port);
