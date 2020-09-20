@@ -22,11 +22,20 @@
 
 #define CHIBIOS_SCHEDULER_MAX_TIMER_PROCS 8
 
+
 #define APM_MONITOR_PRIORITY    183
 #define APM_MAIN_PRIORITY       180
 #define APM_TIMER_PRIORITY      181
 #define APM_RCIN_PRIORITY       177
+
+#if HAL_ENABLE_SLCAN && defined(HAL_BOOTLOADER_BUILD)
+// we want UART thread to be running at higher priority than main
+// so that we always ensure we get data through SLCAN iface
+#define APM_UART_PRIORITY        182
+#else
 #define APM_UART_PRIORITY        60
+#endif
+
 #define APM_STORAGE_PRIORITY     59
 #define APM_IO_PRIORITY          58
 #define APM_STARTUP_PRIORITY     10
