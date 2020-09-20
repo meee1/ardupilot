@@ -95,4 +95,6 @@ define HAL_DEFAULT_CPORT 1
 
 define HAL_UART_NODMA
 
+define HAL_CHIBIOS_ENABLE_ASSERTS 1
+
 define CAN_APP_NODE_NAME "org.ardupilot.CubeOrange-periph"
