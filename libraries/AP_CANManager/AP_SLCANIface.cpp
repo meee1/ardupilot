@@ -497,7 +497,7 @@ void SLCAN::CANIface::update_slcan_port()
             return;
         }
     }
-#if !defined(HAL_BOOTLOADER_BUILD)
+#if !defined(HAL_BOOTLOADER_BUILD) && !defined(HAL_BUILD_AP_PERIPH)
     if (_prev_ser_port != _slcan_ser_port) {
         if (!_slcan_start_req) {
             _slcan_start_req_time = AP_HAL::native_millis();
