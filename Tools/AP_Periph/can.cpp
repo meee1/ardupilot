@@ -85,8 +85,13 @@ uint8_t AP_Periph_FW::transfer_id;
 #define CAN_PROBE_CONTINUOUS 0
 #endif
 
+#if HAL_ENABLE_SLCAN
+#include <AP_CANManager/AP_SLCANIface.h>
+static ChibiOS::CANIface hw_can_iface(0);
+static SLCAN::CANIface can_iface;
+#else
 static ChibiOS::CANIface can_iface(0);
-
+#endif
 /*
  * Variables used for dynamic node ID allocation.
  * RTFM at http://uavcan.org/Specification/6._Application_level_functions/#dynamic-node-id-allocation
@@ -1018,7 +1023,15 @@ void AP_Periph_FW::can_start()
     node_status.mode = UAVCAN_PROTOCOL_NODESTATUS_MODE_INITIALIZATION;
     node_status.uptime_sec = AP_HAL::millis() / 1000U;
 
+#if HAL_ENABLE_SLCAN
+    // initialise serial ports
+    hw_can_iface.init(1000000, AP_HAL::CANIface::NormalMode);
+    can_iface.init_passthrough(&hw_can_iface);
+    hal.uartA->begin(115200);
+    can_iface.set_port(hal.uartA);
+#else
     can_iface.init(1000000, AP_HAL::CANIface::NormalMode);
+#endif
 
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived, shouldAcceptTransfer, NULL);

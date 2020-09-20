@@ -47,6 +47,7 @@ def build(bld):
         'AP_RangeFinder',
         'AP_ROMFS',
         'AP_MSP',
+        'AP_CANManager'
         ]
     bld.ap_stlib(
         name= 'AP_Periph_libs',
