@@ -46,13 +46,21 @@ static uint32_t canard_memory_pool[4096/4];
 static uint8_t initial_node_id = HAL_CAN_DEFAULT_NODE_ID;
 
 // can config for 1MBit
-static uint32_t baudrate = 1000000U;
+static uint32_t can_baudrate = 1000000U;
+
+#ifndef HAL_ENABLE_SLCAN
+#define HAL_ENABLE_SLCAN 0
+#endif
 
 #if HAL_USE_CAN
 static CANConfig cancfg = {
     CAN_MCR_ABOM | CAN_MCR_AWUM | CAN_MCR_TXFP,
     0 // filled in below
 };
+#elif HAL_ENABLE_SLCAN
+#include <AP_CANManager/AP_SLCANIface.h>
+static ChibiOS::CANIface hw_can_iface(0);
+static SLCAN::CANIface can_iface;
 #else
 static ChibiOS::CANIface can_iface(0);
 #endif
@@ -92,6 +100,7 @@ enum {
     FAIL_REASON_WATCHDOG = 15,
 };
 
+extern const AP_HAL::HAL &hal;
 /*
   get cpu unique ID
  */
@@ -697,14 +706,20 @@ void can_start()
 #if HAL_USE_CAN
     // calculate optimal CAN timings given PCLK1 and baudrate
     CanardSTM32CANTimings timings {};
-    canardSTM32ComputeCANTimings(STM32_PCLK1, baudrate, &timings);
+    canardSTM32ComputeCANTimings(STM32_PCLK1, can_baudrate, &timings);
     cancfg.btr = CAN_BTR_SJW(0) |
         CAN_BTR_TS2(timings.bit_segment_2-1) |
         CAN_BTR_TS1(timings.bit_segment_1-1) |
         CAN_BTR_BRP(timings.bit_rate_prescaler-1);
     canStart(&CAND1, &cancfg);
+#elif HAL_ENABLE_SLCAN
+    // initialise serial ports
+    hw_can_iface.init(can_baudrate, AP_HAL::CANIface::NormalMode);
+    can_iface.init_passthrough(&hw_can_iface);
+    hal.uartA->begin(115200);
+    can_iface.set_port(hal.uartA);
 #else
-    can_iface.init(baudrate, AP_HAL::CANIface::NormalMode);
+    can_iface.init(can_baudrate, AP_HAL::CANIface::NormalMode);
 #endif
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived, shouldAcceptTransfer, NULL);
@@ -725,7 +740,7 @@ void can_start()
 
 void can_update()
 {
-    // do one loop of CAN support. If we are doing a few update then
+    // do one loop of CAN support. If we are doing a fw update then
     // loop until it is finished
     do {
         processTx();

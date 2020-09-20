@@ -16,7 +16,7 @@ def build(bld):
                   bld.env.BUILDROOT + '/modules/libcanard/dsdlc_generated']
         )
 
-    if bld.env.BOARD == 'HerePro':
+    if bld.env.BOARD == 'HerePro' or bld.env.BOARD == 'CubeOrange-periph':
         libraries = [
         'AP_HAL',
         'AP_HAL_Empty',
@@ -31,7 +31,7 @@ def build(bld):
         'AP_InternalError',
         'AP_ROMFS',
         'GCS_MAVLink',
-        'AP_FileSystem'
+        'AP_CANManager'
         ]
         # TODO: probably make this define a common methodology for all board types
         bld.env.DEFINES += ['HAL_BOARD_AP_PERIPH_HEREPRO']
