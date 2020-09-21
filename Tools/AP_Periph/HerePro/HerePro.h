@@ -19,11 +19,16 @@
 #include <AP_AHRS/AP_AHRS.h>
 #include <AP_InertialNav/AP_InertialNav.h>
 #include <AP_Scheduler/AP_Scheduler.h>
+#include <AP_Mission/AP_Mission.h>
+#include <AP_Logger/AP_Logger.h>
 
 class HerePro_FW : public AP_Periph_FW {
     GCS_HerePro _gcs;
     AP_Notify notify;
     AP_InertialSensor ins;
+    
+    AP_Logger logger;
+    static const struct LogStructure log_structure[];
 
     AP_AHRS_NavEKF ahrs;
 
@@ -37,12 +42,30 @@ class HerePro_FW : public AP_Periph_FW {
     AP_HAL::AnalogSource *_adc2;
     AP_HAL::AnalogSource *_adc3;
 
+    bool start_command_callback(const AP_Mission::Mission_Command& cmd) { return false; }
+    void exit_mission_callback() { return; }
+    bool verify_command_callback(const AP_Mission::Mission_Command& cmd) { return false; }
+    void log_init(void);
+    static void scheduler_delay_callback();
+
+    //TODO: Remove dependencies on initialisation
+    // of following classes in GCS
+    // Mission library
+    AP_Mission mission{
+            FUNCTOR_BIND_MEMBER(&HerePro_FW::start_command_callback, bool, const AP_Mission::Mission_Command &),
+            FUNCTOR_BIND_MEMBER(&HerePro_FW::verify_command_callback, bool, const AP_Mission::Mission_Command &),
+            FUNCTOR_BIND_MEMBER(&HerePro_FW::exit_mission_callback, void)};
+
 public:
     void init() override;
     void update() override;
     void can_imu_update();
     void can_voltage_update(uint32_t index, float value);
     
+    HerePro_FW(void)
+        : logger(g.log_bitmask)
+    {
+    }
     // setup the var_info table
     AP_Param param_loader{var_info};
     static const AP_Param::Info var_info[];

@@ -17,8 +17,10 @@ public:
         k_param_can_node,
         k_param_can_baudrate,
         k_param_notify,
+        k_param_serial_manager,
         k_param_flash_bootloader,
         k_param_sysid_this_mav,
+        k_param_log_bitmask,
     };
 
     AP_Int16 format_version;
@@ -29,6 +31,7 @@ public:
 
     AP_Int8 led_brightness;
     AP_Int16 sysid_this_mav;
+    AP_Int32 log_bitmask;
     Parameters() {}
 };
 

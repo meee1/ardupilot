@@ -48,8 +48,6 @@ void HerePro_FW::init()
 
     stm32_watchdog_pat();
 
-    can_start();
-
     // initialise serial manager as early as sensible to get
     // diagnostic output during boot process.  We have to initialise
     // the GCS singleton first as it sets the global mavlink system ID
@@ -59,6 +57,11 @@ void HerePro_FW::init()
     // initialise serial ports
     serial_manager.init();
     gcs().setup_console();
+
+    // Register delay callback
+    hal.scheduler->register_delay_callback(scheduler_delay_callback, 1);
+
+    can_start();
 
     stm32_watchdog_pat();
 
@@ -107,8 +110,41 @@ void HerePro_FW::init()
         _adc2 = hal.analogin->channel(14);
         _adc3 = hal.analogin->channel(17);
     }
+
+    // Initialise logging
+    log_init();
 }
 
+/*
+ *  a delay() callback that processes MAVLink packets. We set this as the
+ *  callback in long running library initialisation routines to allow
+ *  MAVLink to process packets while waiting for the initialisation to
+ *  complete
+ */
+void HerePro_FW::scheduler_delay_callback()
+{
+    static uint32_t last_1hz, last_50hz;
+
+    AP_Logger &logger = AP::logger();
+
+    // don't allow potentially expensive logging calls:
+    logger.EnableWrites(false);
+
+    const uint32_t tnow = AP_HAL::millis();
+    if (tnow - last_1hz > 1000) {
+        last_1hz = tnow;
+        gcs().send_message(MSG_HEARTBEAT);
+        gcs().send_message(MSG_SYS_STATUS);
+    }
+
+    if (tnow - last_50hz > 20) {
+        last_50hz = tnow;
+        gcs().update_receive();
+        gcs().update_send();
+    }
+
+    logger.EnableWrites(true);
+}
 
 void HerePro_FW::update()
 {
@@ -161,8 +197,9 @@ void HerePro_FW::update()
         // --------------------
         //inertial_nav.update(vibration_check.high_vibes);      
     }
-    can_update();  
-    hal.scheduler->delay(1);
+
+    can_update();
+    hal.scheduler->delay(2);
 }
 
 void HerePro_FW::can_voltage_update(uint32_t index, float value)
@@ -278,4 +315,13 @@ void HerePro_FW::can_imu_update(void)
                         &buffer[0],
                         total_size);
     }
+}
+
+const struct LogStructure HerePro_FW::log_structure[] = {
+    LOG_COMMON_STRUCTURES,
+};
+
+void HerePro_FW::log_init(void)
+{
+    logger.Init(log_structure, ARRAY_SIZE(log_structure));
 }

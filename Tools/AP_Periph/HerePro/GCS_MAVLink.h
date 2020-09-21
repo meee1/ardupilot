@@ -13,8 +13,7 @@ public:
 private:
 
     uint32_t telem_delay() const override { return 0; }
-    void handleMessage(const mavlink_message_t &msg) override {}
-    bool try_send_message(enum ap_message id) override { return true; }
+    void handleMessage(const mavlink_message_t &msg) override { handle_common_message(msg); }
     bool handle_guided_request(AP_Mission::Mission_Command &cmd) override { return true; }
     void handle_change_alt_request(AP_Mission::Mission_Command &cmd) override {}
 
