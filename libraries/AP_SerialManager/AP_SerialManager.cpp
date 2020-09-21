@@ -28,6 +28,13 @@
 
 extern const AP_HAL::HAL& hal;
 
+#ifdef HAL_SERIAL0_PROTOCOL
+#define SERIAL0_PROTOCOL HAL_SERIAL0_PROTOCOL
+#else
+#define SERIAL0_PROTOCOL SerialProtocol_MAVLink2
+#endif
+
+
 #ifdef HAL_SERIAL2_PROTOCOL
 #define SERIAL2_PROTOCOL HAL_SERIAL2_PROTOCOL
 #else
@@ -85,7 +92,7 @@ const AP_Param::GroupInfo AP_SerialManager::var_info[] = {
     // @Values: 1:MAVlink1, 2:MAVLink2
     // @User: Standard
     // @RebootRequired: True
-    AP_GROUPINFO("0_PROTOCOL",  11, AP_SerialManager, state[0].protocol, SerialProtocol_MAVLink2),
+    AP_GROUPINFO("0_PROTOCOL",  11, AP_SerialManager, state[0].protocol, SERIAL0_PROTOCOL),
 #endif
 
 #if SERIALMANAGER_NUM_PORTS > 1
@@ -356,7 +363,12 @@ void AP_SerialManager::init()
     state[7].uart = hal.uartH;  // serial7, uartH, User Configurable
 #endif
 
-#ifdef HAL_OTG1_CONFIG
+#if defined(HAL_BOARD_AP_PERIPH_HEREPRO)
+    if (state[0].protocol != SerialProtocol_None) {
+        // Don't let user change protocol to anything else
+        state[0].protocol.set(SerialProtocol_None);
+    }
+#elif defined(HAL_OTG1_CONFIG)
     /*
       prevent users from changing USB protocol to other than
       MAVLink. This fixes an issue where users trying to get SLCAN
