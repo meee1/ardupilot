@@ -29,12 +29,10 @@
 #include <stdio.h>
 #include <AP_Vehicle/AP_Vehicle.h>
 
-#define LOG_TAG "SLCAN"
-
 extern const AP_HAL::HAL& hal;
 
 #if HAL_MAX_CAN_PROTOCOL_DRIVERS
-#define Debug(fmt, args...) do { AP::can().log_text(AP_CANManager::LOG_DEBUG, "CANFDIface", fmt, ##args); } while (0)
+#define Debug(fmt, args...) do { AP::can().log_text(AP_CANManager::LOG_DEBUG, "SLCAN", fmt, ##args); } while (0)
 #else
 #define Debug(fmt, args...)
 #endif
@@ -262,7 +260,7 @@ bool SLCAN::CANIface::init_passthrough(uint8_t i)
     _can_iface = hal.can[i];
     _iface_num = _slcan_can_port - 1;
     _prev_ser_port = -1;
-    Debug(AP_CANManager::LOG_INFO, LOG_TAG, "Setting SLCAN Passthrough for CAN%d\n", _slcan_can_port - 1);
+    Debug("Setting SLCAN Passthrough for CAN%d\n", _slcan_can_port - 1);
     return true;
 }
 
@@ -274,7 +272,7 @@ bool SLCAN::CANIface::init_passthrough(AP_HAL::CANIface *can_iface)
     }
 
     _can_iface = can_iface;
-    Debug(AP_CANManager::LOG_INFO, LOG_TAG, "Setting SLCAN Passthrough for CAN\n");
+    Debug("Setting SLCAN Passthrough for CAN\n");
     return true;
 }
 
@@ -675,8 +673,6 @@ int16_t SLCAN::CANIface::receive(AP_HAL::CANFrame& out_frame, uint64_t& rx_time,
 // we don't do passthrough in Bootloader
             reportFrame(out_frame, AP_HAL::native_micros64());
 #endif
-            return ret;
-        } else if (ret < 0) {
             return ret;
         }
     }
