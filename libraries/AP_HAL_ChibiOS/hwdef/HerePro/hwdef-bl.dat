@@ -40,7 +40,8 @@ STM32_VDD 330U
 # order of UARTs (and USB)
 SERIAL_ORDER OTG1 EMPTY EMPTY USART3 UART7 OTG2
 
-define HAL_SERIAL0_PROTOCOL SerialProtocol_SLCAN
+# its overridden directly by Bootloader firmware for use as slcan interface
+define HAL_SERIAL0_PROTOCOL SerialProtocol_None
 
 define HAL_NO_LOGGING TRUE
 define HAL_NO_MONITOR_THREAD
