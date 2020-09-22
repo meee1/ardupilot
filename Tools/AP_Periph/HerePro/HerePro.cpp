@@ -85,6 +85,7 @@ void HerePro_FW::init()
     }
 
     notify.init();
+    scripting.init();
 
     // initialise ahrs (may push imu calibration into the mpu6000 if using that device).
     ahrs.init();
@@ -96,9 +97,6 @@ void HerePro_FW::init()
     // reset ahrs including gyro bias
     ahrs.reset();
 
-
-    // enable leds
-    notify.init();
     // power leds
     palWriteLine(HAL_GPIO_PIN_LED, 1); // 4 leds left/right
     palWriteLine(HAL_GPIO_PIN_LED_2, 1); // the rest
@@ -214,12 +212,12 @@ void HerePro_FW::can_voltage_update(uint32_t index, float value)
     uint32_t len = uavcan_equipment_power_CircuitStatus_encode(&power1, buffer);
 
     canardBroadcast(&canard,
-                                        UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_SIGNATURE,
-                                        UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_ID,
-                                        &transfer_id,
-                                        CANARD_TRANSFER_PRIORITY_LOW,
-                                        buffer,
-                                        len);
+                    UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_SIGNATURE,
+                    UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_ID,
+                    &transfer_id,
+                    CANARD_TRANSFER_PRIORITY_LOW,
+                    buffer,
+                    len);
 }
 
 void HerePro_FW::can_imu_update(void)

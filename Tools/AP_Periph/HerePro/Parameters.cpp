@@ -65,7 +65,9 @@ const AP_Param::Info HerePro_FW::var_info[] = {
     GSCALAR(sysid_this_mav,         "SYSID_THISMAV",  MAV_SYSTEM_ID),
 
     GSCALAR(log_bitmask,    "LOG_BITMASK",          DEFAULT_LOG_BITMASK),
-    
+
+    GOBJECT(scripting, "SCR_", AP_Scripting),
+
     AP_VAREND
 };
 

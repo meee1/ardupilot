@@ -21,6 +21,7 @@
 #include <AP_Scheduler/AP_Scheduler.h>
 #include <AP_Mission/AP_Mission.h>
 #include <AP_Logger/AP_Logger.h>
+#include <AP_Scripting/AP_Scripting.h>
 
 class HerePro_FW : public AP_Periph_FW {
     GCS_HerePro _gcs;
@@ -36,6 +37,8 @@ class HerePro_FW : public AP_Periph_FW {
     AP_InertialNav_NavEKF inertial_nav{ahrs};
 
     AP_Scheduler scheduler;
+
+    AP_Scripting scripting;
 
     AP_HAL::AnalogSource *_adc0;
     AP_HAL::AnalogSource *_adc1;

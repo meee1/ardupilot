@@ -21,6 +21,7 @@ public:
         k_param_flash_bootloader,
         k_param_sysid_this_mav,
         k_param_log_bitmask,
+        k_param_scripting
     };
 
     AP_Int16 format_version;
