@@ -382,6 +382,16 @@ void AP_Notify::handle_rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t rate_hz)
     }
 }
 
+// handle RGB Per led from Scripting
+void AP_Notify::handle_rgb_id(uint8_t r, uint8_t g, uint8_t b, uint8_t id)
+{
+    for (uint8_t i = 0; i < _num_devices; i++) {
+        if (_devices[i] != nullptr) {
+            _devices[i]->rgb_set_id(r, g, b, id);
+        }
+    }
+}
+
 // handle a PLAY_TUNE message
 void AP_Notify::handle_play_tune(const mavlink_message_t &msg)
 {

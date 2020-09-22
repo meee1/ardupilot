@@ -29,6 +29,8 @@ public:
 class ProfiLED_SPI: public RGBLed {
 public:
     ProfiLED_SPI();
+
+    void rgb_set_id(uint8_t r, uint8_t g, uint8_t b, uint8_t id) override;
 protected:
 
     bool hw_init(void) override;

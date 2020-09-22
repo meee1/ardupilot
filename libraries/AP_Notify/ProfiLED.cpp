@@ -17,6 +17,7 @@
 #include "ProfiLED.h"
 #include "SRV_Channel/SRV_Channel.h"
 #include <utility>
+#include <GCS_MAVlink/GCS.h>
 
 // This limit is from the dshot driver rc out groups limit, we need at least one channel for clock
 #define AP_NOTIFY_ProfiLED_MAX_INSTANCES        3
@@ -67,7 +68,7 @@ ProfiLED_SPI::ProfiLED_SPI() :
 
 bool ProfiLED_SPI::hw_init()
 {
-    num_leds = pNotify->get_led_len();
+    num_leds = pNotify->get_led_len() + 1; // for some reason we have to send an additional LED data
     rgb = new ProfiLED_SPI::RGB[num_leds];
     if (!rgb) {
         return false;
@@ -78,9 +79,19 @@ bool ProfiLED_SPI::hw_init()
         return false;
     }
     WITH_SEMAPHORE(_dev->get_semaphore());
-    _dev->register_periodic_callback(20000, FUNCTOR_BIND_MEMBER(&ProfiLED_SPI::_timer, void));
-
+    _dev->register_periodic_callback(10000, FUNCTOR_BIND_MEMBER(&ProfiLED_SPI::_timer, void));
+    _need_update = true;
+    gcs().send_text(MAV_SEVERITY_INFO, "Initialised ProfiLED over SPIs");
     return true;
+}
+
+void ProfiLED_SPI::rgb_set_id(uint8_t red, uint8_t green, uint8_t blue, uint8_t id)
+{
+    if (id >= num_leds) {
+        return;
+    }
+    rgb[id] = {blue, red, green};
+    _need_update = true;
 }
 
 bool ProfiLED_SPI::hw_set_rgb(uint8_t red, uint8_t green, uint8_t blue)
@@ -94,11 +105,7 @@ bool ProfiLED_SPI::hw_set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 
 void ProfiLED_SPI::_timer(void)
 {
-    if (!_need_update) {
-        return;
-    }
     _need_update = false;
-
     update_led_strip();
 }
 
