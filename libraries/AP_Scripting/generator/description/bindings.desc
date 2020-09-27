@@ -40,6 +40,7 @@ singleton AP_AHRS method get_vibration Vector3f
 singleton AP_AHRS method earth_to_body Vector3f Vector3f
 singleton AP_AHRS method body_to_earth Vector3f Vector3f
 singleton AP_AHRS method get_EAS2TAS float
+singleton AP_AHRS method get_yaw_earth float
 
 include AP_Arming/AP_Arming.h
 
@@ -279,3 +280,8 @@ singleton AP_RPM method get_rpm boolean uint8_t 0 RPM_MAX_INSTANCES float'Null
 include AP_Button/AP_Button.h
 singleton AP_Button alias button
 singleton AP_Button method get_button_state boolean uint8_t 1 AP_BUTTON_NUM_PINS
+
+include ../Tools/AP_Periph/HerePro/HerePro.h
+singleton HerePro_FW alias herepro
+singleton HerePro_FW method get_yaw_earth float
+singleton HerePro_FW method get_vehicle_state uint32_t
