@@ -41,6 +41,7 @@
 #include <ardupilot/indication/Button.hpp>
 #include <ardupilot/equipment/trafficmonitor/TrafficReport.hpp>
 #include <uavcan/equipment/gnss/RTCMStream.hpp>
+#include <com/hex/equipment/herepro/NotifyState.hpp>
 
 #include <AP_Baro/AP_Baro_UAVCAN.h>
 #include <AP_RangeFinder/AP_RangeFinder_UAVCAN.h>
@@ -107,6 +108,7 @@ const AP_Param::GroupInfo AP_UAVCAN::var_info[] = {
 static uavcan::Publisher<uavcan::equipment::actuator::ArrayCommand>* act_out_array[HAL_MAX_CAN_PROTOCOL_DRIVERS];
 static uavcan::Publisher<uavcan::equipment::esc::RawCommand>* esc_raw[HAL_MAX_CAN_PROTOCOL_DRIVERS];
 static uavcan::Publisher<uavcan::equipment::indication::LightsCommand>* rgb_led[HAL_MAX_CAN_PROTOCOL_DRIVERS];
+static uavcan::Publisher<com::hex::equipment::herepro::NotifyState>* herepro_notify[HAL_MAX_CAN_PROTOCOL_DRIVERS];
 static uavcan::Publisher<uavcan::equipment::indication::BeepCommand>* buzzer[HAL_MAX_CAN_PROTOCOL_DRIVERS];
 static uavcan::Publisher<ardupilot::indication::SafetyState>* safety_state[HAL_MAX_CAN_PROTOCOL_DRIVERS];
 static uavcan::Publisher<uavcan::equipment::gnss::RTCMStream>* rtcm_stream[HAL_MAX_CAN_PROTOCOL_DRIVERS];
@@ -270,6 +272,10 @@ void AP_UAVCAN::init(uint8_t driver_index, bool enable_filters)
     rgb_led[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
     rgb_led[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
 
+    herepro_notify[driver_index] = new uavcan::Publisher<com::hex::equipment::herepro::NotifyState>(*_node);
+    herepro_notify[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
+    herepro_notify[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
+    
     buzzer[driver_index] = new uavcan::Publisher<uavcan::equipment::indication::BeepCommand>(*_node);
     buzzer[driver_index]->setTxTimeout(uavcan::MonotonicDuration::fromMSec(20));
     buzzer[driver_index]->setPriority(uavcan::TransferPriority::OneHigherThanLowest);
@@ -445,6 +451,7 @@ void AP_UAVCAN::loop(void)
         buzzer_send();
         rtcm_stream_send();
         safety_state_send();
+        herepro_notify_state();
         AP::uavcan_dna_server().verify_nodes(this);
     }
 }
@@ -594,6 +601,88 @@ void AP_UAVCAN::led_out_send()
 
     rgb_led[_driver_index]->broadcast(msg);
     _led_conf.last_update = now;
+}
+
+void AP_UAVCAN::herepro_notify_state()
+{
+    uint64_t now = AP_HAL::native_micros64();
+
+    if ((now - last_herepro_notify) < 50) {
+        last_herepro_notify = AP_HAL::native_micros64();
+        return;
+    }
+
+    com::hex::equipment::herepro::NotifyState msg;
+    msg.vehicle_state = 0;
+    if (AP_Notify::flags.initialising) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_INITIALISING;
+    }
+    if (AP_Notify::flags.armed) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_ARMED;
+    }
+    if (AP_Notify::flags.flying) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_FLYING;
+    }
+    if (AP_Notify::flags.compass_cal_running) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_MAGCAL_RUN;
+    }
+    if (AP_Notify::flags.ekf_bad) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_EKF_BAD;
+    }
+    if (AP_Notify::flags.esc_calibration) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_ESC_CALIBRATION;
+    }
+    if (AP_Notify::flags.failsafe_battery) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_FAILSAFE_BATT;
+    }
+    if (AP_Notify::flags.failsafe_gcs) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_FAILSAFE_GCS;
+    }
+    if (AP_Notify::flags.failsafe_radio) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_FAILSAFE_RADIO;
+    }
+    if (AP_Notify::flags.firmware_update) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_FW_UPDATE;
+    }
+    if (AP_Notify::flags.gps_fusion) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_GPS_FUSION;
+    }
+    if (AP_Notify::flags.gps_glitching) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_GPS_GLITCH;
+    }
+    if (AP_Notify::flags.have_pos_abs) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_POS_ABS_AVAIL;
+    }
+    if (AP_Notify::flags.leak_detected) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_LEAK_DET;
+    }
+    if (AP_Notify::flags.parachute_release) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_CHUTE_RELEASED;
+    }
+    if (AP_Notify::flags.powering_off) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_POWERING_OFF;
+    }
+    if (AP_Notify::flags.pre_arm_check) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_PREARM;
+    }
+    if (AP_Notify::flags.pre_arm_gps_check) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_PREARM_GPS;
+    }
+    if (AP_Notify::flags.save_trim) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_SAVE_TRIM;
+    }
+    if (AP_Notify::flags.vehicle_lost) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_LOST;
+    }
+    if (AP_Notify::flags.video_recording) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_VIDEO_RECORDING;
+    }
+    if (AP_Notify::flags.waiting_for_throw) {
+        msg.vehicle_state |= 1 << com::hex::equipment::herepro::NotifyState::VEHICLE_STATE_THROW_READY;
+    }
+
+    msg.yaw_earth = AP::ahrs().get_yaw_earth();
+    herepro_notify[_driver_index]->broadcast(msg);
 }
 
 bool AP_UAVCAN::led_write(uint8_t led_index, uint8_t red, uint8_t green, uint8_t blue)

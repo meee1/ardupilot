@@ -164,6 +164,9 @@ private:
     // send GNSS injection
     void rtcm_stream_send();
 
+    // send values for vehicle state display on HerePro
+    void herepro_notify_state();
+
     uavcan::PoolAllocator<UAVCAN_NODE_POOL_SIZE, UAVCAN_NODE_POOL_BLOCK_SIZE, AP_UAVCAN::RaiiSynchronizer> _node_allocator;
 
     // UAVCAN parameters
@@ -203,6 +206,8 @@ private:
         uint8_t devices_count;
         uint64_t last_update;
     } _led_conf;
+
+    uint64_t last_herepro_notify;
 
     HAL_Semaphore _led_out_sem;
 
