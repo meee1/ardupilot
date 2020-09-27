@@ -44,6 +44,7 @@
 #include <ardupilot/equipment/trafficmonitor/TrafficReport.h>
 #include <uavcan/equipment/gnss/RTCMStream.h>
 #include <uavcan/protocol/debug/LogMessage.h>
+#include <com/hex/equipment/herepro/NotifyState.h>
 #include <stdio.h>
 #include <AP_HAL_ChibiOS/hwdef/common/stm32_util.h>
 #include <AP_HAL_ChibiOS/hwdef/common/watchdog.h>
@@ -710,6 +711,11 @@ void AP_Periph_FW::onTransferReceived(CanardInstance* ins,
         periph.handle_lightscommand(ins, transfer);
         break;
 #endif
+#if defined(HAL_BOARD_AP_PERIPH_HEREPRO)
+    case COM_HEX_EQUIPMENT_HEREPRO_NOTIFYSTATE_ID:
+        periph.handle_herepro_notify(ins, transfer);
+        break;
+#endif
     }
 }
 
@@ -777,6 +783,11 @@ static bool shouldAcceptTransfer(const CanardInstance* ins,
 #ifdef HAL_PERIPH_ENABLE_GPS
     case UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_ID:
         *out_data_type_signature = UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_SIGNATURE;
+        return true;
+#endif
+#if defined(HAL_BOARD_AP_PERIPH_HEREPRO)
+    case COM_HEX_EQUIPMENT_HEREPRO_NOTIFYSTATE_ID:
+        *out_data_type_signature = COM_HEX_EQUIPMENT_HEREPRO_NOTIFYSTATE_SIGNATURE;
         return true;
 #endif
     default:

@@ -52,6 +52,7 @@ public:
     void handle_begin_firmware_update(CanardInstance* ins, CanardRxTransfer* transfer);
     void handle_param_getset(CanardInstance* ins, CanardRxTransfer* transfer);
     void handle_param_executeopcode(CanardInstance* ins, CanardRxTransfer* transfer);
+    virtual void handle_herepro_notify(CanardInstance* isns, CanardRxTransfer* transfer) {}
 #ifdef HAL_PERIPH_ENABLE_BUZZER
     void handle_beep_command(CanardInstance* ins, CanardRxTransfer* transfer);
 #endif

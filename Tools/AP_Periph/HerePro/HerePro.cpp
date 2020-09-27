@@ -31,10 +31,23 @@
 #include <uavcan/equipment/ahrs/RawIMU.h>
 #include <uavcan/equipment/power/CircuitStatus.h>
 #include <uavcan/equipment/ahrs/Solution.h>
+#include <uavcan/equipment/indication/LightsCommand.h>
+#include <com/hex/equipment/herepro/NotifyState.h>
 
 extern const AP_HAL::HAL &hal;
 
 AP_Vehicle& vehicle = *AP_Vehicle::get_singleton();
+HerePro_FW* HerePro_FW::_singleton = nullptr;
+
+
+HerePro_FW::HerePro_FW() :
+    logger(g.log_bitmask)
+{ 
+    if (_singleton != nullptr) {
+        AP_HAL::panic("HerePro_FW must be singleton");
+    }
+    _singleton = this;
+}
 
 void HerePro_FW::init()
 {
@@ -84,9 +97,6 @@ void HerePro_FW::init()
         compass.init();
     }
 
-    notify.init();
-    scripting.init();
-
     // initialise ahrs (may push imu calibration into the mpu6000 if using that device).
     ahrs.init();
     ahrs.set_vehicle_class(AHRS_VEHICLE_COPTER);
@@ -111,6 +121,9 @@ void HerePro_FW::init()
 
     // Initialise logging
     log_init();
+
+    notify.init();
+    scripting.init();
 }
 
 /*
@@ -146,35 +159,41 @@ void HerePro_FW::scheduler_delay_callback()
 
 void HerePro_FW::update()
 {
-    static uint32_t last_1hz;
+    // static uint32_t last_1hz;
     static uint32_t last_50hz;
     static uint32_t last_100hz;
     uint32_t tnow = AP_HAL::millis();
 
-    if (tnow - last_1hz >= 1000)
-    {
-        last_1hz = tnow;
+    // if (tnow - last_1hz >= 1000)
+    // {
+    //     last_1hz = tnow;
 
-        hal.gpio->pinMode(1, HAL_GPIO_INPUT);
-        uint8_t gpio1 = hal.gpio->read(1);
-        hal.gpio->pinMode(2, HAL_GPIO_INPUT);
-        uint8_t gpio2 = hal.gpio->read(2);
-        //can_printf("gpio %u %u\r\n",gpio1,gpio2);
+    //     hal.gpio->pinMode(1, HAL_GPIO_INPUT);
+    //     uint8_t gpio1 = hal.gpio->read(1);
+    //     hal.gpio->pinMode(2, HAL_GPIO_INPUT);
+    //     uint8_t gpio2 = hal.gpio->read(2);
+    //     //can_printf("gpio %u %u\r\n",gpio1,gpio2);
 
-        float adc1 = _adc0->voltage_average();
-        float adc2 = _adc1->voltage_average();
-        float adc3 = _adc2->voltage_average(); // CircuitStatus
-        float adc4 = _adc3->voltage_average();
+    //     float adc1 = _adc0->voltage_average();
+    //     float adc2 = _adc1->voltage_average();
+    //     float adc3 = _adc2->voltage_average(); // CircuitStatus
+    //     float adc4 = _adc3->voltage_average();
 
-        //can_printf("analog vcc(5v) %f vcc2(1.8v) %f bat1 %f bat2 %f\r\n",adc1,adc2,adc3,adc4);
+    //     //can_printf("analog vcc(5v) %f vcc2(1.8v) %f bat1 %f bat2 %f\r\n",adc1,adc2,adc3,adc4);
 
-        can_voltage_update(0,adc3);
-        can_voltage_update(1,adc4);
-        can_voltage_update(2,adc1);
-        can_voltage_update(3,adc2);
-        can_voltage_update(4,gpio1);
-        can_voltage_update(5,gpio2);
-        can_imu_update();
+    //     can_voltage_update(0,adc3);
+    //     can_voltage_update(1,adc4);
+    //     can_voltage_update(2,adc1);
+    //     can_voltage_update(3,adc2);
+    //     can_voltage_update(4,gpio1);
+    //     can_voltage_update(5,gpio2);
+    //     can_imu_update();
+    // }
+
+    if (AP_HAL::millis() - last_vehicle_state > 500 ) {
+        // We haven't heard from Ardupilot for a while go down
+        vehicle_state = 1;
+        yaw_earth = 0;
     }
 
     if (tnow - last_50hz >= 20) {
@@ -323,3 +342,42 @@ void HerePro_FW::log_init(void)
 {
     logger.Init(log_structure, ARRAY_SIZE(log_structure));
 }
+
+void HerePro_FW::handle_lightscommand(CanardInstance* isns, CanardRxTransfer* transfer)
+{
+    uavcan_equipment_indication_LightsCommand req;
+    uint8_t arraybuf[UAVCAN_EQUIPMENT_INDICATION_LIGHTSCOMMAND_MAX_SIZE];
+    uint8_t *arraybuf_ptr = arraybuf;
+    if (uavcan_equipment_indication_LightsCommand_decode(transfer, transfer->payload_len, &req, &arraybuf_ptr) < 0) {
+        return;
+    }
+    for (uint8_t i=0; i<req.commands.len; i++) {
+        uavcan_equipment_indication_SingleLightCommand &cmd = req.commands.data[i];
+        // to get the right color proportions we scale the green so that is uses the
+        // same number of bits as red and blue
+        uint8_t red = cmd.color.red<<3;
+        uint8_t green = (cmd.color.green>>1)<<3;
+        uint8_t blue = cmd.color.blue<<3;
+        if (periph.g.led_brightness != 100 && periph.g.led_brightness >= 0) {
+            float scale = periph.g.led_brightness * 0.01;
+            red = constrain_int16(red * scale, 0, 255);
+            green = constrain_int16(green * scale, 0, 255);
+            blue = constrain_int16(blue * scale, 0, 255);
+        }
+        notify.handle_rgb_id(red, green, blue, cmd.light_id);
+    }
+}
+
+void HerePro_FW::handle_herepro_notify(CanardInstance* isns, CanardRxTransfer* transfer)
+{
+    com_hex_equipment_herepro_NotifyState msg;
+    uint8_t arraybuf[COM_HEX_EQUIPMENT_HEREPRO_NOTIFYSTATE_MAX_SIZE];
+    uint8_t *arraybuf_ptr = arraybuf;
+    if (com_hex_equipment_herepro_NotifyState_decode(transfer, transfer->payload_len, &msg, &arraybuf_ptr) < 0) {
+        return;
+    }
+    vehicle_state = msg.vehicle_state;
+    yaw_earth = msg.yaw_earth;
+    last_vehicle_state = AP_HAL::millis();
+}
+

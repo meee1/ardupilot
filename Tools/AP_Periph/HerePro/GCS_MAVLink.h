@@ -69,12 +69,6 @@ private:
         return (GCS_MAVLINK_HerePro *)_chan[ofs];
     };
 
-    void send_textv(MAV_SEVERITY severity, const char *fmt, va_list arg_list, uint8_t dest_bitmask) override {
-        hal.console->printf("TOGCS: ");
-        hal.console->vprintf(fmt, arg_list);
-        hal.console->printf("\n");
-    }
-
     MAV_TYPE frame_type() const override { return MAV_TYPE_GENERIC; }
     uint32_t custom_mode() const override { return 3; } // magic number
 };

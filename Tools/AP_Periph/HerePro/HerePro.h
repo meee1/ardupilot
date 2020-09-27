@@ -12,6 +12,9 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
+#include <AP_HAL/AP_HAL.h>
+#if defined(HAL_BOARD_AP_PERIPH_HEREPRO)
 #include "../AP_Periph.h"
 #include "GCS_Mavlink.h"
 #include <AP_Notify/AP_Notify.h>
@@ -50,7 +53,8 @@ class HerePro_FW : public AP_Periph_FW {
     bool verify_command_callback(const AP_Mission::Mission_Command& cmd) { return false; }
     void log_init(void);
     static void scheduler_delay_callback();
-
+    uint64_t vehicle_state;
+    float yaw_earth;
     //TODO: Remove dependencies on initialisation
     // of following classes in GCS
     // Mission library
@@ -58,20 +62,41 @@ class HerePro_FW : public AP_Periph_FW {
             FUNCTOR_BIND_MEMBER(&HerePro_FW::start_command_callback, bool, const AP_Mission::Mission_Command &),
             FUNCTOR_BIND_MEMBER(&HerePro_FW::verify_command_callback, bool, const AP_Mission::Mission_Command &),
             FUNCTOR_BIND_MEMBER(&HerePro_FW::exit_mission_callback, void)};
+    
+    static HerePro_FW* _singleton;
 
+    uint32_t last_vehicle_state;
 public:
+    HerePro_FW();
+
+    /* Do not allow copies */
+    HerePro_FW(const HerePro_FW &other) = delete;
+    HerePro_FW &operator=(const HerePro_FW&) = delete;
+
+    static HerePro_FW *get_singleton() { return _singleton; }
     void init() override;
     void update() override;
     void can_imu_update();
     void can_voltage_update(uint32_t index, float value);
+    void handle_lightscommand(CanardInstance* isns, CanardRxTransfer* transfer) override;
+    void handle_herepro_notify(CanardInstance* isns, CanardRxTransfer* transfer) override;
     
-    HerePro_FW(void)
-        : logger(g.log_bitmask)
-    {
-    }
+    // Handled under LUA script to control LEDs
+    float get_yaw_earth() { return yaw_earth; }
+    uint32_t get_vehicle_state() { return vehicle_state; }
     // setup the var_info table
     AP_Param param_loader{var_info};
     static const AP_Param::Info var_info[];
 };
 
 extern HerePro_FW periph;
+#else
+class HerePro_FW {
+public:
+    HerePro_FW() {}
+    static HerePro_FW *get_singleton() { return nullptr; }
+    float get_yaw_earth() { return 0; }
+    uint32_t get_vehicle_state() { return 0; }
+};
+
+#endif
