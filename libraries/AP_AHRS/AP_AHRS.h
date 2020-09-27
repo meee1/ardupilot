@@ -418,6 +418,15 @@ public:
     // return the quaternion defining the rotation from NED to XYZ (body) axes
     virtual bool get_quaternion(Quaternion &quat) const WARN_IF_UNUSED = 0;
 
+    float get_yaw_earth() const {
+        Quaternion quat;
+        if (!get_quaternion(quat)) {
+            return 0.0f;
+        }
+        quat = quat.inverse();
+        return quat.get_euler_yaw();
+    }
+
     // return secondary attitude solution if available, as eulers in radians
     virtual bool get_secondary_attitude(Vector3f &eulers) const WARN_IF_UNUSED {
         return false;
