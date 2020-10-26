@@ -57,6 +57,8 @@ const AP_Param::Info HerePro_FW::var_info[] = {
     // @Path: ../libraries/AP_SerialManager/AP_SerialManager.cpp
     GOBJECT(serial_manager, "SERIAL",  AP_SerialManager),
 
+    GOBJECT(rtc, "RTC_",  AP_RTC),
+
     // @Param: SYSID_THISMAV
     // @DisplayName: MAVLink system ID of this vehicle
     // @Description: Allows setting an individual system id for this vehicle to distinguish it from others on the same network

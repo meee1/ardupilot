@@ -25,6 +25,7 @@
 #include <AP_Mission/AP_Mission.h>
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Scripting/AP_Scripting.h>
+#include <AP_RTC/AP_RTC.h>
 
 class HerePro_FW : public AP_Periph_FW {
     GCS_HerePro _gcs;
@@ -42,6 +43,8 @@ class HerePro_FW : public AP_Periph_FW {
     AP_Scheduler scheduler;
 
     AP_Scripting scripting;
+
+    AP_RTC rtc;
 
     AP_HAL::AnalogSource *_adc0;
     AP_HAL::AnalogSource *_adc1;
@@ -76,7 +79,7 @@ public:
     static HerePro_FW *get_singleton() { return _singleton; }
     void init() override;
     void update() override;
-    static void trigger_irq_event();
+    static void pps_irq_event();
     void can_imu_update();
     void can_voltage_update(uint32_t index, float value);
     void can_gps_update() override;

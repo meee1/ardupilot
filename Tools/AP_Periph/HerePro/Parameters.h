@@ -23,6 +23,7 @@ public:
         k_param_log_bitmask,
         k_param_scripting,
         k_param_led_brightness,
+        k_param_rtc,
         k_param_serialpass,
         k_param_testmode
     };

@@ -69,6 +69,8 @@ void HerePro_FW::init()
 
     stm32_watchdog_pat();
 
+    AP::rtc().set_utc_usec(hal.util->get_hw_rtc(), AP_RTC::SOURCE_HW);
+
     // initialise serial manager as early as sensible to get
     // diagnostic output during boot process.  We have to initialise
     // the GCS singleton first as it sets the global mavlink system ID
@@ -125,8 +127,6 @@ void HerePro_FW::init()
         hal.scheduler->delay(1);
 	}    
 
-    AP::rtc().set_utc_usec(hal.util->get_hw_rtc(), AP_RTC::SOURCE_HW);
-
     if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE) {
         gps.init(serial_manager);
     }
@@ -151,7 +151,7 @@ void HerePro_FW::init()
 
     // setup handler for rising edge of IRQ pin - GPIO(100)
     hal.gpio->pinMode(100, HAL_GPIO_INPUT);
-    hal.gpio->attach_interrupt(100, trigger_irq_event, AP_HAL::GPIO::INTERRUPT_RISING);
+    hal.gpio->attach_interrupt(100, pps_irq_event, AP_HAL::GPIO::INTERRUPT_RISING);
 
     {
         // get analog for loop
@@ -168,15 +168,30 @@ void HerePro_FW::init()
     scripting.init();
 }
 
-void HerePro_FW::trigger_irq_event()
+/*
+the pps pin outputs a high accuracy time pulse every 1 second. using this we can calculate the position processing delay/serial buffer delay
+*/
+void HerePro_FW::pps_irq_event()
 {
     static uint64_t last_irq;
+    static uint8_t setcounter;
     uint64_t tnow = AP_HAL::micros64();
 
     uint64_t tepoch_us = AP::gps().time_epoch_usec();
+    setcounter++;
+    uint64_t epoch_ms =  tepoch_us % 1000000;
+    tepoch_us = tepoch_us - epoch_ms;
+    if(epoch_ms > 500000)
+         tepoch_us = tepoch_us + 1000000;
+
+    if(tepoch_us > 0 && setcounter > 10) {
+        //can_printf("PCI TimePulse set %llu", tepoch_us);
+        AP::rtc().set_utc_usec(tepoch_us, AP_RTC::SOURCE_GPS);
+    }
+
     uint64_t utc_usec=0;
     if (AP::rtc().get_utc_usec(utc_usec)) {
-        can_printf("PCI TimePulse %llu us %llu gps %llu", (tnow - last_irq), utc_usec, tepoch_us);
+        can_printf("PCI TimePulse %f ms %llu gps %llu set %llu", (tnow - last_irq) * 0.001, utc_usec, AP::gps().time_epoch_usec(), tepoch_us);
     }
     last_irq = tnow;
 }
