@@ -68,6 +68,12 @@ const AP_Param::Info HerePro_FW::var_info[] = {
 
     GOBJECT(scripting, "SCR_", AP_Scripting),
 
+    GSCALAR(led_brightness, "LED_BRIGHTNESS", AP_PERIPH_LED_BRIGHT_DEFAULT),
+
+    GSCALAR(serialpass, "SERIALPASS", 0),
+
+    GSCALAR(testmode, "TESTMODE", 0),
+
     AP_VAREND
 };
 

@@ -33,12 +33,20 @@
 #include <uavcan/equipment/ahrs/Solution.h>
 #include <uavcan/equipment/indication/LightsCommand.h>
 #include <com/hex/equipment/herepro/NotifyState.h>
+#include <uavcan/equipment/gnss/RTCMStream.h>
+#include <uavcan/equipment/ahrs/MagneticFieldStrength.h>
+#include <uavcan/equipment/gnss/Fix2.h>
+#include <uavcan/equipment/gnss/Auxiliary.h>
+#include <AP_RTC/AP_RTC.h>
+
+#ifndef CAN_PROBE_CONTINUOUS
+#define CAN_PROBE_CONTINUOUS 0
+#endif
 
 extern const AP_HAL::HAL &hal;
 
 AP_Vehicle& vehicle = *AP_Vehicle::get_singleton();
 HerePro_FW* HerePro_FW::_singleton = nullptr;
-
 
 HerePro_FW::HerePro_FW() :
     logger(g.log_bitmask)
@@ -89,6 +97,36 @@ void HerePro_FW::init()
         printf("Reboot after watchdog reset\n");
     }
 
+
+	while(g.serialpass > 0)
+	{
+        static uint32_t currentbaud = 0;
+        stm32_watchdog_pat();
+
+        // follow the usb baudrate request - allows firmware update etc
+        uint32_t baud = hal.util->get_usb_baud(2); //*((uint32_t*)linecoding2.dwDTERate);
+        if(currentbaud != baud) {
+            can_printf("new baud %lu", baud);
+            hal.uartB->end();
+            hal.uartB->begin(baud);
+            currentbaud = baud;
+        }
+
+	    // send characters received from the otg2 to the GPS
+	    while (hal.uartC->available()) {
+	        hal.uartB->write(hal.uartC->read());
+	    }
+	    // send GPS characters to the otg2
+	    while (hal.uartB->available()) {
+	        hal.uartC->write(hal.uartB->read());
+	    }
+	    can_update();
+        // 1ms = 56kb at 460800 baud
+        hal.scheduler->delay(1);
+	}    
+
+    AP::rtc().set_utc_usec(hal.util->get_hw_rtc(), AP_RTC::SOURCE_HW);
+
     if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE) {
         gps.init(serial_manager);
     }
@@ -111,6 +149,10 @@ void HerePro_FW::init()
     palWriteLine(HAL_GPIO_PIN_LED, 1); // 4 leds left/right
     palWriteLine(HAL_GPIO_PIN_LED_2, 1); // the rest
 
+    // setup handler for rising edge of IRQ pin - GPIO(100)
+    hal.gpio->pinMode(100, HAL_GPIO_INPUT);
+    hal.gpio->attach_interrupt(100, trigger_irq_event, AP_HAL::GPIO::INTERRUPT_RISING);
+
     {
         // get analog for loop
         _adc0 = hal.analogin->channel(4);
@@ -125,6 +167,20 @@ void HerePro_FW::init()
     notify.init();
     scripting.init();
 }
+
+void HerePro_FW::trigger_irq_event()
+{
+    static uint64_t last_irq;
+    uint64_t tnow = AP_HAL::micros64();
+
+    uint64_t tepoch_us = AP::gps().time_epoch_usec();
+    uint64_t utc_usec=0;
+    if (AP::rtc().get_utc_usec(utc_usec)) {
+        can_printf("PCI TimePulse %llu us %llu gps %llu", (tnow - last_irq), utc_usec, tepoch_us);
+    }
+    last_irq = tnow;
+}
+
 
 /*
  *  a delay() callback that processes MAVLink packets. We set this as the
@@ -159,36 +215,36 @@ void HerePro_FW::scheduler_delay_callback()
 
 void HerePro_FW::update()
 {
-    // static uint32_t last_1hz;
+    static uint32_t last_1hz;
     static uint32_t last_50hz;
     static uint32_t last_100hz;
     uint32_t tnow = AP_HAL::millis();
 
-    // if (tnow - last_1hz >= 1000)
-    // {
-    //     last_1hz = tnow;
+     if (g.testmode > 0 && tnow - last_1hz >= 1000)
+     {
+         last_1hz = tnow;
 
-    //     hal.gpio->pinMode(1, HAL_GPIO_INPUT);
-    //     uint8_t gpio1 = hal.gpio->read(1);
-    //     hal.gpio->pinMode(2, HAL_GPIO_INPUT);
-    //     uint8_t gpio2 = hal.gpio->read(2);
-    //     //can_printf("gpio %u %u\r\n",gpio1,gpio2);
+         hal.gpio->pinMode(1, HAL_GPIO_INPUT);
+         uint8_t gpio1 = hal.gpio->read(1);
+         hal.gpio->pinMode(2, HAL_GPIO_INPUT);
+         uint8_t gpio2 = hal.gpio->read(2);
+         //can_printf("gpio %u %u\r\n",gpio1,gpio2);
 
-    //     float adc1 = _adc0->voltage_average();
-    //     float adc2 = _adc1->voltage_average();
-    //     float adc3 = _adc2->voltage_average(); // CircuitStatus
-    //     float adc4 = _adc3->voltage_average();
+         float adc1 = _adc0->voltage_average();
+         float adc2 = _adc1->voltage_average();
+         float adc3 = _adc2->voltage_average();
+         float adc4 = _adc3->voltage_average();
 
-    //     //can_printf("analog vcc(5v) %f vcc2(1.8v) %f bat1 %f bat2 %f\r\n",adc1,adc2,adc3,adc4);
+         //can_printf("analog vcc(5v) %f vcc2(1.8v) %f bat1 %f bat2 %f\r\n",adc1,adc2,adc3,adc4);
 
-    //     can_voltage_update(0,adc3);
-    //     can_voltage_update(1,adc4);
-    //     can_voltage_update(2,adc1);
-    //     can_voltage_update(3,adc2);
-    //     can_voltage_update(4,gpio1);
-    //     can_voltage_update(5,gpio2);
-    //     can_imu_update();
-    // }
+         can_voltage_update(0,adc3);
+         can_voltage_update(1,adc4);
+         can_voltage_update(2,adc1);
+         can_voltage_update(3,adc2);
+         can_voltage_update(4,gpio1);
+         can_voltage_update(5,gpio2);
+         can_imu_update();
+     }
 
     if (AP_HAL::millis() - last_vehicle_state > 500 ) {
         // We haven't heard from Ardupilot for a while go down
@@ -200,8 +256,15 @@ void HerePro_FW::update()
         last_50hz = tnow;
         notify.update();          
     }
+    
+    // testmode raw rtcm feed or we are a moving base and need to forward rtcm messages to can
+    if (g.testmode >= 2 || gps.get_type(0) == AP_GPS::GPS_Type::GPS_TYPE_UBLOX_RTK_BASE){
+        handle_RTCMStreamSend();
+    }
+
     if (tnow - last_100hz >= 10) {
         last_100hz = tnow;  
+
         // update INS immediately to get current gyro data populated
         ins.update();
 
@@ -217,6 +280,37 @@ void HerePro_FW::update()
 
     can_update();
     hal.scheduler->delay(2);
+}
+
+
+void HerePro_FW::handle_RTCMStreamSend()
+{
+    const uint8_t *rtcm_data;
+    uint16_t rtcm_len;
+    
+    if (periph.gps.get_RTCMV3(0, rtcm_data, rtcm_len)) {   
+        for (int a=0; a < rtcm_len; a+=128) {
+            uint8_t size = MIN(rtcm_len - a, 128);
+
+            uavcan_equipment_gnss_RTCMStream pkt {};
+            pkt.protocol_id = 3;
+            pkt.data.len = size;
+            pkt.data.data = (uint8_t*)&rtcm_data[a];
+
+            uint8_t buffer[UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DATA_MAX_LENGTH];
+            uint16_t total_size = uavcan_equipment_gnss_RTCMStream_encode(&pkt, buffer);
+
+            canardBroadcast(&canard,
+                                UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_SIGNATURE,
+                                UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_ID,
+                                &transfer_id,
+                                CANARD_TRANSFER_PRIORITY_LOW,                                
+                                &buffer[0],
+                                total_size);
+        }
+
+        periph.gps.clear_RTCMV3(0);
+    }
 }
 
 void HerePro_FW::can_voltage_update(uint32_t index, float value)
@@ -237,6 +331,55 @@ void HerePro_FW::can_voltage_update(uint32_t index, float value)
                     CANARD_TRANSFER_PRIORITY_LOW,
                     buffer,
                     len);
+}
+
+void HerePro_FW::can_mag_update(void)
+{
+#ifdef HAL_PERIPH_ENABLE_MAG
+    if (!compass.enabled()) {
+        return;
+    }
+    compass.read();
+#if CAN_PROBE_CONTINUOUS
+    if (compass.get_count() == 0) {
+        static uint32_t last_probe_ms;
+        uint32_t now = AP_HAL::millis();
+        if (now - last_probe_ms >= 1000) {
+            last_probe_ms = now;
+            compass.init();
+        }
+    }
+#endif
+
+    if (last_mag_update_ms == compass.last_update_ms()) {
+        return;
+    }
+
+    if (g.testmode > 0 && AP_HAL::millis() - last_mag_update_ms < 1000) {
+        return;
+    }
+
+    last_mag_update_ms = compass.last_update_ms();
+    const Vector3f &field = compass.get_field();
+    uavcan_equipment_ahrs_MagneticFieldStrength pkt {};
+
+    // the canard dsdl compiler doesn't understand float16
+    for (uint8_t i=0; i<3; i++) {
+        pkt.magnetic_field_ga[i] = field[i] * 0.001;
+        fix_float16(pkt.magnetic_field_ga[i]);
+    }
+
+    uint8_t buffer[UAVCAN_EQUIPMENT_AHRS_MAGNETICFIELDSTRENGTH_MAX_SIZE];
+    uint16_t total_size = uavcan_equipment_ahrs_MagneticFieldStrength_encode(&pkt, buffer);
+
+    canardBroadcast(&canard,
+                    UAVCAN_EQUIPMENT_AHRS_MAGNETICFIELDSTRENGTH_SIGNATURE,
+                    UAVCAN_EQUIPMENT_AHRS_MAGNETICFIELDSTRENGTH_ID,
+                    &transfer_id,
+                    CANARD_TRANSFER_PRIORITY_LOW,
+                    &buffer[0],
+                    total_size);
+#endif // HAL_PERIPH_ENABLE_MAG
 }
 
 void HerePro_FW::can_imu_update(void)
@@ -332,6 +475,140 @@ void HerePro_FW::can_imu_update(void)
                         &buffer[0],
                         total_size);
     }
+}
+
+/*
+  update CAN GPS
+ */
+void HerePro_FW::can_gps_update(void)
+{
+#ifdef HAL_PERIPH_ENABLE_GPS
+    if (gps.get_type(0) == AP_GPS::GPS_Type::GPS_TYPE_NONE) {
+        return;
+    }
+    gps.update();
+    if (last_gps_update_ms == gps.last_message_time_ms()) {
+        return;
+    }
+    if (g.testmode > 0 && AP_HAL::millis() - last_gps_update_ms < 1000) {
+        return;
+    }
+    last_gps_update_ms = gps.last_message_time_ms();
+
+    {
+        /*
+          send Fix2 packet
+        */
+        uavcan_equipment_gnss_Fix2 pkt {};
+        const Location &loc = gps.location();
+        const Vector3f &vel = gps.velocity();
+
+        pkt.timestamp.usec = AP_HAL::micros64();
+        pkt.gnss_timestamp.usec = gps.time_epoch_usec();
+        if (pkt.gnss_timestamp.usec == 0) {
+            pkt.gnss_time_standard = UAVCAN_EQUIPMENT_GNSS_FIX2_GNSS_TIME_STANDARD_NONE;
+        } else {
+            pkt.gnss_time_standard = UAVCAN_EQUIPMENT_GNSS_FIX2_GNSS_TIME_STANDARD_UTC;
+        }
+        pkt.longitude_deg_1e8 = uint64_t(loc.lng) * 10ULL;
+        pkt.latitude_deg_1e8 = uint64_t(loc.lat) * 10ULL;
+        pkt.height_ellipsoid_mm = loc.alt * 10;
+        pkt.height_msl_mm = loc.alt * 10;
+        for (uint8_t i=0; i<3; i++) {
+            pkt.ned_velocity[i] = vel[i];
+        }
+        pkt.sats_used = gps.num_sats();
+        switch (gps.status()) {
+        case AP_GPS::GPS_Status::NO_GPS:
+        case AP_GPS::GPS_Status::NO_FIX:
+            pkt.status = UAVCAN_EQUIPMENT_GNSS_FIX2_STATUS_NO_FIX;
+            pkt.mode = UAVCAN_EQUIPMENT_GNSS_FIX2_MODE_SINGLE;
+            pkt.sub_mode = UAVCAN_EQUIPMENT_GNSS_FIX2_SUB_MODE_DGPS_OTHER;
+            break;
+        case AP_GPS::GPS_Status::GPS_OK_FIX_2D:
+            pkt.status = UAVCAN_EQUIPMENT_GNSS_FIX2_STATUS_2D_FIX;
+            pkt.mode = UAVCAN_EQUIPMENT_GNSS_FIX2_MODE_SINGLE;
+            pkt.sub_mode = UAVCAN_EQUIPMENT_GNSS_FIX2_SUB_MODE_DGPS_OTHER;
+            break;
+        case AP_GPS::GPS_Status::GPS_OK_FIX_3D:
+            pkt.status = UAVCAN_EQUIPMENT_GNSS_FIX2_STATUS_3D_FIX;
+            pkt.mode = UAVCAN_EQUIPMENT_GNSS_FIX2_MODE_SINGLE;
+            pkt.sub_mode = UAVCAN_EQUIPMENT_GNSS_FIX2_SUB_MODE_DGPS_OTHER;
+            break;
+        case AP_GPS::GPS_Status::GPS_OK_FIX_3D_DGPS:
+            pkt.status = UAVCAN_EQUIPMENT_GNSS_FIX2_STATUS_3D_FIX;
+            pkt.mode = UAVCAN_EQUIPMENT_GNSS_FIX2_MODE_DGPS;
+            pkt.sub_mode = UAVCAN_EQUIPMENT_GNSS_FIX2_SUB_MODE_DGPS_SBAS;
+            break;
+        case AP_GPS::GPS_Status::GPS_OK_FIX_3D_RTK_FLOAT:
+            pkt.status = UAVCAN_EQUIPMENT_GNSS_FIX2_STATUS_3D_FIX;
+            pkt.mode = UAVCAN_EQUIPMENT_GNSS_FIX2_MODE_RTK;
+            pkt.sub_mode = UAVCAN_EQUIPMENT_GNSS_FIX2_SUB_MODE_RTK_FLOAT;
+            break;
+        case AP_GPS::GPS_Status::GPS_OK_FIX_3D_RTK_FIXED:
+            pkt.status = UAVCAN_EQUIPMENT_GNSS_FIX2_STATUS_3D_FIX;
+            pkt.mode = UAVCAN_EQUIPMENT_GNSS_FIX2_MODE_RTK;
+            pkt.sub_mode = UAVCAN_EQUIPMENT_GNSS_FIX2_SUB_MODE_RTK_FIXED;
+            break;
+        }
+
+        float cov[6] {};
+        pkt.covariance.data = &cov[0];
+        pkt.covariance.len = 6;
+
+        float hacc;
+        if (gps.horizontal_accuracy(hacc)) {
+            cov[0] = cov[1] = sq(hacc);
+        }
+    
+        float vacc;
+        if (gps.vertical_accuracy(vacc)) {
+            cov[2] = sq(vacc);
+        }
+
+        float sacc;
+        if (gps.speed_accuracy(sacc)) {
+            float vc3 = sq(sacc);
+            cov[3] = cov[4] = cov[5] = vc3;
+        }
+
+        for (uint8_t i=0; i<6; i++) {
+            fix_float16(cov[i]);
+        }
+
+        uint8_t buffer[UAVCAN_EQUIPMENT_GNSS_FIX2_MAX_SIZE];
+        uint16_t total_size = uavcan_equipment_gnss_Fix2_encode(&pkt, buffer);
+
+        canardBroadcast(&canard,
+                        UAVCAN_EQUIPMENT_GNSS_FIX2_SIGNATURE,
+                        UAVCAN_EQUIPMENT_GNSS_FIX2_ID,
+                        &transfer_id,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        &buffer[0],
+                        total_size);
+    }
+    
+    /*
+      send aux packet
+     */
+    {
+        uavcan_equipment_gnss_Auxiliary aux {};
+        aux.hdop = gps.get_hdop() * 0.01;
+        aux.vdop = gps.get_vdop() * 0.01;
+        fix_float16(aux.hdop);
+        fix_float16(aux.vdop);
+
+        uint8_t buffer[UAVCAN_EQUIPMENT_GNSS_AUXILIARY_MAX_SIZE];
+        uint16_t total_size = uavcan_equipment_gnss_Auxiliary_encode(&aux, buffer);
+        canardBroadcast(&canard,
+                        UAVCAN_EQUIPMENT_GNSS_AUXILIARY_SIGNATURE,
+                        UAVCAN_EQUIPMENT_GNSS_AUXILIARY_ID,
+                        &transfer_id,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        &buffer[0],
+                        total_size);
+    }
+#endif // HAL_PERIPH_ENABLE_GPS
 }
 
 const struct LogStructure HerePro_FW::log_structure[] = {

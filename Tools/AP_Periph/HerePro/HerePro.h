@@ -76,8 +76,13 @@ public:
     static HerePro_FW *get_singleton() { return _singleton; }
     void init() override;
     void update() override;
+    static void trigger_irq_event();
     void can_imu_update();
     void can_voltage_update(uint32_t index, float value);
+    void can_gps_update() override;
+    void can_mag_update() override;
+    void handle_RTCMStreamSend();
+
     void handle_lightscommand(CanardInstance* isns, CanardRxTransfer* transfer) override;
     void handle_herepro_notify(CanardInstance* isns, CanardRxTransfer* transfer) override;
     

@@ -21,18 +21,26 @@ public:
         k_param_flash_bootloader,
         k_param_sysid_this_mav,
         k_param_log_bitmask,
-        k_param_scripting
+        k_param_scripting,
+        k_param_led_brightness,
+        k_param_serialpass,
+        k_param_testmode
     };
+
+    AP_Int16 serialpass;
 
     AP_Int16 format_version;
     AP_Int16 can_node;
     AP_Int32 can_baudrate;
 
+    AP_Int32 log_bitmask;
+
     AP_Int8 flash_bootloader;
 
     AP_Int8 led_brightness;
     AP_Int16 sysid_this_mav;
-    AP_Int32 log_bitmask;
+    AP_Int8 testmode;
+
     Parameters() {}
 };
 
