@@ -25,7 +25,8 @@ public:
         k_param_led_brightness,
         k_param_rtc,
         k_param_serialpass,
-        k_param_testmode
+        k_param_testmode,
+        k_param_rtcmsource,
     };
 
     AP_Int16 serialpass;
@@ -41,8 +42,10 @@ public:
     AP_Int8 led_brightness;
     AP_Int16 sysid_this_mav;
     AP_Int8 testmode;
-
+    AP_Int8 rtcmsource;
+    
     Parameters() {}
 };
 
 extern const AP_Param::Info var_info[];
+

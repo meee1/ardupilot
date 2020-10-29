@@ -31,6 +31,7 @@ public:
         k_param_hardpoint_rate,
         k_param_baro_enable,
         k_param_esc_number,
+        k_param_rtcmsource,
     };
 
     AP_Int16 format_version;
@@ -52,7 +53,9 @@ public:
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
     AP_Int32 rangefinder_baud;
 #endif
-
+#ifdef HAL_PERIPH_ENABLE_GPS
+    AP_Int8 rtcmsource;
+#endif
 #ifdef HAL_PERIPH_ENABLE_ADSB
     AP_Int32 adsb_baudrate;
 #endif

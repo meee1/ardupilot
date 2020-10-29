@@ -503,13 +503,15 @@ void AP_Periph_FW::handle_safety_state(CanardInstance* ins, CanardRxTransfer* tr
  */
 void AP_Periph_FW::handle_RTCMStream(CanardInstance* ins, CanardRxTransfer* transfer)
 {
-    uavcan_equipment_gnss_RTCMStream req;
-    uint8_t arraybuf[UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DATA_MAX_LENGTH];
-    uint8_t *arraybuf_ptr = arraybuf;
-    if (uavcan_equipment_gnss_RTCMStream_decode(transfer, transfer->payload_len, &req, &arraybuf_ptr) < 0) {
-        return;
+    if(g.rtcmsource == 0 || g.rtcmsource == transfer->source_node_id) {
+        uavcan_equipment_gnss_RTCMStream req;
+        uint8_t arraybuf[UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DATA_MAX_LENGTH];
+        uint8_t *arraybuf_ptr = arraybuf;
+        if (uavcan_equipment_gnss_RTCMStream_decode(transfer, transfer->payload_len, &req, &arraybuf_ptr) < 0) {
+            return;
+        }
+        periph.gps.handle_gps_rtcm_fragment(0, req.data.data, req.data.len);
     }
-    periph.gps.handle_gps_rtcm_fragment(0, req.data.data, req.data.len);
 }
 #endif // HAL_PERIPH_ENABLE_GPS
 

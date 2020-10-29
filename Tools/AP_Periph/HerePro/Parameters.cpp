@@ -45,6 +45,8 @@ const AP_Param::Info HerePro_FW::var_info[] = {
     // @Path: ../../libraries/AP_GPS/AP_GPS.cpp
     GOBJECT(gps, "GPS_", AP_GPS),
 
+    GSCALAR(rtcmsource,         "GPS_RTCMSOURCE", 0),
+    
     // @Group: COMPASS_
     // @Path: ../../libraries/AP_Compass/AP_Compass.cpp
     GOBJECT(compass,         "COMPASS_",     Compass),

@@ -50,6 +50,8 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     // @Group: GPS_
     // @Path: ../../libraries/AP_GPS/AP_GPS.cpp
     GOBJECT(gps, "GPS_", AP_GPS),
+
+    GSCALAR(rtcmsource,         "GPS_RTCMSOURCE", 0),
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_MAG
