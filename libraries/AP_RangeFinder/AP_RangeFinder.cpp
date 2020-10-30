@@ -47,6 +47,7 @@
 #include "AP_RangeFinder_LeddarVu8.h"
 #include "AP_RangeFinder_SITL.h"
 #include "AP_RangeFinder_MSP.h"
+#include "AP_RangeFinder_NRA24.h"
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_Logger/AP_Logger.h>
@@ -548,6 +549,9 @@ void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
             drivers[instance] = new AP_RangeFinder_MSP(state[instance], params[instance]);
         }
 #endif // HAL_MSP_RANGEFINDER_ENABLED
+        break;
+    case Type::NRA24:
+        drivers[instance] = new AP_RangeFinder_NRA24(state[instance], params[instance]);
         break;
 
     case Type::NONE:
