@@ -37,6 +37,7 @@
 #include <uavcan/equipment/ahrs/MagneticFieldStrength.h>
 #include <uavcan/equipment/gnss/Fix2.h>
 #include <uavcan/equipment/gnss/Auxiliary.h>
+#include <ardupilot/gnss/Heading.h>
 #include <AP_RTC/AP_RTC.h>
 
 #ifndef CAN_PROBE_CONTINUOUS
@@ -622,6 +623,29 @@ void HerePro_FW::can_gps_update(void)
                         CANARD_TRANSFER_PRIORITY_LOW,
                         &buffer[0],
                         total_size);
+    }
+
+    {
+        if (gps.get_type(0) == AP_GPS::GPS_Type::GPS_TYPE_UBLOX_RTK_ROVER) {
+            // always send if we are in this mode
+            ardupilot_gnss_Heading heading {};
+            float yaw_deg = 0;
+            float accuracy_deg = 0;
+            heading.heading_valid = gps.gps_yaw_deg(yaw_deg, accuracy_deg);
+            heading.heading_accuracy_valid = heading.heading_valid;
+            heading.heading = yaw_deg;
+            heading.heading_accuracy = accuracy_deg;
+
+            uint8_t buffer[ARDUPILOT_GNSS_HEADING_MAX_SIZE];
+            uint16_t total_size = ardupilot_gnss_Heading_encode(&heading, buffer);
+            canardBroadcast(&canard,
+                            ARDUPILOT_GNSS_HEADING_SIGNATURE,
+                            ARDUPILOT_GNSS_HEADING_ID,
+                            &transfer_id,
+                            CANARD_TRANSFER_PRIORITY_LOW,
+                            &buffer[0],
+                            total_size);
+        }
     }
 #endif // HAL_PERIPH_ENABLE_GPS
 }
