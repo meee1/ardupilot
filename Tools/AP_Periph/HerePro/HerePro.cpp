@@ -82,9 +82,6 @@ void HerePro_FW::init()
     serial_manager.init();
     gcs().setup_console();
 
-    // Register delay callback
-    hal.scheduler->register_delay_callback(scheduler_delay_callback, 1);
-
     can_start();
 
     stm32_watchdog_pat();
@@ -101,8 +98,8 @@ void HerePro_FW::init()
     }
 
 
-	while(g.serialpass > 0)
-	{
+    while(g.serialpass > 0)
+    {
         static uint32_t currentbaud = 0;
         stm32_watchdog_pat();
 
@@ -115,18 +112,20 @@ void HerePro_FW::init()
             currentbaud = baud;
         }
 
-	    // send characters received from the otg2 to the GPS
-	    while (hal.uartC->available()) {
-	        hal.uartB->write(hal.uartC->read());
-	    }
-	    // send GPS characters to the otg2
-	    while (hal.uartB->available()) {
-	        hal.uartC->write(hal.uartB->read());
-	    }
-	    can_update();
-        // 1ms = 56kb at 460800 baud
-        hal.scheduler->delay(1);
-	}    
+        // send characters received from the otg2 to the GPS
+        while (hal.uartC->available()) {
+            hal.uartB->write(hal.uartC->read());
+        }
+        // send GPS characters to the otg2
+        while (hal.uartB->available()) {
+            hal.uartC->write(hal.uartB->read());
+        }
+        can_update();
+        //hal.scheduler->delay(1);
+    }
+
+    // Register delay callback
+    hal.scheduler->register_delay_callback(scheduler_delay_callback, 1);
 
     if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE) {
         gps.init(serial_manager);
@@ -272,11 +271,6 @@ void HerePro_FW::update()
         last_50hz = tnow;
         notify.update();          
     }
-    
-    // testmode raw rtcm feed or we are a moving base and need to forward rtcm messages to can
-    if (g.testmode >= 2 || gps.get_type(0) == AP_GPS::GPS_Type::GPS_TYPE_UBLOX_RTK_BASE){
-        handle_RTCMStreamSend();
-    }
 
     if (tnow - last_100hz >= 10) {
         last_100hz = tnow;  
@@ -295,7 +289,11 @@ void HerePro_FW::update()
     }
 
     can_update();
-    hal.scheduler->delay(2);
+    // this can create a delay in the gps update loop as the rtcm messages are received the read breaks,
+    // and the remaining buffer stays till the next read
+    // 1s = 56kb at 460800 baud
+    // 1ms = 56bps  rtcm eg (1074-112,1084-68,1094-83,1124-54,1230-11,4072-129) = 6 reads = 6 ms wait = 336 possible = 457 sent
+    hal.scheduler->delay(1);
 }
 
 
@@ -309,7 +307,7 @@ void HerePro_FW::handle_RTCMStreamSend()
             uint8_t size = MIN(rtcm_len - a, 128);
 
             uavcan_equipment_gnss_RTCMStream pkt {};
-            pkt.protocol_id = 3;
+            pkt.protocol_id = UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_PROTOCOL_ID_RTCM3;
             pkt.data.len = size;
             pkt.data.data = (uint8_t*)&rtcm_data[a];
 
@@ -503,6 +501,13 @@ void HerePro_FW::can_gps_update(void)
         return;
     }
     gps.update();
+
+    // testmode raw rtcm feed or we are a moving base and need to forward rtcm messages to can
+    // this need to happen after the update to ensure we dont skip an entire rtcm packet
+    if (g.testmode >= 2 || gps.get_type(0) == AP_GPS::GPS_Type::GPS_TYPE_UBLOX_RTK_BASE){
+        handle_RTCMStreamSend();
+    }
+
     if (last_gps_update_ms == gps.last_message_time_ms()) {
         return;
     }
