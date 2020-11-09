@@ -27,6 +27,8 @@ public:
         k_param_serialpass,
         k_param_testmode,
         k_param_rtcmsource,
+        k_param_canterm1,
+        k_param_canterm2,
     };
 
     AP_Int16 serialpass;
@@ -43,6 +45,8 @@ public:
     AP_Int16 sysid_this_mav;
     AP_Int8 testmode;
     AP_Int8 rtcmsource;
+    AP_Int8 canterm1;
+    AP_Int8 canterm2;
     
     Parameters() {}
 };

@@ -82,6 +82,10 @@ void HerePro_FW::init()
     serial_manager.init();
     gcs().setup_console();
 
+    // can terminator setup
+    hal.gpio->pinMode(3, HAL_GPIO_OUTPUT);
+    hal.gpio->pinMode(4, HAL_GPIO_OUTPUT);
+
     can_start();
 
     stm32_watchdog_pat();
@@ -184,14 +188,14 @@ void HerePro_FW::pps_irq_event()
     if(epoch_ms > 500000)
          tepoch_us = tepoch_us + 1000000;
 
-    if(tepoch_us > 0 && setcounter > 10) {
+    if(tepoch_us > 0 && setcounter > 30) {
         //can_printf("PCI TimePulse set %llu", tepoch_us);
         AP::rtc().set_utc_usec(tepoch_us, AP_RTC::SOURCE_GPS);
     }
 
     uint64_t utc_usec=0;
     if (AP::rtc().get_utc_usec(utc_usec)) {
-        can_printf("PCI TimePulse %f ms %llu gps %llu set %llu", (tnow - last_irq) * 0.001, utc_usec, AP::gps().time_epoch_usec(), tepoch_us);
+        printf("PCI TimePulse %f ms %llu gps %llu set %llu", (tnow - last_irq) * 0.001, utc_usec, AP::gps().time_epoch_usec(), tepoch_us);
     }
     last_irq = tnow;
 }
@@ -230,14 +234,14 @@ void HerePro_FW::scheduler_delay_callback()
 
 void HerePro_FW::update()
 {
-    static uint32_t last_1hz;
+    static uint32_t last_0dot5hz;
     static uint32_t last_50hz;
     static uint32_t last_100hz;
     uint32_t tnow = AP_HAL::millis();
 
-     if (g.testmode > 0 && tnow - last_1hz >= 1000)
+     if (g.testmode > 0 && tnow - last_0dot5hz >= 2000)
      {
-         last_1hz = tnow;
+         last_0dot5hz = tnow;
 
          hal.gpio->pinMode(1, HAL_GPIO_INPUT);
          uint8_t gpio1 = hal.gpio->read(1);
@@ -269,7 +273,11 @@ void HerePro_FW::update()
 
     if (tnow - last_50hz >= 20) {
         last_50hz = tnow;
-        notify.update();          
+        notify.update();
+
+        // set can terminators from config
+        hal.gpio->write(3, g.canterm1 & 0x1);
+        hal.gpio->write(4, g.canterm2 & 0x1);
     }
 
     if (tnow - last_100hz >= 10) {
@@ -436,6 +444,7 @@ void HerePro_FW::can_imu_update(void)
                         total_size);
     }
 
+    if(false)
     {
         uavcan_equipment_ahrs_Solution _att_state {};
         uavcan_Timestamp ts {};
