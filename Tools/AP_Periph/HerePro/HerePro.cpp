@@ -278,6 +278,16 @@ void HerePro_FW::update()
         // set can terminators from config
         hal.gpio->write(3, g.canterm1 & 0x1);
         hal.gpio->write(4, g.canterm2 & 0x1);
+
+        if (g.testmode > 0) {
+            //clear all leds
+            for (int a = 0; a < 16;a++)
+            {
+                notify.handle_rgb_id(0, 0, 0, a);
+            }
+            // set new state
+            notify.handle_rgb_id(g.led_idx % 3 == 0 ? 255: 0, g.led_idx % 3 == 1 ? 255: 0, g.led_idx % 3 == 2 ? 255: 0, (g.led_idx / 3));
+        }
     }
 
     if (tnow - last_100hz >= 10) {

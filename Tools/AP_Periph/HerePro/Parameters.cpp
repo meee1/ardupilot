@@ -81,6 +81,9 @@ const AP_Param::Info HerePro_FW::var_info[] = {
     GSCALAR(canterm1, "CAN1_TERMINATOR", 0),
     GSCALAR(canterm2, "CAN2_TERMINATOR", 0),
 
+    GSCALAR(led_idx, "LED_TEST", -1),
+    
+
     AP_VAREND
 };
 

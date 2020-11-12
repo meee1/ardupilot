@@ -29,6 +29,7 @@ public:
         k_param_rtcmsource,
         k_param_canterm1,
         k_param_canterm2,
+        k_param_led_idx,
     };
 
     AP_Int16 serialpass;
@@ -47,6 +48,7 @@ public:
     AP_Int8 rtcmsource;
     AP_Int8 canterm1;
     AP_Int8 canterm2;
+    AP_Int8 led_idx;
     
     Parameters() {}
 };
