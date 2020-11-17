@@ -75,7 +75,6 @@ static uint32_t canard_memory_pool[HAL_CAN_POOL_SIZE/sizeof(uint32_t)];
 #ifndef HAL_CAN_DEFAULT_NODE_ID
 #define HAL_CAN_DEFAULT_NODE_ID CANARD_BROADCAST_NODE_ID
 #endif
-uint8_t AP_Periph_FW::PreferredNodeID = HAL_CAN_DEFAULT_NODE_ID;
 uint8_t AP_Periph_FW::transfer_id;
 
 #ifndef CAN_APP_NODE_NAME
@@ -985,7 +984,7 @@ void AP_Periph_FW::can_wait_node_id(void)
         // Structure of the request is documented in the DSDL definition
         // See http://uavcan.org/Specification/6._Application_level_functions/#dynamic-node-id-allocation
         uint8_t allocation_request[CANARD_CAN_FRAME_MAX_DATA_LEN - 1];
-        allocation_request[0] = (uint8_t)(PreferredNodeID << 1U);
+        allocation_request[0] = (uint8_t)(g.can_node << 1U);
 
         if (node_id_allocation_unique_id_offset == 0)
         {
@@ -1049,8 +1048,8 @@ void AP_Periph_FW::can_start()
     canardInit(&canard, (uint8_t *)canard_memory_pool, sizeof(canard_memory_pool),
                onTransferReceived, shouldAcceptTransfer, NULL);
 
-    if (PreferredNodeID != CANARD_BROADCAST_NODE_ID) {
-        canardSetLocalNodeID(&canard, PreferredNodeID);
+    if (g.can_node != CANARD_BROADCAST_NODE_ID) {
+        canardSetLocalNodeID(&canard, g.can_node);
     }
 
     // wait for dynamic node ID allocation
