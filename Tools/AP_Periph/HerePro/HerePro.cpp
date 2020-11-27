@@ -704,6 +704,13 @@ void HerePro_FW::handle_lightscommand(CanardInstance* isns, CanardRxTransfer* tr
             green = constrain_int16(green * scale, 0, 255);
             blue = constrain_int16(blue * scale, 0, 255);
         }
+        // if led_mode is 0 mirror the first led command to all siblings
+        if(g.led_mode == 0 && req.commands.len == 1 && cmd.light_id == 0) {
+            for (uint8_t l=0; l<16; l++) { 
+                notify.handle_rgb_id(red, green, blue, l);
+            }
+            return;
+        }
         notify.handle_rgb_id(red, green, blue, cmd.light_id);
     }
 }

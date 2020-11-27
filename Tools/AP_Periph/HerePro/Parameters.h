@@ -30,7 +30,10 @@ public:
         k_param_canterm1,
         k_param_canterm2,
         k_param_led_idx,
+        k_param_led_mode,
     };
+
+    AP_Int8 led_mode;
 
     AP_Int16 serialpass;
 

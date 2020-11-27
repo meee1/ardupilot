@@ -74,6 +74,8 @@ const AP_Param::Info HerePro_FW::var_info[] = {
 
     GSCALAR(led_brightness, "LED_BRIGHTNESS", AP_PERIPH_LED_BRIGHT_DEFAULT),
 
+    GSCALAR(led_mode, "LED_MODE", 0),
+
     GSCALAR(serialpass, "SERIALPASS", 0),
 
     GSCALAR(testmode, "TESTMODE", 0),
