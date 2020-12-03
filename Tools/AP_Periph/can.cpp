@@ -806,8 +806,8 @@ void AP_Periph_FW::processTx(void)
         txmsg.dlc = txf->data_len;
         memcpy(txmsg.data, txf->data, 8);
         txmsg.id = (txf->id | AP_HAL::CANFrame::FlagEFF);
-        // push message with 1s timeout
-        if (can_iface.send(txmsg, AP_HAL::micros64() + 1000000, 0) > 0) {
+        // push message with 10ms timeout
+        if (can_iface.send(txmsg, AP_HAL::micros64() + 10000, 0) > 0) {
             canardPopTxQueue(&canard);
             fail_count = 0;
         } else {
