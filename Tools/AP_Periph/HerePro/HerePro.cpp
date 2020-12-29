@@ -107,7 +107,7 @@ void HerePro_FW::init()
         printf("Reboot after watchdog reset\n");
     }
 
-    if(true)
+    if(false)
     {
         usbDisconnectBus(&USBD1);
         usbDisconnectBus(&USBD2);

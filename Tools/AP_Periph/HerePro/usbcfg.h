@@ -26,7 +26,7 @@ extern SerialUSBDriver SDU1;
 #define USBD1_INTERRUPT_REQUEST_EP      3
 
 #define USBD_VID 0x0483
-#define USBD_PID 0x5740
+#define USBD_PID 0x5744
 #define USB_MSD_EP_SIZE 64
 
 #endif  /* USBCFG_H */
