@@ -28,6 +28,7 @@
 class FixCb;
 class Fix2Cb;
 class AuxCb;
+class HeadingCb;
 
 class AP_GPS_UAVCAN : public AP_GPS_Backend {
 public:

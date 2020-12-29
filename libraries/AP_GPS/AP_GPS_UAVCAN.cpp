@@ -27,6 +27,7 @@
 #include <uavcan/equipment/gnss/Fix.hpp>
 #include <uavcan/equipment/gnss/Fix2.hpp>
 #include <uavcan/equipment/gnss/Auxiliary.hpp>
+#include <ardupilot/gnss/Heading.hpp>
 
 extern const AP_HAL::HAL& hal;
 
@@ -403,14 +404,15 @@ void AP_GPS_UAVCAN::handle_heading_msg(const HeadingCb &cb)
 {
     WITH_SEMAPHORE(sem);
 
-    if (interim_state.gps_yaw_configured == false)
-        interim_state.gps_yaw_configured = cb.msg->have_gps_yaw;
+    if (interim_state.gps_yaw_configured == false) {
+        interim_state.gps_yaw_configured = cb.msg->heading_valid;
+    }
 
-    interim_state.have_gps_yaw = cb.msg->have_gps_yaw;
-    interim_state.heading = cb.msg->heading;
+    interim_state.have_gps_yaw = cb.msg->heading_valid;
+    interim_state.gps_yaw = degrees(cb.msg->heading_rad);
 
-    interim_state.have_gps_yaw_accuracy = cb.msg->have_gps_yaw_accuracy;
-    interim_state.heading_accuracy = cb.msg->heading_accuracy;    
+    interim_state.have_gps_yaw_accuracy = cb.msg->heading_accuracy_valid;
+    interim_state.gps_yaw_accuracy = degrees(cb.msg->heading_accuracy_rad);
 }
 
 void AP_GPS_UAVCAN::handle_fix_msg_trampoline(AP_UAVCAN* ap_uavcan, uint8_t node_id, const FixCb &cb)
@@ -459,6 +461,12 @@ bool AP_GPS_UAVCAN::read(void)
     WITH_SEMAPHORE(sem);
     if (_new_data) {
         _new_data = false;
+
+        // the encoding of accuracies in UAVCAN can result in infinite
+        // values. These cause problems with blending. Use 1000m and 1000m/s instead
+        interim_state.horizontal_accuracy = MIN(interim_state.horizontal_accuracy, 1000.0);
+        interim_state.vertical_accuracy = MIN(interim_state.vertical_accuracy, 1000.0);
+        interim_state.speed_accuracy = MIN(interim_state.speed_accuracy, 1000.0);
 
         state = interim_state;
 
