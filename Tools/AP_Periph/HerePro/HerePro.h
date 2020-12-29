@@ -26,6 +26,8 @@
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Scripting/AP_Scripting.h>
 #include <AP_RTC/AP_RTC.h>
+#include "usbcfg.h"
+#include "hal_usb_msd.h"
 
 class HerePro_FW : public AP_Periph_FW {
     GCS_HerePro _gcs;

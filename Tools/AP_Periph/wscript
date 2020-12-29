@@ -19,7 +19,8 @@ def build(bld):
         extra_use = ['libHerePro']
 
         libraries = bld.ap_get_all_libraries() + [
-        'Tools/AP_Periph/HerePro/*.cpp'
+        'Tools/AP_Periph/HerePro/*.cpp',
+        'Tools/AP_Periph/HerePro/*.c'
         ]
         bld.env.prepend_value('INCLUDES', [bld.env.SRCROOT + '/modules/libcanard',
             bld.env.BUILDROOT + '/modules/libcanard/dsdlc_generated'])

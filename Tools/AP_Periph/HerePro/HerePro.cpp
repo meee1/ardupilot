@@ -39,6 +39,10 @@
 #include <uavcan/equipment/gnss/Auxiliary.h>
 #include <ardupilot/gnss/Heading.h>
 #include <AP_RTC/AP_RTC.h>
+#include <AP_HAL_ChibiOS/sdcard.h>
+#include <AP_HAL_ChibiOS/hwdef/common/bouncebuffer.h>
+#include "usbcfg.h"
+#include "hal_usb_msd.h"
 
 #ifndef CAN_PROBE_CONTINUOUS
 #define CAN_PROBE_CONTINUOUS 0
@@ -48,6 +52,8 @@ extern const AP_HAL::HAL &hal;
 
 AP_Vehicle& vehicle = *AP_Vehicle::get_singleton();
 HerePro_FW* HerePro_FW::_singleton = nullptr;
+
+static uint8_t blkbuf[512];
 
 HerePro_FW::HerePro_FW() :
     logger(g.log_bitmask)
@@ -101,9 +107,46 @@ void HerePro_FW::init()
         printf("Reboot after watchdog reset\n");
     }
 
-
-    while(g.serialpass > 0)
+    if(true)
     {
+        usbDisconnectBus(&USBD1);
+        usbDisconnectBus(&USBD2);
+
+        usbStop(&USBD1);
+        usbStop(&USBD2);
+        stm32_watchdog_pat();
+
+        // init
+        sdcard_init();        
+        // unmount
+        f_mount(nullptr, "/", 1);
+        
+        chThdSleepMilliseconds(100);       
+
+        stm32_watchdog_pat();
+
+        sduObjectInit(&SDU1);
+        sduStart(&SDU1,&serusbcfg);
+        chThdSleepMilliseconds(100);
+        usbStart(&USBD1, &usbcfg1);
+        chThdSleepMilliseconds(100);
+        msdObjectInit(&USBMSD1);  
+
+        stm32_watchdog_pat();
+        msdStart(&USBMSD1, &USBD1, (BaseBlockDevice*)&SDCD1, blkbuf,  NULL, NULL);
+        stm32_watchdog_pat();
+
+        usbConnectBus(&USBD1);
+
+        while(true)
+        {
+              stm32_watchdog_pat();
+            chThdSleepMilliseconds(1000);
+            printf(".");
+        }
+    }
+
+    while(g.serialpass > 0) {
         static uint32_t currentbaud = 0;
         stm32_watchdog_pat();
 
