@@ -657,8 +657,8 @@ void HerePro_FW::can_gps_update(void)
             float accuracy_deg = 0;
             heading.heading_valid = gps.gps_yaw_deg(yaw_deg, accuracy_deg);
             heading.heading_accuracy_valid = heading.heading_valid;
-            heading.heading = yaw_deg;
-            heading.heading_accuracy = accuracy_deg;
+            heading.heading_rad = radians(yaw_deg);
+            heading.heading_accuracy_rad = radians(accuracy_deg);
 
             uint8_t buffer[ARDUPILOT_GNSS_HEADING_MAX_SIZE];
             uint16_t total_size = ardupilot_gnss_Heading_encode(&heading, buffer);
