@@ -1415,6 +1415,7 @@ AP_GPS_UBLOX::_parse_gps(void)
         state.location.lng    = _buffer.pvt.lon;
         state.location.lat    = _buffer.pvt.lat;
         state.location.alt    = _buffer.pvt.h_msl / 10;
+        state.alt_ell = _buffer.pvt.height / 10;
         switch (_buffer.pvt.fix_type) 
         {
             case 0:

@@ -595,7 +595,7 @@ void HerePro_FW::can_gps_update(void)
         }
         pkt.longitude_deg_1e8 = uint64_t(loc.lng) * 10ULL;
         pkt.latitude_deg_1e8 = uint64_t(loc.lat) * 10ULL;
-        pkt.height_ellipsoid_mm = loc.alt * 10;
+        pkt.height_ellipsoid_mm = gps.alt_ellipsoid() * 10;
         pkt.height_msl_mm = loc.alt * 10;
         for (uint8_t i=0; i<3; i++) {
             pkt.ned_velocity[i] = vel[i];

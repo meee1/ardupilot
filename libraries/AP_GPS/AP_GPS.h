@@ -160,6 +160,7 @@ public:
         uint32_t time_week_ms;              ///< GPS time (milliseconds from start of GPS week)
         uint16_t time_week;                 ///< GPS week number
         Location location;                  ///< last fix location
+        float alt_ell;                      ///< elipsoid alt
         float ground_speed;                 ///< ground speed in m/sec
         float ground_course;                ///< ground course in degrees
         float gps_yaw;                      ///< GPS derived yaw information, if available (degrees)
@@ -242,6 +243,13 @@ public:
     }
     const Location &location() const {
         return location(primary_instance);
+    }
+
+    const float &alt_ellipsoid(uint8_t instance) const {
+        return state[instance].alt_ell;
+    }
+    const float &alt_ellipsoid() const {
+        return alt_ellipsoid(primary_instance);
     }
 
     // report speed accuracy
