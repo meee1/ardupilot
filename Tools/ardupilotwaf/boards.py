@@ -1026,3 +1026,6 @@ class SITL_x86_64_linux_gnu(SITL_static):
 
 class SITL_arm_linux_gnueabihf(SITL_static):
     toolchain = 'arm-linux-gnueabihf'
+
+class SITL_aarch64_linux_gnu(SITL_static):
+    toolchain = 'aarch64-linux-gnu'

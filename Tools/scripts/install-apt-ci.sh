@@ -12,6 +12,8 @@ PKGS=" \
     python-pip \
     python-dev \
     zlib1g-dev \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
     "
 
 read -r UBUNTU_CODENAME <<<$(lsb_release -c -s)

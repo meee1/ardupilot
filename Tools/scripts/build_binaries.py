@@ -647,6 +647,7 @@ is bob we will attempt to checkout bob-AVR'''
                 # SITL targets
                 "SITL_x86_64_linux_gnu",
                 "SITL_arm_linux_gnueabihf",
+                "SITL_aarch64_linux_gnu"
                 ]
 
     def AP_Periph_boards(self):
