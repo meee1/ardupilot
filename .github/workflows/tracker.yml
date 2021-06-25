@@ -1,4 +1,4 @@
-name: test replay
+name: test tracker
 
 on: [push, pull_request, workflow_dispatch]
 # paths:
@@ -14,11 +14,9 @@ jobs:
       matrix:
         toolchain: [
             base,  # GCC
-            clang,
+            chibios,
         ]
-        config: [
-            replay
-        ]
+        gcc: [6]
     steps:
       # git checkout the PR
       - uses: actions/checkout@v2
@@ -45,22 +43,46 @@ jobs:
           echo "max_size = 400M" >> ~/.ccache/ccache.conf
           ccache -s
           ccache -z
-      - name: test ${{matrix.config}} ${{ matrix.toolchain }}
-        env:
-          CI_BUILD_TARGET: ${{matrix.config}}
+      - name: build tracker ${{ matrix.toolchain }}
         shell: bash
         run: |
           if [[ ${{ matrix.toolchain }} = "clang" ]]; then
             export CC=clang-7
             export CXX=clang++-7
           fi
+          PATH="/usr/lib/ccache:/opt/gcc-arm-none-eabi-${{matrix.gcc}}/bin:$PATH"
           PATH="/github/home/.local/bin:$PATH"
-          Tools/scripts/build_ci.sh
+                    
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake flex bison build-essential libssl-dev libz-dev p7zip-full
+          cd modules/gsoap
+          sed -i 's/\/\/ #  include <fcntl.h>/#  include <fcntl.h>/g' gsoap/stdsoap2.h
+          sudo autoreconf -f -i
+          sudo ./configure
+          sudo make
+          sudo make install
+          cd ..
+          cd ..
+          
+          cd modules/ChibiOS/ext
+          7z x lwip-2.1.2.7z
+          
+          cd ..
+          cd ..
+          cd ..
+          
+          mkdir modules/ChibiOS/ext/lwip/src/include/compat/posix/netinet
+          echo '#include "lwip/sockets.h"' > modules/ChibiOS/ext/lwip/src/include/compat/posix/netinet/in.h
+          echo '#include "lwip/sockets.h"' > modules/ChibiOS/ext/lwip/src/include/compat/posix/netinet/tcp.h
 
-      - name: Archive buildlog artifacts
-        uses: actions/upload-artifact@v2
-        if: failure()
+          
+          echo ./waf configure --board H757I_EVAL --debug --enable-onvif --enable-asserts
+          echo ./waf antennatracker
+          
+          ./waf configure --board sitl  --debug --enable-onvif --enable-asserts
+          ./waf antennatracker
+          ccache -s
+          ccache -z
+      - uses: actions/upload-artifact@v2
         with:
-           name: fail-${{ matrix.toolchain }}-${{matrix.config}}
-           path: /tmp/buildlogs
-           retention-days: 14
+          path: build\sitl\bin
