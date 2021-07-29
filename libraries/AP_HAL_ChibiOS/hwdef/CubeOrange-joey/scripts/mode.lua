@@ -11,12 +11,13 @@ local counter = 0
 
 function update()
   local pos = ahrs:get_position()
+  local pwm6 = rc:get_pwm(6)
 
   if (vehicle:get_mode() == MODE_AUTO or vehicle:get_mode() == MODE_LOITER) then
     setfence(true)
-  elseif vehicle:get_mode() == MODE_ALT_HOLD and not pos then
+  elseif vehicle:get_mode() == MODE_ALT_HOLD and pwm6 > 1750 then
     setfence(false)
-  elseif vehicle:get_mode() == MODE_ALT_HOLD and pos then
+  elseif vehicle:get_mode() == MODE_ALT_HOLD then
     setfence(true)
   end
   
