@@ -13,17 +13,11 @@ jobs:
       fail-fast: false  # don't cancel if a job from the matrix fails
       matrix:
         config: [
-            navigator
+            SITL_aarch64_linux_gnu
         ]
         toolchain: [
-            armhf,
+            aarch64,
         ]
-        include:
-          - config: navigator
-            toolchain: armhf-musl
-        exclude:
-          - config: navigator
-            toolchain: armhf
 
     steps:
       # git checkout the PR
@@ -51,6 +45,7 @@ jobs:
           echo "max_size = 400M" >> ~/.ccache/ccache.conf
           ccache -s
           ccache -z
+          sudo apt-get install -y     gcc-aarch64-linux-gnu     g++-aarch64-linux-gnu 
       - name: test ${{matrix.config}} ${{ matrix.toolchain }}
         env:
           CI_BUILD_TARGET: ${{matrix.config}}
