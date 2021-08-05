@@ -50,3 +50,15 @@ jobs:
           pip3 install future
           ./waf configure
           ./waf copter
+
+      - name: Archive build
+
+        uses: actions/upload-artifact@v2
+
+        with:
+
+           name: binaries-${{ matrix.toolchain }}
+
+           path: build
+
+           retention-days: 7
