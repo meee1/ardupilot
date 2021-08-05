@@ -47,5 +47,6 @@ jobs:
         continue-on-error: ${{ matrix.can-fail }}
         id: build
         run: |
+          pip install future
           ./waf configure
           ./waf copter
