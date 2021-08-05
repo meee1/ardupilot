@@ -15,9 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         include: [
-          { msystem: MINGW64, toolchain: mingw-w64-x86_64-toolchain, can-fail: false },
-          { msystem: MINGW32, toolchain: mingw-w64-i686-toolchain, can-fail: false },
-          { msystem: UCRT64, toolchain: mingw-w64-ucrt-x86_64-toolchain, can-fail: false },
+          { msystem: MINGW64, toolchain: mingw-w64-x86_64-toolchain, can-fail: true },
+          { msystem: MINGW32, toolchain: mingw-w64-i686-toolchain, can-fail: true },
+          { msystem: UCRT64, toolchain: mingw-w64-ucrt-x86_64-toolchain, can-fail: true },
           { msystem: CLANG64, toolchain: mingw-w64-clang-x86_64-toolchain, can-fail: true },
           { msystem: CLANG32, toolchain: '', can-fail: true }
         ]
@@ -35,7 +35,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
-          install: git msys2-devel base-devel binutils pactoys-git ${{ matrix.toolchain }}
+          install: git msys2-devel base-devel binutils pactoys-git python-pip mingw-w64-python-future ${{ matrix.toolchain }}
           update: true
           
       - shell: msys2 {0}
@@ -47,6 +47,5 @@ jobs:
         continue-on-error: ${{ matrix.can-fail }}
         id: build
         run: |
-          pip install future
           ./waf configure
           ./waf copter
