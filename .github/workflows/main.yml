@@ -35,7 +35,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
-          install: git msys2-devel base-devel binutils pactoys-git python-pip mingw-w64-python-future ${{ matrix.toolchain }}
+          install: git msys2-devel base-devel binutils pactoys-git python-pip python-future ${{ matrix.toolchain }}
           update: true
           
       - shell: msys2 {0}
