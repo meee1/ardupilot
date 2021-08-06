@@ -17,14 +17,9 @@ jobs:
       fail-fast: false  # don't cancel if a job from the matrix fails
       matrix:
         config: [
-            stm32f7,
-            stm32h7,
-            fmuv2-plane,
-            periph-build,
-            iofirmware,
+            CubeOrange,
             CubeOrange-bootloader,
-            revo-bootloader,
-            stm32h7-debug
+            CubeOrange-joey
         ]
         toolchain: [
             chibios,  # GCC-6
@@ -75,3 +70,9 @@ jobs:
           Tools/scripts/build_ci.sh
           ccache -s
           ccache -z
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+           name: ${{matrix.config}}
+           path: /__w/ardupilot/ardupilot/build
+           retention-days: 7
