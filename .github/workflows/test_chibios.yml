@@ -73,5 +73,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
            name: ${{matrix.config}}
-           path: /__w/ardupilot/ardupilot/build/${{matrix.config}}/bin/
+           path: /__w/ardupilot/ardupilot/build/${{matrix.config}}/bin/arducopter.apj
            retention-days: 7
