@@ -72,6 +72,6 @@ jobs:
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
-           name: ${{matrix.config}}
+           name: ${{matrix.config}}-${{ matrix.gcc }}
            path: /__w/ardupilot/ardupilot/build/${{matrix.config}}/bin/arducopter.apj
            retention-days: 7
