@@ -14,8 +14,8 @@ unset CXX CC
 
 export BUILDROOT=/tmp/ci.build
 rm -rf $BUILDROOT
-export GIT_VERSION="ci_test"
-export CHIBIOS_GIT_VERSION="ci_test"
+#export GIT_VERSION="ci_test"
+#export CHIBIOS_GIT_VERSION="ci_test"
 export CCACHE_SLOPPINESS="include_file_ctime,include_file_mtime"
 autotest_args=""
 
