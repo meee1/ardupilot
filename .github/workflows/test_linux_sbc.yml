@@ -59,3 +59,9 @@ jobs:
           Tools/scripts/build_ci.sh
           ccache -s
           ccache -z
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+           name: ${{matrix.config}}-${{ matrix.toolchain }}
+           path: /__w/ardupilot/ardupilot/build/${{matrix.config}}/bin/
+           retention-days: 7
