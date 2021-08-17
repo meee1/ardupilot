@@ -425,6 +425,8 @@ def get_ap_periph_boards():
     for d in dirlist:
         if d in list_ap:
             continue
+        if 'Here' in d:
+            list_ap.append(d)
         hwdef = os.path.join(dirname, d, 'hwdef.dat')
         if os.path.exists(hwdef):
             with open(hwdef, "r") as f:
