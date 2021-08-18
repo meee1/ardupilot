@@ -1,7 +1,7 @@
 include ../HereCommon/hwdef.inc
 
 # board ID for firmware load
-APJ_BOARD_ID 1042
+APJ_BOARD_ID 1038
 
 # USB setup
 USB_VENDOR 0x2DAE # ONLY FOR USE BY HEX! NOBODY ELSE

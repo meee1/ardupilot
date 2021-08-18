@@ -214,6 +214,17 @@ void AP_Periph_FW::init()
 #endif
 
     start_ms = AP_HAL::native_millis();
+    
+    while(true){
+     stm32_watchdog_pat();
+            while (hal.serial(2)->available()) {
+            hal.serial(0)->write(hal.serial(2)->read());
+        }
+        // send GPS characters to the otg2
+        while (hal.serial(0)->available()) {
+            hal.serial(2)->write(hal.serial(0)->read());
+        }
+    }
 }
 
 #if (defined(HAL_PERIPH_NEOPIXEL_COUNT_WITHOUT_NOTIFY) && HAL_PERIPH_NEOPIXEL_COUNT_WITHOUT_NOTIFY == 8) || defined(HAL_PERIPH_ENABLE_NOTIFY)
@@ -384,6 +395,9 @@ void AP_Periph_FW::update()
 #ifdef HAL_PERIPH_ENABLE_NOTIFY
         notify.update();
 #endif
+
+
+
 #ifndef HAL_NO_GCS
         gcs().update_receive();
         gcs().update_send();
@@ -402,6 +416,30 @@ void AP_Periph_FW::update()
 #ifdef HAL_PERIPH_ENABLE_ADSB
     adsb_update();
 #endif
+
+    {
+        //static uint32_t currentbaud = 0;
+        stm32_watchdog_pat();
+/*
+        // follow the usb baudrate request - allows firmware update etc
+        uint32_t baud = hal.util->get_usb_baud(0); // *((uint32_t*)linecoding2.dwDTERate);
+        if(currentbaud != baud) {
+            can_printf("new baud %lu", baud);
+            hal.uartB->end();
+            hal.uartB->begin(baud);
+            currentbaud = baud;
+        }
+*/
+        // send characters received from the otg2 to the GPS
+        while (hal.serial(2)->available()) {
+            hal.serial(0)->write(hal.serial(2)->read());
+        }
+        // send GPS characters to the otg2
+        while (hal.serial(0)->available()) {
+            hal.serial(2)->write(hal.serial(0)->read());
+        }
+    }
+
 }
 
 #ifdef HAL_PERIPH_LISTEN_FOR_SERIAL_UART_REBOOT_CMD_PORT
