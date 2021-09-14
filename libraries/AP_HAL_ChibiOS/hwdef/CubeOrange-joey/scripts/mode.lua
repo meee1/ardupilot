@@ -8,6 +8,7 @@ local MODE_ALT_HOLD = 2
 local MODE_RTL = 6
 local MODE_LAND = 9
 local counter = 0
+local indoormode = 9876
 
 function update()
   local pos = ahrs:get_position()
@@ -15,7 +16,7 @@ function update()
 
   if (vehicle:get_mode() == MODE_AUTO or vehicle:get_mode() == MODE_LOITER) then
     setfence(true)
-  elseif vehicle:get_mode() == MODE_ALT_HOLD and pwm6 > 1750 then
+  elseif vehicle:get_mode() == MODE_ALT_HOLD and pwm6 > 1750 and param:get('SCR_USER1') == indoormode then
     setfence(false)
   elseif vehicle:get_mode() == MODE_ALT_HOLD then
     setfence(true)
@@ -29,6 +30,11 @@ function update()
         vehicle:set_mode(MODE_LOITER)
         gcs:send_text(0, "JoeyFence: Invalid Mode, Changing gps")
     end
+  end
+  
+  value = param:get('FENCE_RADIUS')
+  if (value < 5 or value > 50) then
+    param:set('FENCE_RADIUS',50)
   end
 
   if (counter >= 5 * 5) then
