@@ -32,11 +32,13 @@ function update()
     end
   end
   
+  --[[  
   value = param:get('FENCE_RADIUS')
   if (value < 5 or value > 50) then
     param:set('FENCE_RADIUS',50)
   end
-
+  --]]
+    
   if (counter >= 5 * 5) then
     --gcs:send_text(0, "JoeyFence: Running")
     counter = 0
