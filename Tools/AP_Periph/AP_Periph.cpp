@@ -95,13 +95,16 @@ void AP_Periph_FW::init()
 #if !HAL_GCS_ENABLED
     hal.serial(0)->begin(AP_SERIALMANAGER_CONSOLE_BAUD, 32, 32);
 #endif
+    hal.serial(0)->begin(115200, 128, 256);
+    hal.serial(1)->begin(115200, 128, 256);
+    hal.serial(2)->begin(115200, 128, 256);
     hal.serial(3)->begin(115200, 128, 256);
 
     load_parameters();
 
     stm32_watchdog_pat();
 
-    can_start();
+   // can_start();
 
 #if HAL_GCS_ENABLED
     stm32_watchdog_pat();
@@ -218,6 +221,71 @@ void AP_Periph_FW::init()
     scripting.init();
 #endif
     start_ms = AP_HAL::native_millis();
+    palSetLine(HAL_GPIO_PIN_MCU_POW_ON);
+    stm32_watchdog_pat();
+    hal.scheduler->delay(200);
+    stm32_watchdog_pat();
+    palClearLine (HAL_GPIO_PIN_MCU_POW_ON);
+    stm32_watchdog_pat();
+    hal.scheduler->delay(550);
+    stm32_watchdog_pat();
+     hal.scheduler->delay(550);
+       stm32_watchdog_pat();
+    palSetLine(HAL_GPIO_PIN_MCU_POW_ON);
+    
+     hal.serial(2)->end();
+    hal.serial(2)->set_options(8);
+    hal.serial(2)->begin(115200, 128, 256);
+
+    
+    while(true){
+     stm32_watchdog_pat();
+
+//hal.scheduler->delay(50);
+
+        //hal.serial(0)->write('.');
+
+     
+             while (hal.serial(1)->available()) {
+            hal.serial(0)->write(hal.serial(1)->read());
+}
+
+                while (hal.serial(3)->available()) {
+            hal.serial(0)->write(hal.serial(3)->read());
+        }
+     
+        while (hal.serial(2)->available()) {
+            hal.serial(0)->write(hal.serial(2)->read());
+        }
+        // send GPS characters to the otg2
+        while (hal.serial(0)->available()) {
+            const int16_t data = hal.serial(0)->read();
+            hal.serial(2)->write(data);
+            hal.serial(1)->write(data);
+            hal.serial(3)->write(data);
+        }
+        /*
+        hal.serial(1)->write('A');
+        hal.serial(2)->write('A');
+        hal.serial(3)->write('A');
+        
+        hal.serial(1)->write('T');
+        hal.serial(2)->write('T');
+        hal.serial(3)->write('T');
+        
+        hal.serial(1)->write('I');
+        hal.serial(2)->write('I');
+        hal.serial(3)->write('I');
+        
+        hal.serial(1)->write('9');
+        hal.serial(2)->write('9');
+        hal.serial(3)->write('9');
+        
+        hal.serial(1)->write('\r');
+        hal.serial(2)->write('\r');
+        hal.serial(3)->write('\r');
+        */
+    }
 }
 
 #if (defined(HAL_PERIPH_NEOPIXEL_COUNT_WITHOUT_NOTIFY) && HAL_PERIPH_NEOPIXEL_COUNT_WITHOUT_NOTIFY == 8) || defined(HAL_PERIPH_ENABLE_NOTIFY)
