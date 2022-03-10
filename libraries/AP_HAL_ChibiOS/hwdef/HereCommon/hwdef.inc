@@ -85,3 +85,7 @@ define HAL_DISABLE_ADC_DRIVER TRUE
 
 define HAL_CAN_DEFAULT_NODE_ID 154
 define HAL_NO_GCS
+
+# use the app descriptor needed by MissionPlanner for CAN upload
+env APP_DESCRIPTOR MissionPlanner
+

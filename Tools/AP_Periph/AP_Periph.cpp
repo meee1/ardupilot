@@ -225,14 +225,13 @@ void AP_Periph_FW::init()
     stm32_watchdog_pat();
     hal.scheduler->delay(550);
     stm32_watchdog_pat();
-     hal.scheduler->delay(550);
-       stm32_watchdog_pat();
     palSetLine(HAL_GPIO_PIN_MCU_POW_ON);
     
      hal.serial(2)->end();
     hal.serial(2)->set_options(8);
     hal.serial(2)->begin(115200, 128, 256);
 
+    hal.serial(2)->write("UUUUUUUUUU");
     
     while(true){
      stm32_watchdog_pat();
