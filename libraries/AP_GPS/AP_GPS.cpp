@@ -91,7 +91,7 @@ const AP_Param::GroupInfo AP_GPS::var_info[] = {
     // @Values: 0:None,1:AUTO,2:uBlox,5:NMEA,6:SiRF,7:HIL,8:SwiftNav,9:DroneCAN,10:SBF,11:GSOF,13:ERB,14:MAV,15:NOVA,16:HemisphereNMEA,17:uBlox-MovingBaseline-Base,18:uBlox-MovingBaseline-Rover,19:MSP,20:AllyStar,21:ExternalAHRS,22:DroneCAN-MovingBaseline-Base,23:DroneCAN-MovingBaseline-Rover
     // @RebootRequired: True
     // @User: Advanced
-    AP_GROUPINFO("_TYPE",    0, AP_GPS, _type[0], HAL_GPS_TYPE_DEFAULT),
+    AP_GROUPINFO("_TYPE",    0, AP_GPS, _type[0], 9),
 
 #if GPS_MAX_RECEIVERS > 1
     // @Param: _TYPE2
@@ -100,7 +100,7 @@ const AP_Param::GroupInfo AP_GPS::var_info[] = {
     // @Values: 0:None,1:AUTO,2:uBlox,5:NMEA,6:SiRF,7:HIL,8:SwiftNav,9:DroneCAN,10:SBF,11:GSOF,13:ERB,14:MAV,15:NOVA,16:HemisphereNMEA,17:uBlox-MovingBaseline-Base,18:uBlox-MovingBaseline-Rover,19:MSP,20:AllyStar,21:ExternalAHRS,22:DroneCAN-MovingBaseline-Base,23:DroneCAN-MovingBaseline-Rover
     // @RebootRequired: True
     // @User: Advanced
-    AP_GROUPINFO("_TYPE2",   1, AP_GPS, _type[1], 0),
+    AP_GROUPINFO("_TYPE2",   1, AP_GPS, _type[1], 9),
 #endif
 
     // @Param: _NAVFILTER
@@ -390,6 +390,24 @@ const AP_Param::GroupInfo AP_GPS::var_info[] = {
     AP_GROUPINFO("2_CAN_OVRIDE", 31, AP_GPS, _override_node_id[1], 0),
 #endif // GPS_MAX_RECEIVERS > 1
 #endif // HAL_ENABLE_LIBUAVCAN_DRIVERS
+
+
+
+#if GPS_MAX_RECEIVERS > 2
+    AP_GROUPINFO("_TYPE3",   32, AP_GPS, _type[2], 9),
+    AP_GROUPINFO("3_CAN_OVRIDE", 33, AP_GPS, _override_node_id[2], 0),
+        AP_GROUPINFO("_CAN_NODEID3", 34, AP_GPS, _node_id[2], 0),
+#endif
+#if GPS_MAX_RECEIVERS > 3
+    AP_GROUPINFO("_TYPE4",   35, AP_GPS, _type[3], 9),
+    AP_GROUPINFO("4_CAN_OVRIDE", 36, AP_GPS, _override_node_id[3], 0),
+        AP_GROUPINFO("_CAN_NODEID4", 37, AP_GPS, _node_id[3], 0),
+#endif
+#if GPS_MAX_RECEIVERS > 4
+    AP_GROUPINFO("_TYPE5",   38, AP_GPS, _type[4], 9),
+    AP_GROUPINFO("5_CAN_OVRIDE", 39, AP_GPS, _override_node_id[4], 0),
+        AP_GROUPINFO("_CAN_NODEID5", 40, AP_GPS, _node_id[4], 0),
+#endif
 
     AP_GROUPEND
 };
