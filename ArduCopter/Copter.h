@@ -846,6 +846,9 @@ private:
     void update_flight_mode();
     void notify_flight_mode();
 
+    // mode_throw.cpp
+    uint8_t get_throw_stage() const override;
+
     // mode_land.cpp
     void set_mode_land_with_pause(ModeReason reason);
     bool landing_with_GPS();

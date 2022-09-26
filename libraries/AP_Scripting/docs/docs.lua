@@ -1584,6 +1584,10 @@ function vehicle:set_target_throttle_rate_rpy(param1, param2, param3, param4) en
 function vehicle:nav_script_time_done(param1) end
 
 -- desc
+---@return integer
+function vehicle:get_throw_stage() end
+
+-- desc
 ---@class onvif
 onvif = {}
 

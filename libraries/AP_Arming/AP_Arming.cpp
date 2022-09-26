@@ -72,7 +72,7 @@
 #define AP_ARMING_COMPASS_MAGFIELD_MAX  875     // 1.65 * 530 milligauss
 #define AP_ARMING_BOARD_VOLTAGE_MAX     5.8f
 #define AP_ARMING_ACCEL_ERROR_THRESHOLD 0.75f
-#define AP_ARMING_AHRS_GPS_ERROR_MAX    10      // accept up to 10m difference between AHRS and GPS
+#define AP_ARMING_AHRS_GPS_ERROR_MAX    50      // accept up to 50m difference between AHRS and GPS
 
 #if APM_BUILD_TYPE(APM_BUILD_ArduPlane)
   #define ARMING_RUDDER_DEFAULT         (uint8_t)RudderArming::ARMONLY
@@ -597,7 +597,7 @@ bool AP_Arming::gps_checks(bool report)
             return false;
         }
 
-        // check AHRS and GPS are within 10m of each other
+        // check AHRS and GPS are within 50m of each other
         if (gps.num_sensors() > 0) {
             const Location gps_loc = gps.location();
             Location ahrs_loc;

@@ -300,6 +300,9 @@ public:
      */
     virtual bool get_rate_ef_targets(Vector3f& rate_ef_targets) const { return false; }
 
+    // return current throw state
+    virtual uint8_t get_throw_stage() const { return 0; }
+
 protected:
 
     virtual void init_ardupilot() = 0;

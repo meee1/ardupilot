@@ -307,4 +307,9 @@ bool ModeThrow::throw_position_good() const
     return (pos_control->get_pos_error_xy_cm() < 50.0f);
 }
 
+uint8_t Copter::get_throw_stage() const
+{
+    return (uint8_t)mode_throw.stage;
+}
+
 #endif

@@ -1563,6 +1563,8 @@ private:
 class ModeThrow : public Mode {
 
 public:
+    friend class Copter;
+
     // inherit constructor
     using Mode::Mode;
     Number mode_number() const override { return Number::THROW; }
