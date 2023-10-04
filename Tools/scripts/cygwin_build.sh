@@ -23,7 +23,7 @@ rm -rf artifacts
 mkdir artifacts
 
 (
-    python ./waf --color yes --toolchain $TOOLCHAIN --board linux configure 2>&1
+    python ./waf --color yes --toolchain $TOOLCHAIN --board sitl configure 2>&1
     python ./waf replay 2>&1
 ) | tee artifacts/build.txt
 
