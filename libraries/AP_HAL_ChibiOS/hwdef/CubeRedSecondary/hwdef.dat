@@ -4,6 +4,10 @@
 # MCU class and specific type
 MCU STM32H7xx STM32H757xx
 
+# USB setup
+USB_VENDOR 0x2DAE # ONLY FOR USE BY HEX! NOBODY ELSE
+USB_PRODUCT 0x1059
+
 define CORE_CM7
 define SMPS_PWR
 
